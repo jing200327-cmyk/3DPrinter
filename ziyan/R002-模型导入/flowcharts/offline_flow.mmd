@@ -1,0 +1,33 @@
+%% R002 模型导入 · 无网打印链路
+flowchart TD
+    S(["APP 检测到无网络 / 弱网"]) --> T1["顶部网络提醒条<br/>并列「无网打印 >」"]
+    S --> T2["自动弹窗<br/>每登录会话一次"]
+
+    T1 -- "点「无网打印 >」" --> U
+    T2 -- "去无网打印" --> U
+    T2 -- "暂不" --> T1
+
+    U["文件目录（无网模式）<br/>仅 gcode 可选"] --> V{"是否 gcode？"}
+    V -- "否" --> W1["「无网打印仅支持 gcode」"]
+    V -- "是" --> W{"绑定握手（双向）"}
+
+    W -- "两端通过" --> Y["无网文件传输页"]
+    W -- "未绑定" --> Z1["「该打印机尚未与当前账号绑定」<br/>+ 去绑定（需联网）"]
+    W -- "设备拒绝握手" --> Z2["「绑定信息已失效」"]
+    W -- "未登录" --> Z3["「请先登录后再进行无网打印」"]
+    W -- "凭证 > 30 天未校验" --> Y2["允许继续 + 强提示"]
+
+    Y2 --> Y
+    Y --> Y3(["编辑页 · 单盘"])
+    Y3 -- "点「去打印」" --> Y4["上传中进度弹窗"]
+    Y4 --> Y5(["上传完成<br/>弹窗：请联网查看打印机状态"])
+    Y3 -. "无网时" .-> Y6["准备打印页<br/>顶部无网标签 · 整页下移"]
+
+    classDef start fill:#ffe8d9,stroke:#f16326,stroke-width:2px,color:#8a3d10;
+    classDef page fill:#eef2ff,stroke:#5f74e8,color:#243b8f;
+    classDef warn fill:#fff6e5,stroke:#f59e0b,color:#8a5326;
+    classDef deny fill:#ffe9ec,stroke:#e11d48,color:#9b1030;
+    class S start;
+    class T1,T2,U,Y,Y3,Y4,Y5,Y6 page;
+    class V,W,Y2 warn;
+    class W1,Z1,Z2,Z3 deny;

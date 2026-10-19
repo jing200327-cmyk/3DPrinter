@@ -1,0 +1,9 @@
+{
+	"servers": {
+		"figwright": {
+			"type": "stdio",
+			"command": "C:\\Users\\MECHREVO\\AppData\\Roaming\\npm\\figwright-mcp.cmd"
+		}
+	},
+	"inputs": []
+}

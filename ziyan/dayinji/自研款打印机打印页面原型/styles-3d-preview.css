@@ -1,0 +1,308 @@
+/* ==========================================================================
+   3D 预览页（复用 R001「模型编辑与切片」原型的三维视图）
+   --------------------------------------------------------------------------
+   · 页面结构 = 状态栏 + 导航（左上返回 + 标题）+ 模型名 + 三维视图区
+   · 按本次需求删掉的部分：右上角「更多」按钮、底部「缩放 / 复制 / 删除」
+     工具区、「去打印」CTA 区（连带只服务于它们的缩放面板与遮罩）
+   · 盘缩略图左上角的 3D 图标（.plate-3d-btn）坐标也放在本文件里统一维护
+   ========================================================================== */
+
+/* ==========================================================================
+   1 · 盘缩略图左上角的 3D 图标
+   --------------------------------------------------------------------------
+   坐标由切片原图像素反算：
+     常规切片 311×108，缩略图卡片本体 rect = x[24,125] y[8,77]
+     换耗材后切片 375×130，缩略图卡片本体 rect = x[27,148] y[15,98]
+   盘行在页面上被拉伸成 100% 宽 × 16% 高，所以百分比可以直接套用。
+   ========================================================================== */
+
+.plate-3d-btn {
+  position: absolute;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 18px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 6px;
+  background: linear-gradient(140deg, #6ba4ff 0%, #4388f5 46%, #2f6fe0 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 52%),
+    inset 0 -1.5px 0 rgb(6 32 74 / 22%),
+    0 1px 3px rgb(15 40 90 / 30%);
+  color: #fff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+/* 「3D」三个字符做出上白下暗的立体字感 */
+.plate-3d-btn__text {
+  display: block;
+  transform: translateY(-0.5px);
+  text-shadow: 0 1px 0 rgb(6 32 74 / 34%), 0 -1px 0 rgb(255 255 255 / 40%);
+}
+.plate-3d-btn:active {
+  transform: translateY(0.5px);
+  box-shadow: inset 0 2px 4px rgb(6 32 74 / 26%);
+}
+.plate-3d-btn:focus-visible {
+  outline: 2px solid #4388f5;
+  outline-offset: 2px;
+}
+
+/* 缩略图卡片左上角，内缩 2px 不压到卡片描边 */
+.plate-row .plate-3d-btn,
+.state-row .plate-3d-btn {
+  left: calc(7.717% + 2px);
+  top: calc(7.407% + 2px);
+}
+/* 换了耗材的底图整页重排过，卡片位置整体下移（375×130 切片） */
+#prepare-stage[data-artwork="colorChanged"] .plate-row .plate-3d-btn {
+  left: calc(7.2% + 2px);
+  top: calc(11.538% + 2px);
+}
+/* 被状态戳盖住的盘整行不可点（戳下的色卡不可改），
+   但 3D 图标只是「看」，不受这层门控限制，单独放行 */
+.state-row.is-stamped .plate-3d-btn { pointer-events: auto; }
+
+/* ==========================================================================
+   2 · 3D 预览页外壳
+   ========================================================================== */
+
+.reuse-screen.preview3d-screen {
+  overflow: hidden;
+  background: #f7f9fc;
+  color: #1f242c;
+  --pv-blue: #4388f5;
+  --pv-blue-deep: #2f6fe0;
+  --pv-blue-soft: #eaf2fe;
+  --pv-ink: #1f242c;
+  --pv-ink-2: #5b6474;
+  --pv-ink-3: #98a2b3;
+  --pv-line: #eef1f6;
+  --pv-err: #e11d48;
+}
+.reuse-screen.preview3d-screen [hidden] { display: none; }
+
+.pv3d-frame {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* ---------- 状态栏（与分享打印机页同一套设备框语言） ---------- */
+.pv3d-statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+  height: 44px;
+  padding: 0 22px 0 26px;
+  color: #000;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+.pv3d-statusbar-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #000;
+}
+.pv3d-statusbar-icons svg { display: block; }
+
+/* ---------- 导航栏：左上角回退 → 准备打印页 ---------- */
+.pv3d-nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: none;
+  height: 48px;
+  padding: 0 16px;
+  background: #fff;
+  border-bottom: 1px solid var(--pv-line);
+}
+.pv3d-back {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  margin-left: -10px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--pv-ink);
+  cursor: pointer;
+}
+.pv3d-back:active { background: rgb(31 36 44 / 6%); }
+.pv3d-back svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.pv3d-nav-title {
+  position: absolute;
+  left: 50%;
+  margin: 0;
+  color: var(--pv-ink);
+  font-size: 16px;
+  font-weight: 600;
+  transform: translateX(-50%);
+}
+
+/* ---------- 模型名 ---------- */
+.pv3d-head {
+  flex: none;
+  padding: 12px 16px 12px;
+  background: #fff;
+  border-bottom: 1px solid var(--pv-line);
+}
+.pv3d-name {
+  margin: 0;
+  overflow: hidden;
+  color: var(--pv-ink);
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.pv3d-name span { color: var(--pv-ink-3); font-size: 14px; font-weight: 500; }
+.pv3d-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  color: var(--pv-ink-2);
+  font-size: 12px;
+}
+.pv3d-meta__dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #c6ccd8;
+}
+.pv3d-meta__chip {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--pv-blue-soft);
+  color: var(--pv-blue-deep);
+  font-weight: 600;
+}
+
+/* ---------- 三维视图区 ---------- */
+.pv3d-view {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, #fdfdff 0%, #eef1f8 100%);
+}
+#pv3d-gl {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: grab;
+}
+#pv3d-gl:active { cursor: grabbing; }
+
+.pv3d-hud {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  pointer-events: none;
+}
+.pv3d-pill {
+  align-self: flex-start;
+  padding: 3px 8px;
+  border: 1px solid var(--pv-line);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 92%);
+  color: var(--pv-ink-2);
+  font-size: 10.5px;
+  backdrop-filter: blur(6px);
+}
+
+.pv3d-axis {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+}
+.pv3d-axis__item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 6px 1px 4px;
+  border: 1px solid var(--pv-line);
+  border-radius: 6px;
+  background: rgb(255 255 255 / 90%);
+  color: var(--pv-ink-2);
+  font-size: 10px;
+}
+.pv3d-axis__dot { width: 7px; height: 7px; border-radius: 2px; }
+
+/* 视角缩放：只改相机距离，不动模型实际尺寸 */
+.pv3d-zoom {
+  position: absolute;
+  z-index: 5;
+  top: 50%;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transform: translateY(-50%);
+}
+.pv3d-zoom button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--pv-line);
+  border-radius: 10px;
+  background: rgb(255 255 255 / 95%);
+  box-shadow: 0 2px 8px rgb(20 24 40 / 8%);
+  color: var(--pv-ink);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+.pv3d-zoom button:active { background: #eef0f6; }
+
+.pv3d-tip {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgb(31 36 44 / 62%);
+  color: #fff;
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translateX(-50%);
+  backdrop-filter: blur(6px);
+}
+.pv3d-tip[hidden] { display: none; }

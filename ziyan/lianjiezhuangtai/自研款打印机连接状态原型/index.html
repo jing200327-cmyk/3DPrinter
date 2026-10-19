@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f6fa">
+  <title>自研款打印机连接状态原型</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <aside class="state-preview-nav" aria-label="原型状态预览">
+    <p>连接状态</p>
+    <a href="?state=idle" data-preview-state="idle">空闲</a>
+    <a href="?state=connecting" data-preview-state="connecting">连接中</a>
+    <a href="?state=offline" data-preview-state="offline">离线</a>
+  </aside>
+
+  <main id="device-page" class="phone-shell" data-state="idle" aria-labelledby="page-title">
+    <h1 id="page-title" class="sr-only">自研款 3D 打印机设备页</h1>
+
+    <div class="system-bar" aria-hidden="true">
+      <strong>09:50</strong>
+      <span class="system-icons"><i class="signal"></i><i class="wifi"></i><i class="battery"></i></span>
+    </div>
+
+    <header id="printer-status-panel" class="printer-status-panel" aria-label="打印机连接状态">
+      <img id="status-reference" src="../../src/dayinji/打印机状态空闲.png" alt="打印机 miao 当前为空闲状态">
+      <span id="connecting-spinner" class="connecting-spinner" aria-hidden="true" hidden></span>
+      <button id="printer-switch" class="hotspot hotspot--switch" type="button" aria-label="切换或添加打印机"></button>
+      <button id="printer-settings" class="hotspot hotspot--settings" type="button" aria-label="打开打印机设置"></button>
+    </header>
+
+    <div class="page-content">
+      <section id="timelapse-panel" class="timelapse-panel is-idle" aria-labelledby="timelapse-title">
+        <h2 id="timelapse-title" class="sr-only">延时摄影</h2>
+        <img id="timelapse-image" src="../../src/dayinji/空闲延时摄影.jpg" alt="打印机舱内实时画面">
+        <div id="camera-loading" class="camera-loading" aria-hidden="true" hidden>
+          <span></span><span></span><span></span>
+        </div>
+      </section>
+
+      <section id="idle-task-panel" class="idle-task-panel" aria-labelledby="idle-task-title">
+        <h2 id="idle-task-title" class="sr-only">空闲打印任务</h2>
+        <img src="../../src/dayinji/打印任务面板空闲.jpg" alt="准备打印：开始打印啦，挑选一个玩具开始打印">
+        <div class="idle-task-actions" aria-label="空闲任务快捷操作">
+          <button type="button" data-action="explore" aria-label="探索玩具"></button>
+          <button type="button" data-action="models" aria-label="打开我的模型"></button>
+        </div>
+      </section>
+
+      <section id="state-only-task" class="state-only-task" aria-labelledby="task-state" hidden>
+        <div class="state-only-ribbon" role="status" aria-live="polite">
+          <span class="task-status-icon" aria-hidden="true"></span>
+          <h2 id="task-state">待连接</h2>
+        </div>
+      </section>
+
+      <section class="filament-panel" aria-labelledby="filament-title">
+        <div class="section-heading">
+          <h2 id="filament-title">耗材</h2>
+          <button id="filament-settings" class="text-settings" type="button">设置<span aria-hidden="true">›</span></button>
+        </div>
+        <div class="material-slots" role="group" aria-label="耗材槽位">
+          <button class="material-slot" type="button" data-slot="1" aria-label="1号槽，黑色 PLA" aria-pressed="false">
+            <span class="slot-index">1</span><span class="spool spool--black" aria-hidden="true"></span><strong>PLA</strong>
+          </button>
+          <button class="material-slot" type="button" data-slot="2" aria-label="2号槽，灰色 PLA" aria-pressed="false">
+            <span class="slot-index">2</span><span class="spool spool--gray" aria-hidden="true"></span><strong>PLA</strong>
+          </button>
+          <button class="material-slot" type="button" data-slot="3" aria-label="3号槽，白色 PLA" aria-pressed="false">
+            <span class="slot-index">3</span><span class="spool spool--white" aria-hidden="true"></span><strong>PLA</strong>
+          </button>
+          <button class="material-slot is-selected" type="button" data-slot="4" aria-label="4号槽，蓝色 PLA，已选择" aria-pressed="true">
+            <span class="slot-index">4</span><span class="spool spool--blue" aria-hidden="true"></span><strong>PLA</strong>
+          </button>
+        </div>
+      </section>
+
+      <section class="controls-section" aria-labelledby="controls-title">
+        <div class="section-heading section-heading--outside">
+          <h2 id="controls-title">控制</h2>
+          <button id="control-settings" class="icon-settings" type="button" aria-label="打开打印机控制设置">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.7a3.3 3.3 0 1 0 0 6.6 3.3 3.3 0 0 0 0-6.6Z"/><path d="m19 13.1 1.4 1-.4 1.3-1.8.1c-.3.5-.6 1-1.1 1.4l.4 1.7-1.2.7-1.3-1.2c-.6.2-1.2.3-1.8.3l-.9 1.6H11l-.8-1.6c-.6-.1-1.2-.2-1.8-.5L7 19l-1.1-.8.5-1.7c-.4-.4-.8-.9-1-1.5l-1.8-.2-.3-1.3 1.5-1c-.1-.6 0-1.2.1-1.8l-1.3-1.2.6-1.2 1.8.3c.3-.5.8-.9 1.3-1.3L7.1 5.5l1.2-.6 1.2 1.4c.6-.2 1.2-.3 1.8-.3l.9-1.5h1.3l.8 1.6c.6.1 1.2.3 1.7.6l1.4-1 1 .8-.5 1.7c.4.5.7 1 1 1.6l1.7.2.3 1.3-1.5 1c.1.3.1.5.1.8Z"/></svg>
+          </button>
+        </div>
+        <div id="control-carousel" class="control-carousel" role="region" aria-label="打印机控制菜单，可左右滑动" tabindex="0">
+          <div class="control-track">
+            <article class="control-item">
+              <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="7" width="34" height="34" rx="9"/><path d="M18 22a6 6 0 1 1 12 0c0 3-2 4-3 6h-6c-1-2-3-3-3-6Zm4 10h4M24 11v3m-10 3 3 2m17-2-3 2"/></svg>
+              <strong>舱内灯</strong><button class="switch is-on" type="button" aria-label="关闭舱内灯" aria-pressed="true"><span></span></button>
+            </article>
+            <article class="control-item">
+              <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="9" y="14" width="30" height="28" rx="7"/><path d="M18 10V7m6 3V6m6 4V7M20 34h8"/></svg>
+              <strong>舱外灯</strong><button class="switch is-on" type="button" aria-label="关闭舱外灯" aria-pressed="true"><span></span></button>
+            </article>
+            <article class="control-item">
+              <svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="4"/><path d="M24 20c-3-8 1-13 6-12 5 2 4 9-2 14M28 24c8-3 13 1 12 6-2 5-9 4-14-2M24 28c3 8-1 13-6 12-5-2-4-9 2-14M20 24c-8 3-13-1-12-6 2-5 9-4 14 2"/></svg>
+              <strong>风扇</strong><button class="switch is-on" type="button" aria-label="关闭风扇" aria-pressed="true"><span></span></button>
+            </article>
+            <article class="control-item">
+              <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 20h8l9-8v24l-9-8h-8zM32 19c3 3 3 7 0 10m4-14c6 5 6 13 0 18"/></svg>
+              <strong>提示音</strong><button class="switch is-on" type="button" aria-label="关闭提示音" aria-pressed="true"><span></span></button>
+            </article>
+          </div>
+        </div>
+        <div class="carousel-dots" aria-hidden="true"><span class="is-active"></span><span></span></div>
+      </section>
+    </div>
+
+    <nav class="bottom-nav" aria-label="主导航">
+      <img id="bottom-nav-reference" src="../../src/dayinji/底部导航栏.png" alt="" aria-hidden="true">
+      <div class="bottom-nav-hotspots">
+        <button type="button" data-nav="探索" aria-label="探索"></button>
+        <button type="button" data-nav="设备" aria-label="设备" aria-current="page"></button>
+        <button type="button" data-nav="玩具" aria-label="玩具"></button>
+        <button type="button" data-nav="创造" aria-label="创造"></button>
+        <button type="button" data-nav="我的" aria-label="我的"></button>
+      </div>
+    </nav>
+  </main>
+
+  <section id="content-reference-screen" class="content-reference-screen" hidden aria-label="内容参考页">
+    <img id="content-reference-image" src="" alt="">
+    <div class="reference-nav-hotspots">
+      <button id="content-device-back" type="button" aria-label="返回打印机设备页"></button>
+    </div>
+  </section>
+
+  <section id="filament-operation-screen" class="filament-operation-screen" data-operation="feed" hidden tabindex="-1" aria-label="耗材操作进度页">
+    <div class="filament-operation-frame">
+      <img id="filament-operation-image" src="" alt="">
+      <button id="close-filament-operation" class="filament-operation-hotspot close-filament-operation" type="button" aria-label="关闭耗材操作"></button>
+      <button id="cancel-filament-operation" class="filament-operation-hotspot cancel-filament-operation" type="button" aria-label="取消耗材操作"></button>
+    </div>
+  </section>
+
+  <div id="state-announcer" class="sr-only" role="status" aria-live="polite"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <dialog id="filament-sheet" class="filament-sheet" aria-labelledby="filament-sheet-title">
+    <div class="filament-sheet-frame">
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="sheet-heading">
+        <h2 id="filament-sheet-title">耗材 <span title="选择槽位后可进退料">?</span></h2>
+        <button id="filament-sheet-close" class="filament-sheet-close" type="button" aria-label="关闭耗材设置" autofocus>×</button>
+      </div>
+      <div class="sheet-slots" role="group" aria-label="可设置的四个耗材槽位"></div>
+      <p class="sheet-help"><span aria-hidden="true"></span>请选择 1 个槽位，然后点击进料/退料按钮以自动加载/卸载耗材。</p>
+      <div class="sheet-actions">
+        <button id="feed-filament" type="button">进料</button>
+        <button id="retract-filament" type="button">退料</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="printer-dialog" class="app-dialog" aria-labelledby="printer-dialog-title">
+    <form method="dialog">
+      <h2 id="printer-dialog-title">切换或添加打印机</h2>
+      <p>当前设备为 miao。可在设备列表切换打印机，或继续添加一台新设备。</p>
+      <div class="dialog-actions">
+        <button value="cancel">暂不</button>
+        <button id="add-printer" value="confirm">添加打印机</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="prototype.js"></script>
+</body>
+</html>

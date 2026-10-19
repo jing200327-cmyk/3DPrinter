@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>R001 模型编辑与切片 · 产品需求文档 v1.0</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f3f4f8;color:#1c1c1e;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15px;line-height:1.75}
+.bar{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid #e8eaf0;
+  padding:12px 20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.bar b{font-size:15px}
+.bar a{font-size:13.5px;color:#f16326;text-decoration:none;font-weight:600}
+#doc{max-width:900px;margin:0 auto;padding:28px 20px 80px;background:#fff;border-radius:18px;
+  box-shadow:0 8px 30px rgba(20,24,40,.07)}
+h1{font-size:26px;letter-spacing:-.4px;border-bottom:2px solid #1c1c1e;padding-bottom:10px}
+h2{font-size:20px;margin-top:38px;padding-top:16px;border-top:1px solid #eef0f5}
+h3{font-size:16.5px;margin-top:26px}
+h4{font-size:15px;margin-top:20px}
+table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13px;display:block;overflow-x:auto}
+th,td{border:1px solid #e3e6ee;padding:8px 10px;text-align:left;vertical-align:top}
+th{background:#f6f7fb;font-weight:600;white-space:nowrap}
+tr:nth-child(even) td{background:#fcfcfe}
+code{background:#f2f3f7;padding:1.5px 5px;border-radius:5px;font-size:12.5px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+pre{background:#f7f8fb;border:1px solid #e8eaf0;border-radius:12px;padding:14px;overflow-x:auto}
+pre code{background:none;padding:0;font-size:12.5px;line-height:1.6}
+blockquote{margin:14px 0;padding:10px 16px;background:#fff8f4;border-left:4px solid #f16326;
+  border-radius:0 10px 10px 0;color:#4b5563;font-size:13.5px}
+blockquote p{margin:0}
+ul,ol{padding-left:24px}
+li{margin:4px 0}
+hr{border:0;border-top:1px solid #eef0f5;margin:26px 0}
+a{color:#f16326}
+.err{background:#fff1f4;border:1px solid #f6c7d2;color:#a5163a;padding:14px 16px;border-radius:12px}
+</style>
+</head>
+<body>
+<div class="bar">
+  <b>R001 模型编辑与切片 · PRD v1.0</b>
+  <a href="./index.html">← 打开原型</a>
+  <a href="./shots/index.html">验收截图</a>
+  <a href="./main_flow_web.png" target="_blank" rel="noopener">流程图</a>
+  <a href="./prd_v1.0.md" download>下载 Markdown</a>
+</div>
+<div id="doc">正在加载文档…</div>
+<script src="./vendor/marked.min.js"></script>
+<script>
+(function () {
+  var box = document.getElementById('doc');
+  fetch('./prd_v1.0.md', { cache: 'no-cache' })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+    .then(function (md) {
+      box.innerHTML = marked.parse(md);
+      // 表格外层包一层，便于窄屏横向滚动
+      box.querySelectorAll('table').forEach(function (t) {
+        if (t.parentElement && t.parentElement.classList.contains('tw')) return;
+        var w = document.createElement('div'); w.className = 'tw';
+        t.parentNode.insertBefore(w, t); w.appendChild(t);
+      });
+      box.querySelectorAll('a').forEach(function (a) {
+        if (a.host && a.host !== location.host) { a.target = '_blank'; a.rel = 'noopener'; }
+      });
+    })
+    .catch(function (e) {
+      box.innerHTML = '<div class="err"><b>文档加载失败</b><br>' +
+        '请通过部署后的链接访问本页；直接双击本地文件时浏览器会禁止读取 .md 文件。<br>' +
+        '也可以 <a href="./prd_v1.0.md" download>下载 Markdown 原文</a>。</div>';
+    });
+})();
+</script>
+</body>
+</html>

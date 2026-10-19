@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://product-prototype.local/ai-design-system/button.schema.json",
+  "title": "AI Design System Button",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["component", "variant", "size", "label"],
+  "properties": {
+    "component": { "const": "Button" },
+    "variant": {
+      "enum": ["default", "secondary", "outline", "destructive", "ghost", "link"]
+    },
+    "size": {
+      "enum": ["xs", "sm", "default", "lg", "icon", "icon-xs", "icon-sm", "icon-lg"]
+    },
+    "label": { "type": "string", "minLength": 1 },
+    "asChild": { "type": "boolean", "default": false },
+    "disabled": { "type": "boolean", "default": false },
+    "loading": { "type": "boolean", "default": false },
+    "intent": { "enum": ["primaryGradient", "standard", "destructive"] },
+    "iconOnly": { "type": "boolean", "default": false },
+    "accessibilityLabel": { "type": "string" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "iconOnly": { "const": true } }, "required": ["iconOnly"] },
+      "then": { "required": ["accessibilityLabel"] }
+    },
+    {
+      "if": { "properties": { "loading": { "const": true } }, "required": ["loading"] },
+      "then": { "properties": { "disabled": { "const": true } } }
+    }
+  ],
+  "x-designTokens": [
+    "color.semantic.primary",
+    "color.semantic.primaryForeground",
+    "component.button.default",
+    "component.button.primaryGradient"
+  ]
+}

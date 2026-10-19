@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>R002 模型导入 · 原型 v1.0</title>
+  <link rel="icon" href="data:,">
+  <script src="./vendor/tailwind.min.js"></script>
+  <script>
+    window.tailwind = window.tailwind || {};
+    window.tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: '#f16326',
+            ink: '#1c1c1e',
+            ink2: '#6b7280',
+            ink3: '#9ca3af',
+            line: '#e8eaf0',
+            ok: '#16a34a',
+            err: '#e11d48'
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="stage">
+
+  <!-- ============================ 手机 ============================ -->
+  <div class="phone">
+    <div class="statusbar">
+      <span>9:41</span>
+      <span class="statusbar__right">
+        <span class="statusbar__icons">▮▮▮ ⌾</span>
+        <span>100%</span>
+      </span>
+    </div>
+
+    <!-- 网络提醒条（无网 / 弱网时常驻，并列「无网打印 >」入口，BR-027） -->
+    <div id="netBanner" class="net-banner" hidden>
+      <span class="net-banner__icon" aria-hidden="true">!</span>
+      <span id="netBannerText" class="net-banner__text">当前网络较差，部分功能可能不可用</span>
+      <button id="btnOfflinePrintBanner" class="net-banner__cta" type="button">无网打印 &gt;</button>
+    </div>
+
+    <!-- ================= 0. 创意空间（R002 入口页） ================= -->
+    <section id="screen-creative-space" class="screen screen--artwork is-active" data-screen="creative-space" aria-label="创意空间">
+      <div class="reuse-stage" style="--reuse-ratio: 941 / 1672">
+        <img id="csArtwork" class="reuse-art" src="./assets/创意空间.png"
+             alt="创意空间：顶部左侧「导入模型」、右侧「自由创作」；底部导航「模型库 / 工作台 / 创作 / 我的」">
+        <!-- 顶部左侧「导入模型」→ 模型编辑页（空态）并自动升起导入选择弹窗 -->
+        <button id="btnImportEntry" class="reuse-hotspot" type="button"
+                style="left:1.6%;top:9.0%;width:47.1%;height:24.6%"
+                aria-label="导入模型"></button>
+        <!-- 顶部右侧「自由创作」 -->
+        <button id="btnFreeCreate" class="reuse-hotspot" type="button"
+                style="left:50.5%;top:9.0%;width:47.1%;height:24.6%"
+                aria-label="自由创作"></button>
+        <!-- 底部导航 -->
+        <button id="btnNavModelLib" class="reuse-hotspot" type="button"
+                style="left:0%;top:92.8%;width:25%;height:7.2%"
+                aria-label="模型库"></button>
+        <button id="btnNavMine" class="reuse-hotspot" type="button"
+                style="left:75%;top:92.8%;width:25%;height:7.2%"
+                aria-label="我的"></button>
+      </div>
+    </section>
+
+    <!-- ================= 1. 模型详情页（复用设计稿整图 + 底部左侧透明跳转） ================= -->
+    <section id="screen-model-detail" class="screen screen--artwork" data-screen="model-detail" aria-label="模型详情">
+      <div class="reuse-stage" style="--reuse-ratio: 941 / 1672">
+        <img id="mdArtwork" class="reuse-art" src="./assets/模型详情页.png"
+             alt="模型详情：电击小子_3D浮雕，底部左侧「打印设置」、右侧「立即打印」">
+        <!-- 底部左侧「打印设置」→ 模型编辑页 -->
+        <button id="btnOpenEditor" class="reuse-hotspot" type="button"
+                style="left:0%;top:85.30%;width:50.00%;height:12.50%"
+                aria-label="打印设置（进入模型编辑页）"></button>
+        <!-- 底部右侧「立即打印」 -->
+        <button id="btnModelDetailPrint" class="reuse-hotspot" type="button"
+                style="left:50.27%;top:85.65%;width:46.44%;height:11.90%"
+                aria-label="立即打印"></button>
+      </div>
+    </section>
+
+    <!-- ================= 2. 模型编辑页（本模块主页面） ================= -->
+    <section id="screen-model-editor" class="screen" data-screen="model-editor" aria-label="模型编辑">
+      <div class="ed-head">
+        <div class="navbar" style="border-bottom:0">
+          <button id="btnEditorBack" class="navbar__btn navbar__btn--back" type="button" aria-label="返回模型详情">‹</button>
+          <span class="navbar__title" aria-hidden="true">模型编辑</span>
+          <button id="btnEditorMore" class="navbar__btn navbar__btn--strong" type="button">更多</button>
+        </div>
+        <h1 id="edModelName" class="ed-title">电击小子_3D浮雕 <span class="ed-title__plates">· 1盘</span></h1>
+        <div id="edAddRow" class="ed-add-row" hidden>
+          <button id="btnEditorAdd" class="ed-add" type="button"><span class="ed-add__icon">＋</span>添加</button>
+        </div>
+        <div id="plateChips" class="plate-chips is-hidden" role="tablist" aria-label="打印盘切换"></div>
+      </div>
+
+      <div class="ed-view">
+        <canvas id="gl" aria-label="3D 模型视图区"></canvas>
+        <!-- 空态：尚未导入任何模型（R002）——只保留引导文案 + 按钮，沉底不挡 3D 展示区 -->
+        <div id="edEmpty" class="ed-empty" hidden>
+          <div class="ed-empty__desc">从「我的 AI 创作」「我的切片」选择，<br>或导入手机里的本地模型</div>
+          <button id="btnEmptyImport" class="btn-primary" type="button">导入模型</button>
+        </div>
+        <div class="view-hud">
+          <span class="hud-pill">打印空间 180 × 180 × 180 mm</span>
+          <span id="hudPlateInfo" class="hud-pill">盘 1 · 1 个模型</span>
+          <span id="hudAlert" class="hud-pill hud-pill--bad" hidden>越界</span>
+        </div>
+        <div class="axis-key" aria-hidden="true">
+          <span class="axis-key__item"><i class="axis-key__dot" style="background:#e11d48"></i>X</span>
+          <span class="axis-key__item"><i class="axis-key__dot" style="background:#16a34a"></i>Y</span>
+          <span class="axis-key__item"><i class="axis-key__dot" style="background:#2563eb"></i>Z</span>
+        </div>
+        <!-- 视角缩放控件（鼠标滚轮/双指捏合之外的可靠兜底） -->
+        <div class="view-zoom">
+          <button id="zoomIn" type="button" aria-label="放大视图">＋</button>
+          <button id="zoomOut" type="button" aria-label="缩小视图">－</button>
+          <button id="zoomReset" type="button" aria-label="复位视角">⟲</button>
+        </div>
+      </div>
+
+      <div class="ed-tools">
+        <button id="toolScale" class="tool" type="button">
+          <span class="tool__icon">⤢</span><span>缩放</span>
+        </button>
+        <button id="toolCopy" class="tool" type="button">
+          <span class="tool__icon">⧉</span><span>复制</span>
+        </button>
+        <button id="toolDelete" class="tool" type="button">
+          <span class="tool__icon">🗑</span><span>删除</span>
+        </button>
+      </div>
+
+      <div class="ed-cta">
+        <div id="blockReason" class="block-reason" hidden>
+          <span class="block-reason__icon">⚠</span>
+          <span id="blockReasonText"></span>
+        </div>
+        <button id="btnSlice" class="btn-primary" type="button">去打印</button>
+      </div>
+
+      <div id="editorScrim" class="scrim"></div>
+
+      <!-- 缩放面板 -->
+      <div id="scaleSheet" class="sheet" role="dialog" aria-label="缩放" aria-modal="true">
+        <div class="sheet__grip"></div>
+        <div class="sheet__head">
+          <span class="sheet__title">缩放</span>
+          <button id="btnScaleReset" class="btn-text" type="button" style="margin-left:auto">重置</button>
+        </div>
+        <div class="sheet__body">
+          <div class="seg" role="tablist" aria-label="缩放模式">
+            <button class="seg__item" type="button" data-scale-mode="size" role="tab">尺寸 (mm)</button>
+            <button class="seg__item is-on" type="button" data-scale-mode="percent" role="tab">百分比 (%)</button>
+          </div>
+
+          <!-- 尺寸模式 -->
+          <div id="scaleSizePane" class="scale-xyz" hidden>
+            <div class="scale-axis">
+              <span class="scale-axis__name scale-axis__name--x">X</span>
+              <span class="num" data-axis="x" style="margin-left:auto">
+                <input type="text" inputmode="decimal" value="61.5" aria-label="X 尺寸">
+                <span class="num__unit">mm</span>
+              </span>
+            </div>
+            <div class="scale-axis">
+              <span class="scale-axis__name scale-axis__name--y">Y</span>
+              <span class="num" data-axis="y" style="margin-left:auto">
+                <input type="text" inputmode="decimal" value="99.4" aria-label="Y 尺寸">
+                <span class="num__unit">mm</span>
+              </span>
+            </div>
+            <div class="scale-axis">
+              <span class="scale-axis__name scale-axis__name--z">Z</span>
+              <span class="num" data-axis="z" style="margin-left:auto">
+                <input type="text" inputmode="decimal" value="6.9" aria-label="Z 尺寸">
+                <span class="num__unit">mm</span>
+              </span>
+            </div>
+            <div id="sizeHint" class="note" hidden>
+              <span class="note__dot">⚠</span><span id="sizeHintText"></span>
+            </div>
+          </div>
+
+          <!-- 百分比模式 -->
+          <div id="scalePercentPane" class="scale-pct">
+            <div>
+              <span class="scale-pct__val" id="percentVal">100</span><span class="scale-pct__unit">%</span>
+            </div>
+            <input id="percentSlider" class="slider" type="range" min="10" max="300" step="1" value="100" aria-label="缩放百分比">
+            <div class="scale-pct__range"><span>10%</span><span>100%</span><span>300%</span></div>
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-row__label">等比例缩放</div>
+              <div class="toggle-row__sub">改任一轴，其余两轴按原始比例同步</div>
+            </div>
+            <button id="toggleUniform" class="switch toggle-row__switch" type="button" role="switch" aria-checked="true" aria-label="等比例缩放"></button>
+          </div>
+
+          <div id="rowApplyAll" class="toggle-row">
+            <div>
+              <div class="toggle-row__label">应用至所有盘的零件</div>
+              <div id="applyAllSub" class="toggle-row__sub">关闭时只缩放选中的这一个零件；开启后当前盘的全部零件一起缩放</div>
+            </div>
+            <button id="toggleApplyAll" class="switch toggle-row__switch" type="button" role="switch" aria-checked="false" aria-label="应用至所有盘的零件"></button>
+          </div>
+
+          <p class="note"><span class="note__dot">•</span><span>修改实时生效，无需点「确定」；停止调整后系统会自动重新摆盘。默认只缩放选中的零件。</span></p>
+        </div>
+      </div>
+
+      <!-- ============ 导入选择弹窗（R002 · 自下而上，高于缩放面板） ============ -->
+      <div id="importScrim" class="scrim"></div>
+      <div id="importSheet" class="sheet sheet--import" role="dialog" aria-modal="true" aria-label="导入模型">
+        <div class="sheet__grip"></div>
+        <div class="import__head">
+          <span class="sheet__title">导入模型</span>
+          <button id="btnImportClose" class="import__close" type="button" aria-label="关闭">✕</button>
+        </div>
+        <div class="import__tabs" role="tablist" aria-label="模型来源">
+          <button class="import__tab is-on" type="button" role="tab" data-import-tab="ai-creation" aria-selected="true">我的 AI 创作</button>
+          <button class="import__tab" type="button" role="tab" data-import-tab="my-slice" aria-selected="false">我的切片</button>
+        </div>
+        <div class="import__body">
+          <div id="importGridAI" class="import-grid" role="list" aria-label="我的 AI 创作"></div>
+          <div id="importGridSlice" class="import-grid" role="list" aria-label="我的切片" hidden></div>
+        </div>
+        <div class="import__foot">
+          <p class="import__footnote">「我的 AI 创作」来自「我的」页面保存的创作记录；「我的切片」来自切片保存记录。</p>
+          <button id="btnImportLocal" class="btn-primary" type="button">导入本地模型</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 3. 打印设置页（更多） ================= -->
+    <section id="screen-print-settings" class="screen" data-screen="print-settings" aria-label="打印设置">
+      <div class="navbar">
+        <button id="btnSettingsBack" class="navbar__btn navbar__btn--back" type="button" aria-label="返回模型编辑">‹</button>
+        <span class="navbar__title">打印设置</span>
+        <button id="btnSaveParams" class="navbar__btn navbar__btn--strong" type="button">保存</button>
+      </div>
+
+      <div class="scroll-y" style="padding:0 16px 24px">
+        <div class="section-label">打印模式<span class="section-label__hint">单选，默认标准</span></div>
+        <div class="card" style="padding:12px">
+          <button class="opt-card" type="button" data-opt="mode" data-value="fast">
+            <span class="opt-card__top"><span class="opt-card__name">快速</span></span>
+            <span class="opt-card__desc">打印速度优先 · 层高较大 · 表面精细度相对较低</span>
+            <span class="opt-card__radio"></span>
+          </button>
+          <button class="opt-card is-on" type="button" data-opt="mode" data-value="standard">
+            <span class="opt-card__top"><span class="opt-card__name">标准</span><span class="opt-card__badge">默认</span></span>
+            <span class="opt-card__desc">平衡打印速度、打印质量与耗材使用</span>
+            <span class="opt-card__radio"></span>
+          </button>
+          <button class="opt-card" type="button" data-opt="mode" data-value="fine">
+            <span class="opt-card__top"><span class="opt-card__name">精细</span></span>
+            <span class="opt-card__desc">打印质量优先 · 层高较小 · 表面更精细 · 打印时间较长</span>
+            <span class="opt-card__radio"></span>
+          </button>
+        </div>
+
+        <div class="section-label">底座<span class="section-label__hint">单选，默认带底座</span></div>
+        <div class="card" style="padding:12px">
+          <button class="opt-card is-on" type="button" data-opt="base" data-value="with">
+            <span class="opt-card__top"><span class="opt-card__name">带底座</span><span class="opt-card__badge">默认</span></span>
+            <span class="opt-card__desc">提高模型与打印平台的附着稳定性</span>
+            <span class="opt-card__radio"></span>
+          </button>
+          <button class="opt-card" type="button" data-opt="base" data-value="without">
+            <span class="opt-card__top"><span class="opt-card__name">不带底座</span></span>
+            <span class="opt-card__desc">减少耗材使用</span>
+            <span class="opt-card__radio"></span>
+          </button>
+        </div>
+
+        <div class="section-label">基本参数</div>
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="row__label">喷嘴温度</div>
+              <div class="row__sub">范围按机型 / 喷嘴 / 耗材动态配置</div>
+            </div>
+            <span class="stepper">
+              <button class="stepper__btn" type="button" data-step="temp" data-delta="-5" aria-label="降低温度">−</button>
+              <span class="stepper__val"><span id="tempVal">220</span> °C</span>
+              <button class="stepper__btn" type="button" data-step="temp" data-delta="5" aria-label="升高温度">+</button>
+            </span>
+          </div>
+          <div class="row" style="display:block;padding:12px 0 6px">
+            <div style="display:flex;align-items:baseline">
+              <div class="row__label">填充密度</div>
+              <span class="row__val" style="font-size:15px"><span id="infillVal">15</span> %</span>
+            </div>
+            <input id="infillSlider" class="slider" type="range" min="0" max="100" step="1" value="15" aria-label="填充密度">
+            <div class="scale-pct__range"><span>0%</span><span>100%</span></div>
+          </div>
+        </div>
+
+        <div class="section-label">支撑<span class="section-label__hint">由切片算法按模型几何推荐</span></div>
+        <div class="card">
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-row__label">开启支撑</div>
+              <div class="toggle-row__sub" id="supportHint">已根据模型自动推荐</div>
+            </div>
+            <button id="toggleSupport" class="switch toggle-row__switch" type="button" role="switch" aria-checked="true" aria-label="开启支撑"></button>
+          </div>
+          <div id="supportTypeWrap" style="padding-top:10px">
+            <button class="opt-card is-on" type="button" data-opt="supportType" data-value="tree">
+              <span class="opt-card__top"><span class="opt-card__name">树状支撑</span></span>
+              <span class="opt-card__desc">适合日常复杂模型、不规则悬垂结构；耗材更省、更易拆除</span>
+              <span class="opt-card__radio"></span>
+            </button>
+            <button class="opt-card" type="button" data-opt="supportType" data-value="linear">
+              <span class="opt-card__top"><span class="opt-card__name">线性支撑</span></span>
+              <span class="opt-card__desc">适合较大面积平坦悬垂；支撑稳定性更高</span>
+              <span class="opt-card__radio"></span>
+            </button>
+          </div>
+          <p id="supportOffHint" class="note" hidden><span class="note__dot">•</span><span>支撑已关闭，类型选择暂不可用；已保留上一次选择的支撑类型。</span></p>
+        </div>
+
+        <div style="display:flex;justify-content:center;margin-top:18px">
+          <button id="btnRestoreDefault" class="btn-text btn-text--muted" type="button">恢复默认值</button>
+        </div>
+        <p class="note" style="justify-content:center;text-align:center">
+          <span>参数修改后立即生效；「保存」只决定是否持久化。</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- ================= 4. 准备打印页（复用设计稿整图 + 动态盘列表） ================= -->
+    <section id="screen-prepare-print" class="screen screen--artwork" data-screen="prepare-print" aria-label="准备打印">
+      <div class="reuse-stage" style="--reuse-ratio: 311 / 675">
+        <!-- 顶部无网提示标签：整条盖住设计稿中烘焙的「准备打印」字样（仅无网/弱网时出现） -->
+        <div id="ppOfflineTag" class="pp-offline-tag" hidden>
+          <span class="pp-offline-tag__icon" aria-hidden="true">!</span>
+          <span class="pp-offline-tag__text">无网打印</span>
+          <span class="pp-offline-tag__sub">已通过局域网传输 · 联网后可查看打印机状态</span>
+        </div>
+        <img id="ppArtwork" class="reuse-art" src="./assets/准备打印页.png"
+             alt="准备打印页：打印机卡片、选择要打印的盘、打印选项、开始打印">
+        <!-- 顶部返回 -->
+        <button id="btnPrepareBack" class="reuse-hotspot" type="button"
+                style="left:2.2%;top:3.0%;width:13.5%;height:6.5%"
+                aria-label="返回模型编辑"></button>
+        <!-- 打印机卡片右侧「切换」 -->
+        <button id="ppSwitch" class="reuse-hotspot" type="button"
+                style="left:80.2%;top:12.7%;width:17.5%;height:7.3%"
+                aria-label="切换打印机"></button>
+        <!-- 盘列表：盖住原图烘焙的 3 行，渲染真实盘数据 -->
+        <div id="ppListPanel" class="pp-panel">
+          <div id="ppPlateList" class="pp-plates"></div>
+        </div>
+        <!-- 延时摄影勾选：勾选态完全透明，让原图烘焙的绿框透出来 -->
+        <button id="toggleTimelapse" class="reuse-check" type="button" role="checkbox" aria-checked="true" aria-label="延时摄影">
+          <span class="reuse-check__box" aria-hidden="true"></span>
+        </button>
+        <!-- 底部：原图烘焙的单个「开始打印」按钮用白底盖掉，改绘「保存 / 开始打印」双按钮 -->
+        <div id="ppFootCover" class="pp-foot-cover" aria-hidden="true"></div>
+        <div class="pp-foot-actions">
+          <button id="btnSaveSlice" class="pp-btn pp-btn--sec" type="button">保存</button>
+          <button id="btnStartPrint" class="pp-btn pp-btn--pri" type="button">开始打印</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 5. 切片失败 ================= -->
+    <section id="screen-slice-failed" class="screen" data-screen="slice-failed" aria-label="切片失败">
+      <div class="navbar">
+        <button id="btnFailBack" class="navbar__btn navbar__btn--back" type="button" aria-label="返回模型编辑">‹</button>
+        <span class="navbar__title">切片失败</span>
+        <span class="navbar__btn" aria-hidden="true"></span>
+      </div>
+      <div class="fail-wrap">
+        <div class="fail-icon">!</div>
+        <h2 id="failTitle" class="fail-title">切片失败，请重试</h2>
+        <p id="failDesc" class="fail-desc">云端切片服务暂时无法完成本次计算。</p>
+        <div class="fail-meta" id="failMeta"></div>
+        <button id="btnFailToEditor" class="btn-primary" type="button" style="margin-top:22px;max-width:220px">返回模型编辑</button>
+        <button id="btnFailRetry" class="btn-text btn-text--muted" type="button" style="margin-top:6px">重新发起切片</button>
+      </div>
+    </section>
+
+    <!-- ================= 6. 模拟手机系统文件目录（多选 / 无网模式仅 gcode） ================= -->
+    <section id="screen-system-picker" class="screen" data-screen="system-picker" aria-label="手机文件">
+      <div class="navbar">
+        <button id="btnPickerBack" class="navbar__btn navbar__btn--back" type="button" aria-label="返回">‹</button>
+        <span class="navbar__title" id="pickerTitle">最近文件</span>
+        <button id="btnPickerAll" class="navbar__btn navbar__btn--strong" type="button">全选</button>
+      </div>
+      <div class="picker-hint" id="pickerHint">
+        <span class="picker-hint__icon" aria-hidden="true">ⓘ</span>
+        <span id="pickerHintText">支持 stl / 3mf / obj / gcode / stp / zip，单文件 ≤ 100MB，可多选</span>
+      </div>
+      <div class="picker-path">
+        <span class="picker-path__item">内部存储</span>
+        <span class="picker-path__sep">›</span>
+        <span class="picker-path__item is-cur" id="pickerPathName">Download</span>
+      </div>
+      <div id="pickerList" class="picker-list" role="listbox" aria-multiselectable="true"></div>
+      <div class="picker-foot">
+        <div class="picker-foot__count">
+          <span>已选 <b id="pickerCount">0</b> 项</span>
+          <span id="pickerFootHint" class="picker-foot__hint"></span>
+        </div>
+        <button id="btnPickerConfirm" class="btn-primary" type="button" disabled>导入</button>
+      </div>
+    </section>
+
+    <!-- ================= 7. 无网文件传输页（复用 SM-005 任务上传弹窗） ================= -->
+    <section id="screen-offline-transfer" class="screen" data-screen="offline-transfer" aria-label="无网文件传输">
+      <div class="navbar">
+        <button id="btnXferBack" class="navbar__btn navbar__btn--back" type="button" aria-label="取消传输">‹</button>
+        <span class="navbar__title">文件传输</span>
+        <span class="navbar__btn" aria-hidden="true"></span>
+      </div>
+      <div class="xfer-wrap">
+        <div class="xfer-badge"><span aria-hidden="true">⇅</span></div>
+        <div class="xfer-title">正在传输到打印机…</div>
+        <div class="xfer-file" id="xferName">xiaojidan_pendant.gcode</div>
+        <div class="xfer-conn">
+          <span class="xfer-conn__dot" aria-hidden="true"></span>
+          <span>已连接打印机热点 · 局域网直传</span>
+        </div>
+        <div class="xfer-bar"><div id="xferBar" class="xfer-bar__fill" style="width:0%"></div></div>
+        <div class="xfer-meta">
+          <span id="xferPct">0%</span>
+          <span id="xferBytes">0.0 MB / 0.0 MB</span>
+        </div>
+        <p class="note" style="justify-content:center;text-align:center;margin-top:18px">
+          <span>无网打印仅支持 gcode 文件；传输过程请勿关闭 APP 或断开热点。</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- ================= 弹窗：保存范围 ================= -->
+    <div id="modalSaveScope" class="modal" role="dialog" aria-modal="true" aria-label="选择参数保存范围">
+      <div class="modal__box">
+        <div class="modal__title">请选择参数保存范围</div>
+        <div class="modal__desc">「保存」只决定是否持久化，不影响当前任务已生效的参数。</div>
+        <div class="modal__list">
+          <button class="modal__item" type="button" data-save-scope="model">
+            <div class="modal__item-name">仅用于当前模型</div>
+            <div class="modal__item-desc">再次打开该模型时继续使用这组参数</div>
+          </button>
+          <button class="modal__item" type="button" data-save-scope="default">
+            <div class="modal__item-name">后续模型默认使用</div>
+            <div class="modal__item-desc">设为用户默认打印参数，打开其他模型时优先加载</div>
+          </button>
+        </div>
+        <div class="modal__actions">
+          <button class="btn-ghost" type="button" data-close-modal style="width:100%">取消</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 弹窗：恢复默认值 ================= -->
+    <div id="modalRestoreDefault" class="modal" role="dialog" aria-modal="true" aria-label="恢复默认打印参数">
+      <div class="modal__box">
+        <div class="modal__title">确定恢复默认打印参数吗？</div>
+        <div class="modal__desc">将把打印模式、底座、喷嘴温度、填充密度、支撑开关与支撑类型共 6 项恢复为默认；支撑参数会重新执行一次模型自动分析。</div>
+        <div class="modal__actions modal__actions--row">
+          <button class="btn-ghost" type="button" data-close-modal>取消</button>
+          <button id="btnConfirmRestore" class="btn-primary" type="button">确定恢复</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 弹窗：删除最后一个零件（任务将被移除） ================= -->
+    <div id="modalDeleteLast" class="modal" role="dialog" aria-modal="true" aria-label="删除最后一个零件">
+      <div class="modal__box">
+        <div class="modal__title">删除后任务将被移除</div>
+        <div class="modal__desc">当前盘所有模型被删除后，任务将自动被移除且不可恢复。</div>
+        <div class="modal__actions modal__actions--row">
+          <button class="btn-ghost" type="button" data-close-modal>取消</button>
+          <button id="btnConfirmDeleteLast" class="btn-primary btn-danger" type="button">确认删除</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 弹窗：保存切片 · 命名 ================= -->
+    <div id="modalSaveName" class="modal" role="dialog" aria-modal="true" aria-label="保存切片命名">
+      <div class="modal__box">
+        <div class="modal__title">保存切片</div>
+        <div class="modal__desc">为本次切片命名，方便在「我的切片」中查找。</div>
+        <div class="save-field">
+          <input id="saveNameInput" class="save-field__input" type="text" maxlength="40"
+                 autocomplete="off" spellcheck="false" placeholder="请输入切片名称" aria-label="切片名称">
+          <span id="saveNameCount" class="save-field__count">0/40</span>
+        </div>
+        <div id="saveNameHint" class="save-field__hint" hidden>名称不能为空</div>
+        <div class="modal__actions modal__actions--row">
+          <button class="btn-ghost" type="button" data-close-modal>取消</button>
+          <button id="btnSaveNameOk" class="btn-primary" type="button">确定</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 保存进度 ================= -->
+    <div id="modalSaving" class="modal modal--plain" role="dialog" aria-modal="true" aria-label="正在保存">
+      <div class="modal__box">
+        <div class="save-progress__icon" aria-hidden="true">↥</div>
+        <div class="modal__title">正在保存切片…</div>
+        <div class="modal__desc" id="saveProgressName">电击小子_3D浮雕</div>
+        <div class="save-progress">
+          <div id="saveProgressBar" class="save-progress__bar" style="width:0%"></div>
+        </div>
+        <div class="save-progress__foot"><span id="saveProgressPct">0%</span><span>请勿关闭页面</span></div>
+      </div>
+    </div>
+
+    <!-- ================= 弹窗：保存成功 ================= -->
+    <div id="modalSaveDone" class="modal" role="dialog" aria-modal="true" aria-label="保存成功">
+      <div class="modal__box">
+        <div class="save-done__icon" aria-hidden="true">✓</div>
+        <div class="modal__title">保存成功</div>
+        <div class="save-done__name" id="saveDoneName">电击小子_3D浮雕</div>
+        <div class="modal__desc">可以在「我的 - 我的切片」中查看。</div>
+        <div class="modal__actions modal__actions--row">
+          <button class="btn-ghost" type="button" data-close-modal>完成</button>
+          <button id="btnSaveDoneView" class="btn-primary" type="button">立即查看</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= R002 弹窗：格式不支持 ================= -->
+    <div id="modalFormatUnsupported" class="modal" role="dialog" aria-modal="true" aria-label="格式不支持">
+      <div class="modal__box">
+        <div class="import-modal__icon import-modal__icon--warn" aria-hidden="true">!</div>
+        <div class="modal__title">当前文件格式不支持</div>
+        <div class="modal__desc" id="formatDesc">「robot_arm.fbx」不在支持范围内。</div>
+        <div class="import-support">支持格式：stl / 3mf / obj / gcode / stp / zip</div>
+        <div class="modal__actions modal__actions--row">
+          <button class="btn-ghost" type="button" data-close-modal>知道了</button>
+          <button id="btnFormatRepick" class="btn-primary" type="button">重新选择</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= R002 弹窗：优化确认（超 100MB / 面数超限 · 单/多文件汇总） ================= -->
+    <div id="modalCompress" class="modal" role="dialog" aria-modal="true" aria-label="优化确认">
+      <div class="modal__box">
+        <div class="modal__title" id="compressTitle">文件超过100MB</div>
+        <div class="modal__desc" id="compressDesc">当前文件：dragon_statue.stl（168.4MB）。可尝试自动优化后导入，优化可能导致模型部分细节发生变化。</div>
+        <div class="import-res__list" id="compressList" hidden style="margin-top:10px"></div>
+        <div class="import-support" id="compressStep"></div>
+        <div class="import-note">
+          <span class="import-note__label">将执行的优化策略</span>
+          <span id="compressStrategy">转换为二进制格式（无损），必要时减少三角面数量</span>
+        </div>
+        <div class="import-note import-note--warn">优化可能导致模型部分细节发生变化；优化后仍超过限制的文件将无法导入，<strong>原始文件保持不变</strong>。</div>
+        <div class="modal__actions modal__actions--row">
+          <button class="btn-ghost" type="button" data-close-modal>取消</button>
+          <button id="btnDoCompress" class="btn-primary" type="button">自动优化</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= R002 弹窗：优化中（第 i / N 个文件） ================= -->
+    <div id="modalOptimizeProgress" class="modal modal--plain" role="dialog" aria-modal="true" aria-label="正在优化">
+      <div class="modal__box">
+        <div class="save-progress__icon" aria-hidden="true">⚙</div>
+        <div class="modal__title">正在优化模型…</div>
+        <div class="modal__desc" id="optimizeProgressFile">dragon_statue.stl</div>
+        <div class="save-progress">
+          <div id="optimizeProgressBar" class="save-progress__bar" style="width:0%"></div>
+        </div>
+        <div class="modal__desc" id="optimizeProgressStep" style="margin-top:8px">正在优化第 1 / 3 个文件</div>
+      </div>
+    </div>
+
+    <!-- ================= R002 弹窗：批量超限（阻止写入，BR-026） ================= -->
+    <div id="modalBatchLimit" class="modal" role="dialog" aria-modal="true" aria-label="批量超限">
+      <div class="modal__box">
+        <div class="import-modal__icon import-modal__icon--warn" aria-hidden="true">!</div>
+        <div class="modal__title" id="batchLimitTitle">文件总大小超过300MB</div>
+        <div class="modal__desc" id="batchLimitDesc">当前已选 12 个有效文件，优化后总量 393MB，超过单次 300MB 上限。请返回文件列表移除部分文件后重试。</div>
+        <div class="modal__actions modal__actions--all">
+          <button id="btnBatchBack" class="btn-primary" type="button">返回文件列表</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= R002 弹窗：导入异常（通用，单文件失败 / 优化失败） ================= -->
+    <div id="modalTooLarge" class="modal" role="dialog" aria-modal="true" aria-label="无法导入">
+      <div class="modal__box">
+        <div class="import-modal__icon import-modal__icon--err" aria-hidden="true">×</div>
+        <div class="modal__title" id="errTitle">无法导入</div>
+        <div class="modal__desc" id="tooLargeDesc">文件过大，暂不支持自动优化，请重新选择模型。</div>
+        <div class="modal__actions modal__actions--all">
+          <button class="btn-primary" type="button" data-close-modal>重新选择</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= R002 弹窗：导入中（进度） ================= -->
+    <div id="modalImportProgress" class="modal modal--plain" role="dialog" aria-modal="true" aria-label="正在导入">
+      <div class="modal__box">
+        <div class="save-progress__icon" aria-hidden="true">↥</div>
+        <div class="modal__title" id="importProgressTitle">正在导入模型…</div>
+        <div class="modal__desc" id="importProgressFile">xiaojidan_pendant.stl</div>
+        <div class="save-progress">
+          <div id="importProgressBar" class="save-progress__bar" style="width:0%"></div>
+        </div>
+        <div class="save-progress__foot"><span id="importProgressPct">0%</span><span id="importProgressStep">1 / 1</span></div>
+      </div>
+    </div>
+
+    <!-- ================= R002 弹窗：导入结果（成功 / 部分成功） ================= -->
+    <div id="modalImportResult" class="modal" role="dialog" aria-modal="true" aria-label="导入结果">
+      <div class="modal__box">
+        <div id="importResIcon" class="import-modal__icon import-modal__icon--ok" aria-hidden="true">✓</div>
+        <div class="modal__title" id="importResTitle">导入完成</div>
+        <div class="modal__desc" id="importResDesc">已导入 1 个模型，分为 1 盘。</div>
+        <div id="importResList" class="import-res__list" hidden></div>
+        <div class="modal__actions modal__actions--row">
+          <button id="btnImportResRetry" class="btn-ghost" type="button" hidden>重试未导入项</button>
+          <button id="btnImportResGo" class="btn-primary" type="button">去编辑页</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= R002 弹窗：导入失败 ================= -->
+    <div id="modalImportFailed" class="modal" role="dialog" aria-modal="true" aria-label="导入失败">
+      <div class="modal__box">
+        <div class="import-modal__icon import-modal__icon--err" aria-hidden="true">!</div>
+        <div class="modal__title">导入失败，请重试</div>
+        <div class="modal__desc" id="importFailDesc">传输过程中断，已选文件仍然保留。</div>
+        <div class="modal__actions modal__actions--row">
+          <button class="btn-ghost" type="button" data-close-modal>取消</button>
+          <button id="btnImportRetry" class="btn-primary" type="button">重试</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= R002 弹窗：检测到无网络（每登录会话只弹一次） ================= -->
+    <div id="modalOfflineAsk" class="modal" role="dialog" aria-modal="true" aria-label="无网打印提示">
+      <div class="modal__box">
+        <div class="import-modal__icon import-modal__icon--warn" aria-hidden="true">⌁</div>
+        <div class="modal__title">当前网络差或无网络</div>
+        <div class="modal__desc">是否进行无网打印？连接打印机热点后可在局域网内直接传输 gcode 文件。</div>
+        <div class="modal__actions modal__actions--row">
+          <button class="btn-ghost" type="button" data-close-modal>暂不</button>
+          <button id="btnGoOfflinePrint" class="btn-primary" type="button">去无网打印</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= R002 弹窗：无网绑定拦截 ================= -->
+    <div id="modalOfflineBlock" class="modal" role="dialog" aria-modal="true" aria-label="无网打印被拦截">
+      <div class="modal__box">
+        <div class="import-modal__icon import-modal__icon--err" aria-hidden="true">⊘</div>
+        <div class="modal__title" id="offlineBlockTitle">该打印机尚未与当前账号绑定</div>
+        <div class="modal__desc" id="offlineBlockDesc">无网打印需要打印机与当前账号处于绑定状态，请先联网完成绑定。</div>
+        <div class="modal__actions modal__actions--row">
+          <button class="btn-ghost" type="button" data-close-modal>返回</button>
+          <button id="btnOfflineBlockAction" class="btn-primary" type="button">去绑定</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= R002 弹窗：无网 · 上传中（替代云切片 Loading） ================= -->
+    <div id="modalUploadProgress" class="modal modal--plain" role="dialog" aria-modal="true" aria-label="上传中">
+      <div class="modal__box">
+        <div class="save-progress__icon" aria-hidden="true">⇧</div>
+        <div class="modal__title">上传中</div>
+        <div class="modal__desc">正在把模型文件上传到打印机…</div>
+        <div class="save-progress">
+          <div id="uploadProgressBar" class="save-progress__bar" style="width:0%"></div>
+        </div>
+        <div class="save-progress__foot"><span id="uploadProgressPct">0%</span><span id="uploadProgressFile">—</span></div>
+      </div>
+    </div>
+
+    <!-- ================= R002 弹窗：无网 · 上传完成 ================= -->
+    <div id="modalUploadDone" class="modal" role="dialog" aria-modal="true" aria-label="上传完成">
+      <div class="modal__box">
+        <div class="import-modal__icon import-modal__icon--ok" aria-hidden="true">✓</div>
+        <div class="modal__title">上传完成</div>
+        <div class="modal__desc">当前已成功上传模型文件，请联网查看当前打印机状态。</div>
+        <div class="import-note">原型演示：打印页不在本次需求范围内，此处仅提示结果。</div>
+        <div class="modal__actions modal__actions--all">
+          <button id="btnUploadDoneKnow" class="btn-primary" type="button">知道了</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 云切片 Loading ================= -->
+    <div id="sliceLoading" class="loading" role="status" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <div class="loading__title">正在生成打印方案</div>
+      <div class="loading__steps" id="loadingSteps">
+        <div class="loading__step" data-step="0"><span class="loading__mark">○</span><span>模型合法性校验</span></div>
+        <div class="loading__step" data-step="1"><span class="loading__mark">○</span><span>自动支撑计算</span></div>
+        <div class="loading__step" data-step="2"><span class="loading__mark">○</span><span>切片</span></div>
+        <div class="loading__step" data-step="3"><span class="loading__mark">○</span><span>打印路径计算</span></div>
+        <div class="loading__step" data-step="4"><span class="loading__mark">○</span><span>打印时间估算</span></div>
+        <div class="loading__step" data-step="5"><span class="loading__mark">○</span><span>耗材使用量估算</span></div>
+      </div>
+    </div>
+
+    <!-- ================= Toast ================= -->
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <!-- ============================ 演示控制台 ============================ -->
+  <aside class="demo">
+    <div class="demo__title">演示控制台 · R002 模型导入</div>
+    <div class="demo__sub">用于评审时切换演示数据与触发异常分支。正式产品中不存在。</div>
+
+    <div class="demo__group">
+      <div class="demo__label">快捷跳转（R002 主链路）</div>
+      <div class="demo__btns">
+        <button class="demo__btn is-on" type="button" data-demo-goto="creative-space">创意空间（入口）</button>
+        <button class="demo__btn" type="button" data-demo-goto="import-sheet">导入选择弹窗（空态 + 弹窗）</button>
+        <button class="demo__btn" type="button" data-demo-goto="import-sheet/slice">导入选择弹窗 · 我的切片</button>
+        <button class="demo__btn" type="button" data-demo-goto="system-picker">手机系统文件目录（多选）</button>
+      </div>
+    </div>
+
+    <div class="demo__group">
+      <div class="demo__label">R002 异常分支触发</div>
+      <div class="demo__btns">
+        <button class="demo__btn" type="button" data-demo-r002="format">① 格式不支持（选了 .fbx）</button>
+        <button class="demo__btn" type="button" data-demo-r002="compress">② 超 100MB → 优化确认</button>
+        <button class="demo__btn" type="button" data-demo-r002="toolarge">③ 超 100MB 且不可优化 → 拒绝</button>
+        <button class="demo__btn" type="button" data-demo-r002="partial">④ 部分成功结果</button>
+        <button class="demo__btn" type="button" data-demo-r002="overflow">⑤ 触达 8 盘上限溢出</button>
+        <button class="demo__btn" type="button" data-demo-r002="failed">⑥ 上传失败</button>
+        <button class="demo__btn" type="button" data-demo-r002="optimize-progress">⑦ 优化中（第 i / N 个）</button>
+        <button class="demo__btn" type="button" data-demo-r002="tri-dialog">⑧ 面数超限 →「模型结构过于复杂」</button>
+        <button class="demo__btn" type="button" data-demo-r002="batch-limit">⑨ 批量总量超限 → 阻止写入</button>
+      </div>
+    </div>
+
+    <div class="demo__group">
+      <div class="demo__label">R002 无网导入链路</div>
+      <div class="demo__btns">
+        <label class="demo__check"><input id="demoOffline" type="checkbox"> 开启无网提醒条 + 自动弹窗</label>
+        <button class="demo__btn" type="button" data-demo-r002="offline-picker">无网文件目录（仅 gcode）</button>
+        <button class="demo__btn" type="button" data-demo-r002="offline-unbound">未绑定 → 禁止进入传输页</button>
+        <button class="demo__btn" type="button" data-demo-r002="offline-invalid">凭证失效 → 禁止</button>
+        <button class="demo__btn" type="button" data-demo-r002="offline-guest">未登录 → 禁止</button>
+        <button class="demo__btn" type="button" data-demo-r002="offline-expired">凭证超期 → 允许 + 强提示</button>
+        <button class="demo__btn" type="button" data-demo-r002="offline-xfer">无网文件传输页</button>
+        <button class="demo__btn" type="button" data-demo-r002="upload-progress">无网「上传中」进度</button>
+        <button class="demo__btn" type="button" data-demo-r002="upload-done">无网「上传完成」提示</button>
+        <button class="demo__btn" type="button" data-demo-r002="offline-prepare">准备打印页 + 顶部无网标签</button>
+      </div>
+    </div>
+
+    <div class="demo__group">
+      <div class="demo__label">分盘演示数据</div>
+      <div class="demo__btns">
+        <button class="demo__btn" type="button" data-demo-plates="1">模型自带 1 盘</button>
+        <button class="demo__btn" type="button" data-demo-plates="8">模型自带 8 盘（上限）</button>
+      </div>
+    </div>
+
+    <div class="demo__group">
+      <div class="demo__label">R001 异常分支（沿用）</div>
+      <div class="demo__btns">
+        <label class="demo__check"><input id="demoSliceFail" type="checkbox"> 云切片返回失败</label>
+        <label class="demo__check"><input id="demoOutOfBounds" type="checkbox"> 越界异常演示态</label>
+        <label class="demo__check"><input id="demoCollision" type="checkbox"> 模型重叠演示态</label>
+      </div>
+    </div>
+
+    <div class="demo__group">
+      <div class="demo__label">快捷跳转（R001 链路）</div>
+      <div class="demo__btns">
+        <button class="demo__btn" type="button" data-demo-goto="model-detail">模型详情页</button>
+        <button class="demo__btn" type="button" data-demo-goto="model-editor">模型编辑页</button>
+        <button class="demo__btn" type="button" data-demo-goto="print-settings">打印设置页</button>
+        <button class="demo__btn" type="button" data-demo-goto="prepare-print">准备打印页</button>
+        <button class="demo__btn" type="button" data-demo-goto="slice-failed">切片失败页</button>
+      </div>
+    </div>
+
+    <div class="demo__group">
+      <div class="demo__btn" style="text-align:center;font-weight:600" data-demo-reset role="button" tabindex="0">重置演示数据</div>
+    </div>
+
+    <div class="demo__hint">
+      <b>R002 操作提示</b><br>
+      · 创意空间点「导入模型」→ 进入编辑页空态并自动升起导入选择弹窗<br>
+      · 弹窗左右菜单切换「我的 AI 创作 / 我的切片」；底部「导入本地模型」按钮固定不动<br>
+      · 点右上角 ✕ 或点弹窗外遮罩可拉下弹窗<br>
+      · 文件目录勾选多个文件 → 点「导入」→ 自动分盘进入编辑页<br>
+      · 导入为「追加新盘」；盘数满 8 盘后剩余文件丢弃并提示<br>
+      · 无网链路：先开启「无网提醒条」，再点提醒条上的「无网打印 &gt;」<br>
+      · 无网模式下文件目录只放行 gcode
+    </div>
+  </aside>
+</div>
+
+<script src="./vendor/three.min.js"></script>
+<script src="./assets/model.js"></script>
+<script src="./prototype.js"></script>
+</body>
+</html>

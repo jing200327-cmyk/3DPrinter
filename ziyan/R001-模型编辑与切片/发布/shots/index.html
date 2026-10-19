@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>R001 模型编辑与切片 · 验收截图画廊</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:28px 20px 60px;background:#f3f4f8;color:#1c1c1e;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:1180px;margin:0 auto}
+h1{margin:0 0 6px;font-size:24px;letter-spacing:-.3px}
+.sub{color:#6b7280;font-size:13px;margin-bottom:22px;line-height:1.7}
+.sub a{color:#f16326}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:16px}
+figure{margin:0;background:#fff;border-radius:16px;overflow:hidden;
+  box-shadow:0 6px 20px rgba(20,24,40,.07);display:flex;flex-direction:column}
+figure img{display:block;width:100%;height:auto;background:#eef0f6}
+figcaption{padding:10px 13px 13px;font-size:12.5px;color:#4b5563;line-height:1.5}
+figcaption b{display:block;color:#1c1c1e;font-size:11px;letter-spacing:.4px;margin-bottom:3px}
+.top{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.top a{display:inline-block;padding:9px 16px;border-radius:22px;background:#1c1c1e;color:#fff;
+  text-decoration:none;font-size:13.5px;font-weight:600}
+.top a.ghost{background:#fff;color:#1c1c1e;border:1.5px solid #e8eaf0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>R001 模型编辑与切片 · 验收截图画廊</h1>
+  <div class="sub">
+    自研款 3D 打印机 APP —— 共 33 张，均由无头 Chrome 自动执行交互链路后真实截图（非人工摆拍）。
+  </div>
+  <div class="top">
+    <a href="../index.html">← 打开原型（可交互）</a>
+    <a class="ghost" href="../prd.html">阅读 PRD</a>
+    <a class="ghost" href="../main_flow_web.png" target="_blank" rel="noopener">核心操作流程图</a>
+  </div>
+  <div class="grid">
+<figure><a href="./01-model-detail.png" target="_blank" rel="noopener"><img src="./01-model-detail.png" alt="模型详情页 · 复用设计稿整图（底部左侧「打印设置」为跳转热区）" loading="lazy"></a><figcaption><b>01-model-detail</b>模型详情页 · 复用设计稿整图（底部左侧「打印设置」为跳转热区）</figcaption></figure>
+<figure><a href="./02-model-editor-1plate.png" target="_blank" rel="noopener"><img src="./02-model-editor-1plate.png" alt="模型编辑页 · 单盘（不展示盘号切换控件）" loading="lazy"></a><figcaption><b>02-model-editor-1plate</b>模型编辑页 · 单盘（不展示盘号切换控件）</figcaption></figure>
+<figure><a href="./03-model-editor-8plates.png" target="_blank" rel="noopener"><img src="./03-model-editor-8plates.png" alt="模型编辑页 · 8 盘上限（盘号区可横向滑动）" loading="lazy"></a><figcaption><b>03-model-editor-8plates</b>模型编辑页 · 8 盘上限（盘号区可横向滑动）</figcaption></figure>
+<figure><a href="./04-model-selected.png" target="_blank" rel="noopener"><img src="./04-model-selected.png" alt="选中零件 · 橙色包围框（同一时间仅允许选中一个）" loading="lazy"></a><figcaption><b>04-model-selected</b>选中零件 · 橙色包围框（同一时间仅允许选中一个）</figcaption></figure>
+<figure><a href="./05-scale-panel-percent.png" target="_blank" rel="noopener"><img src="./05-scale-panel-percent.png" alt="缩放面板 · 百分比模式（10%–300%）" loading="lazy"></a><figcaption><b>05-scale-panel-percent</b>缩放面板 · 百分比模式（10%–300%）</figcaption></figure>
+<figure><a href="./06-scale-panel-size.png" target="_blank" rel="noopener"><img src="./06-scale-panel-size.png" alt="缩放面板 · 尺寸模式（XYZ 分轴，红绿蓝标识）" loading="lazy"></a><figcaption><b>06-scale-panel-size</b>缩放面板 · 尺寸模式（XYZ 分轴，红绿蓝标识）</figcaption></figure>
+<figure><a href="./07-out-of-bounds-300pct.png" target="_blank" rel="noopener"><img src="./07-out-of-bounds-300pct.png" alt="放大到 300% → 触发越界阻断" loading="lazy"></a><figcaption><b>07-out-of-bounds-300pct</b>放大到 300% → 触发越界阻断</figcaption></figure>
+<figure><a href="./08-after-copy.png" target="_blank" rel="noopener"><img src="./08-after-copy.png" alt="复制零件 · 副本默认选中并自动摆盘" loading="lazy"></a><figcaption><b>08-after-copy</b>复制零件 · 副本默认选中并自动摆盘</figcaption></figure>
+<figure><a href="./09-copy-insufficient.png" target="_blank" rel="noopener"><img src="./09-copy-insufficient.png" alt="打印盘空间不足 · 复制失败且不新建盘" loading="lazy"></a><figcaption><b>09-copy-insufficient</b>打印盘空间不足 · 复制失败且不新建盘</figcaption></figure>
+<figure><a href="./11-print-settings.png" target="_blank" rel="noopener"><img src="./11-print-settings.png" alt="打印设置页 · 打印模式 / 底座 / 基本参数" loading="lazy"></a><figcaption><b>11-print-settings</b>打印设置页 · 打印模式 / 底座 / 基本参数</figcaption></figure>
+<figure><a href="./12-support-off.png" target="_blank" rel="noopener"><img src="./12-support-off.png" alt="关闭支撑 · 类型区置灰但保留上次选择" loading="lazy"></a><figcaption><b>12-support-off</b>关闭支撑 · 类型区置灰但保留上次选择</figcaption></figure>
+<figure><a href="./13-restore-default-dialog.png" target="_blank" rel="noopener"><img src="./13-restore-default-dialog.png" alt="恢复默认值 · 二次确认" loading="lazy"></a><figcaption><b>13-restore-default-dialog</b>恢复默认值 · 二次确认</figcaption></figure>
+<figure><a href="./15-slicing-loading.png" target="_blank" rel="noopener"><img src="./15-slicing-loading.png" alt="云切片 Loading · 六步进度、禁止重复提交" loading="lazy"></a><figcaption><b>15-slicing-loading</b>云切片 Loading · 六步进度、禁止重复提交</figcaption></figure>
+<figure><a href="./16-prepare-print.png" target="_blank" rel="noopener"><img src="./16-prepare-print.png" alt="准备打印页 · 切片成功后" loading="lazy"></a><figcaption><b>16-prepare-print</b>准备打印页 · 切片成功后</figcaption></figure>
+<figure><a href="./17-slice-failed.png" target="_blank" rel="noopener"><img src="./17-slice-failed.png" alt="云切片失败 · 保留编辑结果并给出具体原因" loading="lazy"></a><figcaption><b>17-slice-failed</b>云切片失败 · 保留编辑结果并给出具体原因</figcaption></figure>
+<figure><a href="./18-out-of-bounds-demo.png" target="_blank" rel="noopener"><img src="./18-out-of-bounds-demo.png" alt="越界异常演示态 · 红态 + 阻断原因 + 去打印置灰" loading="lazy"></a><figcaption><b>18-out-of-bounds-demo</b>越界异常演示态 · 红态 + 阻断原因 + 去打印置灰</figcaption></figure>
+<figure><a href="./19-final-editor.png" target="_blank" rel="noopener"><img src="./19-final-editor.png" alt="模型编辑页 · 最终态" loading="lazy"></a><figcaption><b>19-final-editor</b>模型编辑页 · 最终态</figcaption></figure>
+<figure><a href="./20-view-zoom.png" target="_blank" rel="noopener"><img src="./20-view-zoom.png" alt="视角缩放控件 · ＋ / − / 复位" loading="lazy"></a><figcaption><b>20-view-zoom</b>视角缩放控件 · ＋ / − / 复位</figcaption></figure>
+<figure><a href="./21-prepare-print-reuse.png" target="_blank" rel="noopener"><img src="./21-prepare-print-reuse.png" alt="准备打印页 · 整图复用（盘列表为真实渲染数据）" loading="lazy"></a><figcaption><b>21-prepare-print-reuse</b>准备打印页 · 整图复用（盘列表为真实渲染数据）</figcaption></figure>
+<figure><a href="./22-model-detail-to-editor.png" target="_blank" rel="noopener"><img src="./22-model-detail-to-editor.png" alt="真实鼠标点击详情页底部左侧 → 进入模型编辑页" loading="lazy"></a><figcaption><b>22-model-detail-to-editor</b>真实鼠标点击详情页底部左侧 → 进入模型编辑页</figcaption></figure>
+<figure><a href="./23-single-part-scale.png" target="_blank" rel="noopener"><img src="./23-single-part-scale.png" alt="单零件缩放 · 默认只缩放选中的那一个零件" loading="lazy"></a><figcaption><b>23-single-part-scale</b>单零件缩放 · 默认只缩放选中的那一个零件</figcaption></figure>
+<figure><a href="./24-delete-last-dialog.png" target="_blank" rel="noopener"><img src="./24-delete-last-dialog.png" alt="删除任务最后一个零件 · 二次确认弹窗（取消则返回编辑页）" loading="lazy"></a><figcaption><b>24-delete-last-dialog</b>删除任务最后一个零件 · 二次确认弹窗（取消则返回编辑页）</figcaption></figure>
+<figure><a href="./25-task-removed.png" target="_blank" rel="noopener"><img src="./25-task-removed.png" alt="确认删除后 · 任务被移除并返回模型详情页" loading="lazy"></a><figcaption><b>25-task-removed</b>确认删除后 · 任务被移除并返回模型详情页</figcaption></figure>
+<figure><a href="./26-single-plate-applyall.png" target="_blank" rel="noopener"><img src="./26-single-plate-applyall.png" alt="单盘模型 · 开启「应用至所有盘的零件」后该盘零件一起缩放" loading="lazy"></a><figcaption><b>26-single-plate-applyall</b>单盘模型 · 开启「应用至所有盘的零件」后该盘零件一起缩放</figcaption></figure>
+<figure><a href="./27-save-name-dialog.png" target="_blank" rel="noopener"><img src="./27-save-name-dialog.png" alt="保存切片 · 命名弹窗（默认填模型名，可自定义）" loading="lazy"></a><figcaption><b>27-save-name-dialog</b>保存切片 · 命名弹窗（默认填模型名，可自定义）</figcaption></figure>
+<figure><a href="./28-saving-progress.png" target="_blank" rel="noopener"><img src="./28-saving-progress.png" alt="保存切片 · 保存进度（进度条 + 百分比）" loading="lazy"></a><figcaption><b>28-saving-progress</b>保存切片 · 保存进度（进度条 + 百分比）</figcaption></figure>
+<figure><a href="./29-save-done-dialog.png" target="_blank" rel="noopener"><img src="./29-save-done-dialog.png" alt="保存切片 · 保存成功（含「立即查看」跳我的切片）" loading="lazy"></a><figcaption><b>29-save-done-dialog</b>保存切片 · 保存成功（含「立即查看」跳我的切片）</figcaption></figure>
+<figure><a href="./30-save-scope-open.png" target="_blank" rel="noopener"><img src="./30-save-scope-open.png" alt="打印设置页退出 · 保存范围弹窗（未选范围 → 底部「取消」）" loading="lazy"></a><figcaption><b>30-save-scope-open</b>打印设置页退出 · 保存范围弹窗（未选范围 → 底部「取消」）</figcaption></figure>
+<figure><a href="./31-save-scope-selected.png" target="_blank" rel="noopener"><img src="./31-save-scope-selected.png" alt="保存范围弹窗 · 选中范围后底部变「确定」" loading="lazy"></a><figcaption><b>31-save-scope-selected</b>保存范围弹窗 · 选中范围后底部变「确定」</figcaption></figure>
+<figure><a href="./32-settings-saved-toast.png" target="_blank" rel="noopener"><img src="./32-settings-saved-toast.png" alt="点「确定」后 · 返回模型编辑页 + Toast「打印设置已保存」" loading="lazy"></a><figcaption><b>32-settings-saved-toast</b>点「确定」后 · 返回模型编辑页 + Toast「打印设置已保存」</figcaption></figure>
+<figure><a href="./33-optimized-arrange-5plates.png" target="_blank" rel="noopener"><img src="./33-optimized-arrange-5plates.png" alt="自动摆盘智能优化 · 10 个文件同色合摆为 5 盘（每盘 2 件）" loading="lazy"></a><figcaption><b>33-optimized-arrange-5plates</b>自动摆盘智能优化 · 10 个文件同色合摆为 5 盘（每盘 2 件）</figcaption></figure>
+<figure><a href="./34-optimized-arrange-toast.png" target="_blank" rel="noopener"><img src="./34-optimized-arrange-toast.png" alt="进入编辑页 · Toast「当前已优化摆盘，同色模型摆置同一盘，目前盘数为5」" loading="lazy"></a><figcaption><b>34-optimized-arrange-toast</b>进入编辑页 · Toast「当前已优化摆盘，同色模型摆置同一盘，目前盘数为5」</figcaption></figure>
+<figure><a href="./35-settings-exit-nochange.png" target="_blank" rel="noopener"><img src="./35-settings-exit-nochange.png" alt="打印设置页退出 · 无实际修改时直接返回模型编辑页（不弹保存范围弹窗）" loading="lazy"></a><figcaption><b>35-settings-exit-nochange</b>打印设置页退出 · 无实际修改时直接返回模型编辑页（不弹保存范围弹窗）</figcaption></figure>
+  </div>
+</div>
+</body>
+</html>

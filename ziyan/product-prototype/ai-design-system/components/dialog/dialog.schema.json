@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://product-prototype.local/ai-design-system/dialog.schema.json",
+  "title": "AI Design System Dialog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["component", "title", "description", "primaryAction"],
+  "properties": {
+    "component": { "const": "Dialog" },
+    "title": { "type": "string", "minLength": 1 },
+    "description": { "type": "string", "minLength": 1 },
+    "showCloseButton": { "type": "boolean", "default": true },
+    "dismissible": { "type": "boolean", "default": true },
+    "primaryAction": { "$ref": "../button/button.schema.json" },
+    "secondaryAction": { "$ref": "../button/button.schema.json" },
+    "contentKind": { "enum": ["default", "alert", "confirmation", "permission", "passwordInput", "status"] }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "dismissible": { "const": false } }, "required": ["dismissible"] },
+      "then": { "properties": { "showCloseButton": { "const": false } } }
+    }
+  ],
+  "x-designTokens": [
+    "color.semantic.overlay",
+    "color.semantic.background",
+    "component.dialog.overlay",
+    "component.dialog.content"
+  ]
+}

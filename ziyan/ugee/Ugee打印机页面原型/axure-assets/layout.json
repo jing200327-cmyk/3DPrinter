@@ -1,0 +1,65 @@
+[
+  {
+    "name": "01-header",
+    "x": 0,
+    "y": 0,
+    "width": 390,
+    "height": 139.1875
+  },
+  {
+    "name": "02-timelapse",
+    "x": 16,
+    "y": 155.1875,
+    "width": 358,
+    "height": 215.375
+  },
+  {
+    "name": "03-task-default",
+    "x": 16,
+    "y": 386.5625,
+    "width": 358,
+    "height": 312
+  },
+  {
+    "name": "04-task-queue-open",
+    "x": 16,
+    "y": 386.5625,
+    "width": 358,
+    "height": 410
+  },
+  {
+    "name": "05-task-paused",
+    "x": 16,
+    "y": 386.5625,
+    "width": 358,
+    "height": 312
+  },
+  {
+    "name": "06-filament",
+    "x": 16,
+    "y": 714.5625,
+    "width": 358,
+    "height": 108
+  },
+  {
+    "name": "07-controls-page-1",
+    "x": 16,
+    "y": 838.5625,
+    "width": 358,
+    "height": 214
+  },
+  {
+    "name": "08-controls-page-2",
+    "x": 16,
+    "y": 838.5625,
+    "width": 358,
+    "height": 214
+  },
+  {
+    "name": "09-bottom-nav",
+    "x": 0,
+    "y": 1322,
+    "width": 390,
+    "height": 78
+  }
+]

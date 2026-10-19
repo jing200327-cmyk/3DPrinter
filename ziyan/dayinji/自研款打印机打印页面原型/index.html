@@ -1,0 +1,969 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f5fa">
+  <title>自研款打印机打印页面原型</title>
+  <link rel="stylesheet" href="styles.css?v=r011">
+  <link rel="stylesheet" href="styles-share-printer.css?v=r008">
+  <link rel="stylesheet" href="styles-filament-operation.css?v=r008">
+  <link rel="stylesheet" href="styles-3d-preview.css?v=r008">
+</head>
+<body>
+  <main id="device-page" class="phone-shell" aria-label="自研款 3D 打印机设备页">
+    <header class="printer-header" aria-label="打印机连接状态">
+      <div class="source-crop source-crop--header" aria-hidden="true">
+        <img src="../../ugee/Ugee打印机页面原型/assets/ugee-page-1.jpg" alt="">
+      </div>
+      <div id="printer-connection-state" class="printer-connection-state" data-connection-status="idle" role="status" aria-live="polite">
+        <img id="printer-connection-state-image" src="../../src/lianjiezhuangtai/空闲.png" data-idle-src="../../src/lianjiezhuangtai/空闲.png" data-offline-src="../../src/lianjiezhuangtai/离线.png" alt="空闲状态">
+        <span id="printer-connection-state-label" class="sr-only">空闲</span>
+      </div>
+      <button id="printer-switch" class="hotspot hotspot--switch" type="button" aria-label="添加打印机"></button>
+      <button id="printer-settings" class="hotspot hotspot--settings" type="button" aria-label="打开设备设置"></button>
+    </header>
+
+    <div class="page-content">
+      <section id="timelapse-placeholder" class="source-crop source-crop--timelapse" data-camera-state="on" aria-label="摄像头实时监控模块">
+        <img id="camera-monitor-image" src="../../src/shexiangtou/空闲延时摄影.jpg" data-off-src="../../src/shexiangtou/关闭摄像头状态.jpg" data-limit-src="../../原型修改复用图片资源/达到观看时长后自动关闭摄像头.png" alt="打印机摄像头实时监控画面">
+        <button id="timelapse-action" class="timelapse-action" type="button" aria-label="打开延时摄影">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h10.5v13H4zM14.5 9l5-2.5v11L14.5 15zM8.5 8.5l4 3.5-4 3.5z"/></svg><span>延时摄影</span><span class="timelapse-chevron" aria-hidden="true"></span>
+        </button>
+        <button id="camera-toggle" class="camera-toggle" type="button" aria-label="关闭摄像头" aria-pressed="true"></button>
+        <button id="camera-view-limit" class="camera-view-limit" type="button" aria-label="开始观看计时，7 秒后达到观看时长限制"></button>
+      </section>
+
+      <section id="task-panel" class="task-panel" data-status="ready" aria-labelledby="task-title">
+        <div class="task-status" role="status" aria-live="polite">
+          <span class="status-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+          <span id="task-state">可打印</span>
+        </div>
+
+        <div id="model-navigation" class="model-navigation" aria-label="模型导航区">
+          <img id="ready-navigation-image" src="../../src/dayinji/打印任务面板空闲.jpg" alt="开始打印啦，挑选一个玩具开始打印">
+          <div class="model-navigation-actions" role="group" aria-label="选择模型来源">
+            <button id="explore-toys" class="model-navigation-hotspot model-navigation-hotspot--explore" type="button" aria-label="探索玩具"></button>
+            <button id="my-models" class="model-navigation-hotspot model-navigation-hotspot--mine" type="button" aria-label="我的模型"></button>
+          </div>
+        </div>
+
+        <div class="task-summary" hidden>
+          <div id="active-task-owner-card" class="model-crop owner-task-card owner-task-card--boy" data-owner="boy">
+            <img id="active-task-image" src="../../src/dayinji/选中要打印的盘1.jpg" alt="正在打印的史蒂夫 01 模型">
+            <img id="active-task-owner-avatar" class="task-owner-avatar" src="../../src/dayinjirenwukongzhi/人物头像-男孩.png" alt="男孩发起的任务">
+          </div>
+          <div class="task-copy">
+            <h1 id="task-title" class="sr-only">史蒂夫_01_012214</h1>
+            <p class="task-meta sr-only">5 h 15 min · PLA · 62 g</p>
+            <div class="progress-head">
+              <span id="progress-state">准备打印</span>
+              <strong id="task-percent" hidden>0%</strong>
+            </div>
+            <div class="time-line">
+              <strong id="remaining-time" hidden>05:15:00</strong>
+              <button id="finish-now" class="finish-now" type="button" title="演示打印完成" aria-label="一键完成打印演示" hidden>完成</button>
+            </div>
+            <div id="preparation-progress" class="preparation-progress" role="status" aria-live="polite">
+              <span id="preparation-spinner" class="preparation-spinner" aria-hidden="true"></span>
+              <span class="preparation-copy">
+                <span id="preparation-label">正在分析模型</span>
+                <strong id="preparation-percent">0%</strong>
+              </span>
+            </div>
+            <div id="task-progress" class="progress-track" role="progressbar" aria-label="打印进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden>
+              <span></span>
+            </div>
+          </div>
+        </div>
+
+        <div id="task-actions" class="task-actions" aria-label="打印任务操作">
+          <button id="pause-print" class="outline-action outline-action--pause" type="button" hidden>
+            <span class="action-icon action-icon--pause" aria-hidden="true"></span><span>暂停</span>
+          </button>
+          <button id="cancel-print" class="outline-action outline-action--cancel" type="button">
+            <span class="action-icon action-icon--cancel" aria-hidden="true">×</span><span>取消</span>
+          </button>
+        </div>
+
+        <div id="completion-actions" class="completion-actions" hidden aria-label="打印完成操作">
+          <button id="restart-print" type="button"><span class="repeat-icon" aria-hidden="true">↻</span><span>重新打印</span></button>
+          <button id="next-plate" type="button"><span class="next-icon" aria-hidden="true">▶|</span><span>下一盘</span></button>
+          <button id="local-file" class="local-file-action" type="button" aria-label="本地文件" hidden><img src="../../src/dayinji/本地文件.jpg" alt=""></button>
+        </div>
+
+        <button id="queue-toggle" class="queue-toggle" type="button" aria-expanded="false" aria-controls="print-queue" hidden>
+          <span><strong>打印队列</strong><small>2 个待打印任务</small></span>
+          <span class="chevron" aria-hidden="true"></span>
+        </button>
+        <div id="print-queue" class="print-queue" hidden>
+          <div class="queue-list">
+            <button id="queued-task" class="queue-item owner-task-card owner-task-card--boy" type="button" data-queue-task="1" data-plate="2" data-owner="boy" aria-label="男孩发起的盘 2，打开打印设置">
+              <img id="queue-task-image-one" class="queue-task-artwork" src="../../src/dayinji/打印队列2.jpg" alt="盘 2，等待打印">
+              <img id="queue-task-owner-avatar-one" class="task-owner-avatar" src="../../src/dayinjirenwukongzhi/人物头像-男孩.png" alt="" aria-hidden="true">
+            </button>
+            <button id="queued-task-second" class="queue-item owner-task-card owner-task-card--boy" type="button" data-queue-task="2" data-plate="3" data-owner="boy" aria-label="男孩发起的盘 3，打开打印设置">
+              <img id="queue-task-image-two" class="queue-task-artwork" src="../../src/dayinji/打印队列3.jpg" alt="盘 3，等待打印">
+              <img id="queue-task-owner-avatar-two" class="task-owner-avatar" src="../../src/dayinjirenwukongzhi/人物头像-男孩.png" alt="" aria-hidden="true">
+            </button>
+            <button id="queued-girl-task-one" class="queue-item owner-task-card owner-task-card--girl" type="button" data-queue-task="3" data-task="girl-1" data-owner="girl" aria-label="女孩发起的待打印任务 1，打开打印设置">
+              <img id="queue-task-image-girl-one" class="queue-task-artwork" src="../../src/dayinjirenwukongzhi/女孩的待打印任务__1.jpg" alt="女孩的待打印任务 1">
+              <img id="queue-task-owner-avatar-girl-one" class="task-owner-avatar" src="../../src/dayinjirenwukongzhi/人物头像-女孩.png" alt="" aria-hidden="true">
+            </button>
+            <button id="queued-girl-task-two" class="queue-item owner-task-card owner-task-card--girl" type="button" data-queue-task="4" data-task="girl-2" data-owner="girl" aria-label="女孩发起的待打印任务 2，打开打印设置">
+              <img id="queue-task-image-girl-two" class="queue-task-artwork" src="../../src/dayinjirenwukongzhi/女孩的待打印任务_2.jpg" alt="女孩的待打印任务 2">
+              <img id="queue-task-owner-avatar-girl-two" class="task-owner-avatar" src="../../src/dayinjirenwukongzhi/人物头像-女孩.png" alt="" aria-hidden="true">
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 任务控制面板下方的固件升级提醒条：白底黑字 + 橙色带下划线的“立即升级>”，点击进设备设置页 -->
+      <button id="firmware-banner" class="firmware-banner" type="button" aria-label="新的固件版本可用，立即升级">
+        <span>新的固件版本可用，</span><span class="firmware-banner-cta">立即升级&gt;</span>
+      </button>
+
+      <section class="filament-panel" data-filament-state="idle" aria-label="耗材控制面板">
+        <div class="filament-panel-frame">
+          <button id="fan-filter-banner" class="fan-filter-banner" type="button" aria-label="当前风扇剩余100h需要更换滤芯，前往风扇滤芯更换">
+            <span class="fan-filter-copy">当前风扇剩余<span id="fan-filter-hours">100h</span>需要更换滤芯</span>
+            <span class="fan-filter-chevron" aria-hidden="true"></span>
+          </button>
+          <div class="filament-panel-canvas">
+            <img id="filament-panel-image" src="../../原型修改复用图片资源/耗材面板.png" alt="耗材-料架面板，包含蓝色耗材料盘以及进料、退料按钮">
+            <span id="filament-selection-ring" class="filament-selection-ring" hidden aria-hidden="true"></span>
+            <span id="filament-status" class="filament-status" role="status" aria-live="polite" hidden></span>
+            <button id="filament-spool" class="filament-spool-hotspot" type="button" aria-label="选择料架上的蓝色耗材料盘" aria-pressed="false"></button>
+            <button id="open-material-settings" class="filament-edit-hotspot" type="button" aria-label="打开耗材设置"></button>
+            <button id="load-filament" class="filament-action-button filament-action-button--load" type="button" aria-label="进料" disabled>进料</button>
+            <button id="unload-filament" class="filament-action-button filament-action-button--unload" type="button" aria-label="退料" disabled>退料</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <nav class="bottom-nav" aria-label="主导航">
+      <div class="source-crop source-crop--nav" aria-hidden="true"><img src="../../ugee/Ugee打印机页面原型/assets/ugee-page-2.jpg" alt=""></div>
+    </nav>
+  </main>
+
+  <!-- ==========================================================================
+       进料中 / 退料中（真实 DOM 高保真页）
+       设计稿来自 原型修改复用图片资源/进料中.png（4 屏）与 退料中.png（3 屏），
+       按 686px→375px 换算后逐元素重排；插画资源取自设计稿裁切（assets/耗材操作-*.png）。
+       进料 3 步：加热喷嘴温度 → 抽回当前耗材 → 送出新耗材
+       退料 2 步：加热喷嘴温度 → 退出当前耗材（步骤条第 3 点为「退料完成」态）
+       ========================================================================== -->
+  <section id="filament-operation-screen" class="fo-screen" data-operation="feed" data-step="1" data-phase="running" hidden tabindex="-1" aria-label="进料中">
+    <div class="fo-statusbar" aria-hidden="true">
+      <span>9:41</span>
+      <span class="fo-statusbar-icons">
+        <svg width="18" height="12" viewBox="0 0 18 12" aria-hidden="true">
+          <rect x="0" y="7.6" width="3" height="4.4" rx="1" fill="currentColor"></rect>
+          <rect x="5" y="5.1" width="3" height="6.9" rx="1" fill="currentColor"></rect>
+          <rect x="10" y="2.6" width="3" height="9.4" rx="1" fill="currentColor"></rect>
+          <rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"></rect>
+        </svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+          <path d="M1.4 4.3a9.4 9.4 0 0 1 13.2 0"></path>
+          <path d="M4.1 6.9a5.9 5.9 0 0 1 7.8 0"></path>
+          <circle cx="8" cy="9.9" r="1.1" fill="currentColor" stroke="none"></circle>
+        </svg>
+        <svg width="26" height="13" viewBox="0 0 26 13" aria-hidden="true">
+          <rect x="0.6" y="0.6" width="20.8" height="11.8" rx="3.4" fill="none" stroke="currentColor" stroke-opacity="0.32" stroke-width="1.2"></rect>
+          <rect x="2.3" y="2.3" width="17.4" height="8.4" rx="2.2" fill="currentColor"></rect>
+          <path d="M23.2 4.4v4.2a2.1 2.1 0 0 0 0-4.2Z" fill="currentColor" fill-opacity="0.38"></path>
+        </svg>
+      </span>
+    </div>
+
+    <div class="fo-nav">
+      <button id="filament-operation-back" class="fo-nav-back" type="button" aria-label="返回打印机页面，进料将继续进行">
+        <svg viewBox="0 0 22 22" aria-hidden="true">
+          <path d="M9.4 4.6 3 10.4l6.4 5.8"></path>
+          <path d="M3.3 10.4h11.6a4.1 4.1 0 0 1 4.1 4.1v3.1"></path>
+        </svg>
+      </button>
+      <h1 id="filament-operation-title" class="fo-nav-title">进料中</h1>
+    </div>
+
+    <ol id="filament-operation-steps" class="fo-steps" aria-label="操作步骤">
+      <li class="fo-step" data-step="1" data-state="active">
+        <span class="fo-step-dot">1</span>
+        <span class="fo-step-line" aria-hidden="true"></span>
+      </li>
+      <li class="fo-step" data-step="2" data-state="todo">
+        <span class="fo-step-dot">2</span>
+        <span class="fo-step-line" aria-hidden="true"></span>
+      </li>
+      <li class="fo-step" data-step="3" data-state="todo">
+        <span class="fo-step-dot">3</span>
+      </li>
+    </ol>
+
+    <p id="filament-operation-hint" class="fo-hint">可退出页面，进料将继续进行</p>
+
+    <div class="fo-stage">
+      <p id="filament-operation-percent" class="fo-percent is-hidden">0%</p>
+      <div id="filament-operation-ring" class="fo-ring is-heating">
+        <img id="filament-operation-art" class="fo-ring-art" src="assets/耗材操作-进料-抽回当前耗材.png" alt="" aria-hidden="true" hidden>
+        <svg class="fo-ring-svg" viewBox="0 0 220 220" aria-hidden="true">
+          <circle class="fo-ring-track" cx="110" cy="110" r="108.4"></circle>
+          <circle id="filament-operation-arc" class="fo-ring-arc" cx="110" cy="110" r="108.4"></circle>
+        </svg>
+        <div class="fo-ring-content">
+          <div id="filament-operation-temp" class="fo-temp">
+            <span class="fo-temp-label">当前温度</span>
+            <strong class="fo-temp-value"><span id="filament-operation-degree">28</span>°C</strong>
+            <span class="fo-temp-target">目标 200°C</span>
+          </div>
+        </div>
+        <p id="filament-operation-tip" class="fo-tip" role="status" aria-live="polite" hidden>加热时间较长，请耐心等待</p>
+      </div>
+    </div>
+
+    <p id="filament-operation-label" class="fo-step-label">加热喷嘴温度</p>
+
+    <div class="fo-spacer" aria-hidden="true"></div>
+
+    <p id="filament-operation-banner" class="fo-banner" data-tone="warn">喷头温度高，请勿触碰</p>
+
+    <button id="filament-operation-primary" class="fo-primary" type="button">取消</button>
+  </section>
+
+  <!-- 设备设置页（复用 设备设置页.png） -->
+  <section id="device-settings-screen" class="reuse-screen" hidden tabindex="-1" aria-label="设备设置">
+    <div class="reuse-screen-frame">
+      <div class="reuse-stage" style="--reuse-ratio: 376 / 809">
+        <img src="../../原型修改复用图片资源/设备设置页.png" alt="设备设置页，包含设备名称、固件版本、打印选项与延时摄影">
+        <button id="open-firmware-version" class="reuse-hotspot reuse-hotspot--firmware-version" type="button" aria-label="固件版本"></button>
+        <span id="firmware-status-badge" class="firmware-status-badge" hidden>新的固件版本可用</span>
+        <button id="open-print-options" class="reuse-hotspot reuse-hotspot--print-options" type="button" aria-label="打印选项"></button>
+        <button id="open-timelapse-settings" class="reuse-hotspot reuse-hotspot--timelapse-setting" type="button" aria-label="延时摄影"></button>
+        <button id="open-remove-printer" class="reuse-hotspot reuse-hotspot--remove-printer" type="button" aria-label="移除打印机"></button>
+      </div>
+    </div>
+    <button id="device-settings-back" class="reuse-screen-back" type="button" aria-label="返回打印机页面"></button>
+  </section>
+
+  <!-- 打印选项（复用 打印选项.png） -->
+  <section id="print-options-screen" class="reuse-screen" hidden tabindex="-1" aria-label="打印选项">
+    <div class="reuse-screen-frame">
+      <div class="reuse-stage" style="--reuse-ratio: 348 / 751">
+        <img src="../../原型修改复用图片资源/打印选项.png" alt="打印选项页，包含缠料检测、断料检测与提示音开关">
+      </div>
+    </div>
+    <button id="print-options-back" class="reuse-screen-back" type="button" aria-label="返回设备设置"></button>
+  </section>
+
+  <!-- 延时摄影模型列表页（真实 DOM，不用整图铺满）：
+       原型修改复用图片资源/延时摄影页.png 是三联图（未下载 / 下载中 / 可播放三个状态），
+       整图铺满只能做热区、点不动状态，所以这里按原图量取坐标，用真实 DOM 复现同一个页面：
+       顶栏（返回 / 标题「延时摄影」/ 右侧删除）→ 自上而下三张模型卡（缩略图 + 名称 + 时长 + 克重）
+       → 每张卡下方一枚「下载 / 下载中… / 播放」按钮。缩略图裁自原图，见 assets/_tools_make_timelapse_assets.py。 -->
+  <section id="timelapse-screen" class="reuse-screen reuse-screen--fullscreen" hidden tabindex="-1" aria-label="延时摄影">
+    <div class="reuse-screen-frame is-pannable">
+      <div class="timelapse-page">
+        <header class="timelapse-bar">
+          <button id="timelapse-screen-back" class="timelapse-bar__btn" type="button" aria-label="返回打印页">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4.5 7.5 12l7.5 7.5"/></svg>
+          </button>
+          <h2 class="timelapse-bar__title">延时摄影</h2>
+          <button id="open-timelapse-delete" class="timelapse-bar__btn" type="button" aria-label="删除延时摄影文件" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6.5V4.8h5v1.7M6.8 6.5l.9 12.2a1.4 1.4 0 0 0 1.4 1.3h5.8a1.4 1.4 0 0 0 1.4-1.3l.9-12.2M10.3 10v6.4M13.7 10v6.4"/></svg>
+          </button>
+        </header>
+        <ul id="timelapse-list" class="timelapse-list" role="list"></ul>
+        <p id="timelapse-empty" class="timelapse-empty" hidden>延时摄影文件已全部删除</p>
+        <div id="timelapse-delete-bar" class="timelapse-delete-bar" hidden>
+          <button id="timelapse-delete-cancel" class="timelapse-delete-bar__cancel" type="button">取消</button>
+          <button id="timelapse-delete-confirm" class="timelapse-delete-bar__confirm" type="button">删除</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 注：原先的「延时摄影删除演示」整图页（复用 延时摄影删除演示.png）已下线——
+       删除改为模型列表页顶栏的真实多选删除（见上面的 #timelapse-screen），
+       原图 `原型修改复用图片资源/延时摄影删除演示.png` 保留未删，供回溯对照。 -->
+
+  <!-- 风扇滤芯更换（复用 风扇滤芯更换.png） -->
+  <section id="fan-filter-screen" class="reuse-screen" hidden tabindex="-1" aria-label="风扇滤芯更换">
+    <div class="reuse-screen-frame">
+      <div class="reuse-stage" style="--reuse-ratio: 398 / 848">
+        <img src="../../原型修改复用图片资源/风扇滤芯更换.png" alt="风扇滤芯更换页，包含已工作300h、剩余100h与更换步骤">
+        <button id="fan-filter-replaced" class="reuse-hotspot reuse-hotspot--fan-replaced" type="button" aria-label="我已更换，返回打印页面"><span class="sr-only">我已更换</span></button>
+        <button id="open-fan-alert" class="reuse-hotspot reuse-hotspot--fan-alert" type="button" aria-label="查看风扇滤芯提醒弹窗"></button>
+      </div>
+    </div>
+    <button id="fan-filter-back" class="reuse-screen-back" type="button" aria-label="返回打印机页面"></button>
+  </section>
+
+  <!-- 风扇提醒弹窗（复用 风扇提醒弹窗.png）：整屏铺满展示 -->
+  <section id="fan-alert-screen" class="reuse-screen reuse-screen--fullscreen" hidden tabindex="-1" aria-label="风扇滤芯提醒弹窗">
+    <div class="reuse-screen-frame is-pannable">
+      <img class="fullscreen-art" src="../../原型修改复用图片资源/风扇提醒弹窗.png" alt="风扇使用已超过规定时间，请及时更换滤芯的提醒弹窗">
+    </div>
+    <button id="fan-alert-back" class="reuse-screen-back reuse-screen-back--fullscreen" type="button" aria-label="返回风扇滤芯更换"></button>
+  </section>
+
+  <!-- 添加打印机（复用 添加打印机.png） -->
+  <section id="add-printer-screen" class="reuse-screen" hidden tabindex="-1" aria-label="添加打印机">
+    <div class="reuse-screen-frame">
+      <div class="reuse-stage" style="--reuse-ratio: 846 / 1720">
+        <img src="../../原型修改复用图片资源/添加打印机.png" alt="添加打印机页，包含我的打印机列表与配置新的打印机按钮">
+        <!-- 顶部右侧、略低于标题「添加打印机」的新入口：分享打印机。
+             原图此处是空白，所以按钮需要自绘文字（不是透明热区）。 -->
+        <button id="open-share-printer" class="add-printer-share-entry" type="button" aria-label="分享打印机">
+          <span class="add-printer-share-entry-pill">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3.4v11.1"/>
+              <path d="M8.3 7.1 12 3.4l3.7 3.7"/>
+              <path d="M6.6 11.4H5.3A1.8 1.8 0 0 0 3.5 13.2v5.5a1.8 1.8 0 0 0 1.8 1.8h13.4a1.8 1.8 0 0 0 1.8-1.8v-5.5a1.8 1.8 0 0 0-1.8-1.8h-1.3"/>
+            </svg>
+            <span>分享打印机</span>
+          </span>
+        </button>
+        <button id="configure-new-printer" class="reuse-hotspot reuse-hotspot--configure-printer" type="button" aria-label="配置新的打印机，前往首次配网连接流程"></button>
+      </div>
+    </div>
+    <button id="add-printer-back" class="reuse-screen-back" type="button" aria-label="返回打印机页面"></button>
+  </section>
+
+  <!-- ============================ 分享打印机 ============================
+       这是本轮新增的真实 DOM 高保真页（不是整图复用）：375 × 812 设备框内
+       自绘状态栏 / 导航栏 / 卡片，主色 #4388F5，底色 #F7F9FC。
+       =================================================================== -->
+  <section id="share-printer-screen" class="reuse-screen share-screen" hidden tabindex="-1" aria-label="分享打印机">
+    <div class="reuse-screen-frame share-frame">
+      <div class="share-statusbar" aria-hidden="true">
+        <span>9:41</span>
+        <span class="share-statusbar-icons">
+          <svg width="18" height="12" viewBox="0 0 18 12" aria-hidden="true">
+            <rect x="0" y="7.6" width="3" height="4.4" rx="1" fill="currentColor"></rect>
+            <rect x="5" y="5.1" width="3" height="6.9" rx="1" fill="currentColor"></rect>
+            <rect x="10" y="2.6" width="3" height="9.4" rx="1" fill="currentColor"></rect>
+            <rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"></rect>
+          </svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+            <path d="M1.4 4.3a9.4 9.4 0 0 1 13.2 0"></path>
+            <path d="M4.1 6.9a5.9 5.9 0 0 1 7.8 0"></path>
+            <circle cx="8" cy="9.9" r="1.1" fill="currentColor" stroke="none"></circle>
+          </svg>
+          <svg width="26" height="13" viewBox="0 0 26 13" aria-hidden="true">
+            <rect x="0.6" y="0.6" width="20.8" height="11.8" rx="3.4" fill="none" stroke="currentColor" stroke-opacity="0.32" stroke-width="1.2"></rect>
+            <rect x="2.3" y="2.3" width="17.4" height="8.4" rx="2.2" fill="currentColor"></rect>
+            <path d="M23.2 4.4v4.2a2.1 2.1 0 0 0 0-4.2Z" fill="currentColor" fill-opacity="0.38"></path>
+          </svg>
+        </span>
+      </div>
+
+      <header class="share-nav">
+        <button id="share-printer-back" class="share-nav-back" type="button" aria-label="返回添加打印机">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4.6 7.6 12 15 19.4"></path></svg>
+        </button>
+        <h1 class="share-nav-title">分享打印机</h1>
+      </header>
+
+      <div class="share-body">
+        <!-- 1 · 当前打印机信息卡片 -->
+        <section id="share-device-card" class="share-card share-device" aria-label="当前打印机">
+          <div class="share-device-art">
+            <img src="assets/分享打印机-打印机.png" alt="白色封闭式桌面 3D 打印机">
+          </div>
+          <div class="share-device-info">
+            <div class="share-device-head">
+              <strong id="share-device-name" class="share-device-name">My Printer</strong>
+              <button id="share-switch-printer" class="share-device-switch" type="button" aria-label="切换要分享的打印机" aria-haspopup="dialog" aria-expanded="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9.5 6 6 6-6"></path></svg>
+              </button>
+            </div>
+            <div class="share-device-meta">
+              <span id="share-device-status" class="share-status-pill" data-status="online"><i aria-hidden="true"></i><span id="share-device-status-text">已连接</span></span>
+              <span id="share-device-sn" class="share-device-sn">SN ****1234</span>
+            </div>
+            <p id="share-device-note" class="share-device-note" hidden></p>
+          </div>
+        </section>
+
+        <!-- 1b · 无可分享设备（异常态） -->
+        <section id="share-device-empty" class="share-card share-device-empty" hidden aria-label="暂无可分享的打印机">
+          <span class="share-device-empty-art" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <rect x="7" y="2.8" width="10" height="4.6" rx="1.4" fill="currentColor" opacity=".45"></rect>
+              <rect x="2.6" y="7.6" width="18.8" height="8.8" rx="3" fill="currentColor"></rect>
+              <rect x="6" y="13.2" width="12" height="7.6" rx="1.8" fill="currentColor" stroke="#eaf2fe" stroke-width="1.2"></rect>
+              <circle cx="18.2" cy="11.2" r="1.2" fill="#eaf2fe"></circle>
+            </svg>
+          </span>
+          <strong>暂无可分享的打印机</strong>
+          <p>先添加一台打印机，再把邀请分享给家人。</p>
+          <button id="share-add-printer" class="share-ghost-button" type="button">去添加打印机</button>
+        </section>
+
+        <!-- 2 · 分享说明区域 -->
+        <section class="share-intro" aria-label="分享说明">
+          <div class="share-intro-copy">
+            <h2>和家人一起创作</h2>
+            <p>邀请家人使用这台打印机，一起开启 3D 创作之旅。</p>
+          </div>
+          <svg class="share-intro-art" viewBox="0 0 96 72" aria-hidden="true">
+            <rect x="4" y="11" width="50" height="50" rx="16" fill="#EAF2FE"></rect>
+            <g transform="translate(14.5 22) scale(1.25)" fill="#4388F5">
+              <rect x="7" y="2.8" width="10" height="4.6" rx="1.4" opacity=".45"></rect>
+              <rect x="2.6" y="7.6" width="18.8" height="8.8" rx="3"></rect>
+              <rect x="6" y="13.2" width="12" height="7.6" rx="1.8" stroke="#eaf2fe" stroke-width="1.2"></rect>
+              <circle cx="18.2" cy="11.2" r="1.2" fill="#eaf2fe"></circle>
+            </g>
+            <path d="M57 37q8.5 7 13.5 3.4" fill="none" stroke="#BFD7FB" stroke-width="2.2" stroke-dasharray="3 4.5" stroke-linecap="round"></path>
+            <circle cx="68" cy="28" r="15" fill="#CFE1FD"></circle>
+            <circle cx="68" cy="23.4" r="5.2" fill="#3E7FE0"></circle>
+            <path d="M59.4 36.4a8.6 8.6 0 0 1 17.2 0z" fill="#3E7FE0"></path>
+            <circle cx="82" cy="48" r="11" fill="#4388F5"></circle>
+            <circle cx="82" cy="44.6" r="3.7" fill="#fff"></circle>
+            <path d="M75.8 53.6a6.2 6.2 0 0 1 12.4 0z" fill="#fff"></path>
+          </svg>
+        </section>
+
+        <!-- 3 · 核心分享卡片（页面的视觉中心） -->
+        <section id="share-credential" class="share-card share-credential" data-state="active" aria-label="邀请家人加入">
+          <h2 class="share-credential-title">邀请家人加入</h2>
+          <div class="share-qr">
+            <img id="share-qr-image" class="share-qr-image" src="assets/分享打印机-二维码-1.svg" alt="邀请二维码，家人扫码即可加入这台打印机">
+            <span class="share-qr-logo" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <rect x="7" y="2.8" width="10" height="4.6" rx="1.4" fill="currentColor" opacity=".45"></rect>
+                <rect x="2.6" y="7.6" width="18.8" height="8.8" rx="3" fill="currentColor"></rect>
+                <rect x="6" y="13.2" width="12" height="7.6" rx="1.8" fill="currentColor" stroke="#fff" stroke-width="1.2"></rect>
+                <circle cx="18.2" cy="11.2" r="1.2" fill="#fff"></circle>
+              </svg>
+            </span>
+          </div>
+          <div class="share-code-row">
+            <span id="share-code" class="share-code">ABCD 1234</span>
+            <button id="share-copy" class="share-copy" type="button" aria-label="复制邀请码">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11.2" height="11.2" rx="2.8"></rect><path d="M15.2 6.6v-.9A2.7 2.7 0 0 0 12.5 3H5.7A2.7 2.7 0 0 0 3 5.7v6.8a2.7 2.7 0 0 0 2.7 2.7h.9"></path></svg>
+            </button>
+          </div>
+          <p id="share-expiry" class="share-expiry">有效期剩余 09:59</p>
+          <p id="share-note" class="share-note" hidden></p>
+          <button id="share-invite" class="share-primary" type="button">分享邀请</button>
+          <button id="share-regenerate" class="share-text-button" type="button">重新生成邀请码</button>
+        </section>
+
+        <!-- 4 · 已共享成员 -->
+        <section class="share-card share-members" aria-label="已共享成员">
+          <div class="share-members-head">
+            <h2>已共享成员</h2>
+            <span id="share-members-count">2/5</span>
+          </div>
+          <ul id="share-members-list" class="share-members-list"></ul>
+          <p id="share-members-empty" class="share-members-empty" hidden>暂未邀请任何家人。生成邀请码并分享给他们即可加入。</p>
+          <button id="share-manage-members" class="share-row-link" type="button">
+            <span>管理共享成员</span><span class="share-row-chevron" aria-hidden="true"></span>
+          </button>
+        </section>
+
+        <!-- 异常状态演示入口：原型附属控件，不属于产品 UI，放在页面流最底部 -->
+        <button id="share-demo-toggle" class="share-demo-toggle" type="button" aria-label="打开异常状态演示面板">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3h4v5.2l3.4 7.6A3 3 0 0 1 14.7 20H9.3a3 3 0 0 1-2.7-4.2L10 8.2Z"></path><path d="M9 3h6"></path></svg>
+          <span>演示 · 异常与边界状态</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 共享成员管理页（真实 DOM） -->
+  <section id="member-manage-screen" class="reuse-screen member-screen" hidden tabindex="-1" aria-label="共享成员管理">
+    <div class="reuse-screen-frame share-frame">
+      <div class="share-statusbar" aria-hidden="true">
+        <span>9:41</span>
+        <span class="share-statusbar-icons">
+          <svg width="18" height="12" viewBox="0 0 18 12" aria-hidden="true">
+            <rect x="0" y="7.6" width="3" height="4.4" rx="1" fill="currentColor"></rect>
+            <rect x="5" y="5.1" width="3" height="6.9" rx="1" fill="currentColor"></rect>
+            <rect x="10" y="2.6" width="3" height="9.4" rx="1" fill="currentColor"></rect>
+            <rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"></rect>
+          </svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+            <path d="M1.4 4.3a9.4 9.4 0 0 1 13.2 0"></path>
+            <path d="M4.1 6.9a5.9 5.9 0 0 1 7.8 0"></path>
+            <circle cx="8" cy="9.9" r="1.1" fill="currentColor" stroke="none"></circle>
+          </svg>
+          <svg width="26" height="13" viewBox="0 0 26 13" aria-hidden="true">
+            <rect x="0.6" y="0.6" width="20.8" height="11.8" rx="3.4" fill="none" stroke="currentColor" stroke-opacity="0.32" stroke-width="1.2"></rect>
+            <rect x="2.3" y="2.3" width="17.4" height="8.4" rx="2.2" fill="currentColor"></rect>
+            <path d="M23.2 4.4v4.2a2.1 2.1 0 0 0 0-4.2Z" fill="currentColor" fill-opacity="0.38"></path>
+          </svg>
+        </span>
+      </div>
+
+      <header class="share-nav">
+        <button id="member-manage-back" class="share-nav-back" type="button" aria-label="返回分享打印机">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4.6 7.6 12 15 19.4"></path></svg>
+        </button>
+        <h1 class="share-nav-title">共享成员</h1>
+      </header>
+
+      <div class="member-body">
+        <section class="share-card member-count-card" aria-label="成员数量">
+          <strong>已加入的家庭成员</strong>
+          <span id="member-manage-count">2/5</span>
+        </section>
+        <section class="share-card member-card" aria-label="成员列表">
+          <div id="member-manage-list"></div>
+        </section>
+        <p id="member-manage-note" class="member-limit-note">最多可共享给 5 位家庭成员，移除成员后名额会立即释放。</p>
+        <button id="member-manage-invite" class="share-primary member-invite" type="button">邀请更多成员</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 底部面板 A · 选择要分享的打印机 -->
+  <div id="share-device-sheet" class="share-sheet-layer" hidden>
+    <div class="share-sheet" role="dialog" aria-modal="true" aria-labelledby="share-device-sheet-title">
+      <span class="share-sheet-grabber" aria-hidden="true"></span>
+      <h2 id="share-device-sheet-title" class="share-sheet-title">选择要分享的打印机</h2>
+      <p class="share-sheet-copy">邀请码与二维码会绑定到选中的这台打印机。</p>
+      <div id="share-device-sheet-list" class="share-sheet-list"></div>
+      <button id="share-device-sheet-cancel" class="share-sheet-cancel" type="button">取消</button>
+    </div>
+  </div>
+
+  <!-- 底部面板 B · 系统分享面板（示意） -->
+  <div id="share-target-sheet" class="share-sheet-layer" hidden>
+    <div class="share-sheet" role="dialog" aria-modal="true" aria-labelledby="share-target-sheet-title">
+      <span class="share-sheet-grabber" aria-hidden="true"></span>
+      <h2 id="share-target-sheet-title" class="share-sheet-title">分享邀请</h2>
+      <div class="share-panel-head">
+        <img src="assets/分享打印机-打印机.png" alt="">
+        <div class="share-panel-head-copy">
+          <strong id="share-panel-title">邀请你一起使用 My Printer 打印</strong>
+          <span id="share-panel-sub">邀请码 ABCD 1234 · https://app.ugee.com/i/ABCD1234</span>
+        </div>
+      </div>
+      <div id="share-targets" class="share-targets"></div>
+      <button id="share-target-sheet-cancel" class="share-sheet-cancel" type="button">取消</button>
+    </div>
+  </div>
+
+  <!-- 底部面板 C · 异常状态演示 -->
+  <div id="share-demo-sheet" class="share-sheet-layer" hidden>
+    <div class="share-sheet" role="dialog" aria-modal="true" aria-labelledby="share-demo-title">
+      <span class="share-sheet-grabber" aria-hidden="true"></span>
+      <span class="share-demo-badge">演示 · 非最终视觉</span>
+      <h2 id="share-demo-title" class="share-sheet-title">异常与边界状态</h2>
+      <p class="share-sheet-copy">切换后页面立刻进入对应状态，用于逐条验收。刷新页面即可回到默认态。</p>
+      <div id="share-demo-list" class="share-demo-list"></div>
+      <button id="share-demo-close" class="share-sheet-cancel" type="button">关闭</button>
+    </div>
+  </div>
+
+  <!-- 通用二次确认弹窗（重新生成邀请码 / 移除成员） -->
+  <dialog id="share-confirm-dialog" class="app-dialog">
+    <form method="dialog">
+      <button id="share-confirm-close" class="app-dialog-close" type="button" aria-label="关闭弹窗">×</button>
+      <h2 id="share-confirm-title"></h2>
+      <p id="share-confirm-copy"></p>
+      <div class="dialog-actions">
+        <button id="share-confirm-cancel" value="cancel" data-tone="outline">取消</button>
+        <button id="share-confirm-ok" value="confirm" data-tone="primary">确认</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- 通用提示弹窗（生成失败 / 人数上限 / 无可分享设备） -->
+  <dialog id="share-alert-dialog" class="app-dialog">
+    <form method="dialog">
+      <h2 id="share-alert-title"></h2>
+      <p id="share-alert-copy"></p>
+      <div class="dialog-actions">
+        <button id="share-alert-cancel" value="cancel" data-tone="outline">取消</button>
+        <button id="share-alert-ok" value="confirm" data-tone="primary">重试</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- 移除打印机弹窗（复用 移除打印机弹窗.png） -->
+  <section id="remove-printer-screen" class="reuse-screen" hidden tabindex="-1" aria-label="是否确认移除当前打印机">
+    <div class="reuse-screen-frame">
+      <div class="reuse-stage" style="--reuse-ratio: 411 / 879">
+        <img src="../../原型修改复用图片资源/移除打印机弹窗.png" alt="是否确认移除当前打印机，含取消与确认按钮">
+        <button id="remove-printer-cancel" class="reuse-hotspot reuse-hotspot--remove-cancel" type="button" aria-label="取消，返回设备设置"></button>
+        <button id="remove-printer-confirm" class="reuse-hotspot reuse-hotspot--remove-confirm" type="button" aria-label="确认移除当前打印机"></button>
+      </div>
+    </div>
+    <!-- 左上角回退按钮：这一页是弹窗，遮罩把原图烘焙的返回箭头压得太暗，
+         这里在箭头原位盖一个自绘的可见返回按钮（点击仍走原来的 goBackInReuseScreens） -->
+    <button id="remove-printer-back" class="reuse-screen-back remove-dialog-back" type="button" aria-label="返回设备设置">
+      <span class="remove-dialog-back__icon" aria-hidden="true"></span>
+    </button>
+  </section>
+
+  <!-- 移除打印机后的跳转逻辑页：与原型其余页面同构的浅色卡片风格 -->
+  <section id="logic-demo-screen" class="reuse-screen reuse-screen--logic" hidden tabindex="-1" aria-label="移除打印机跳转逻辑">
+    <div class="reuse-screen-frame logic-demo">
+      <div class="logic-demo-card">
+        <h2 class="logic-demo-title">确认移除后，App 往哪里走？</h2>
+        <p class="logic-demo-copy">点击「确认」后需要先判断：当前账号是否还连接着其他打印机。</p>
+        <div class="logic-demo-rule">
+          <p><b>IF</b><span>已有其他打印机</span><em>直接回到打印页，自动连接「我的打印机」列表里的第一台（Ugee Funbox）</em></p>
+          <p><b>ELSE</b><span>没有其他打印机</span><em>跳转到「打印机首次配网连接流程」原型首页，重新开始配网</em></p>
+        </div>
+        <div class="logic-demo-actions">
+          <button id="logic-demo-existing" type="button"><strong>已有其他打印机</strong><span>跳到打印页原型</span></button>
+          <button id="logic-demo-none" type="button"><strong>没有其他打印机</strong><span>跳到配网流程首页</span></button>
+        </div>
+        <button id="logic-demo-back" class="logic-demo-back" type="button">返回设备设置</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 准备打印（复用 准备打印页.png）：盘列表可点选 + 上下拖动排序；色卡按红框 / 非红框分流 -->
+  <section id="prepare-print-screen" class="reuse-screen" hidden tabindex="-1" aria-label="准备打印">
+    <div class="reuse-screen-frame">
+      <div id="prepare-stage" class="reuse-stage" style="--reuse-ratio: 311 / 675">
+        <!-- 底图：盘列表那一段已刷成页面白底，真正的三行由下面的切片补上。
+             耗材颜色更换后整页换成 assets/准备打印页-更换后-底图.png（由 JS 按状态切换 src） -->
+        <img id="prepare-artwork" src="assets/准备打印页-底图.png" alt="准备打印页，包含打印机信息、打印选项、延时摄影开关与开始打印按钮">
+        <!-- 打印机卡片右侧的“切换”：跳添加打印机页 -->
+        <button id="prepare-switch-printer" class="reuse-hotspot reuse-hotspot--prepare-switch" type="button" aria-label="切换或添加打印机"></button>
+        <div id="prepare-plate-list" class="plate-list" role="listbox" aria-label="选择要打印的盘">
+          <div class="plate-row" data-plate="1" data-slot="0" role="option" aria-selected="true">
+            <img class="plate-row-art" src="assets/准备打印页-盘1.png" alt="盘 1：史蒂夫_01_012214，2 h 16 min，72 g">
+            <span class="plate-row-ring" aria-hidden="true"></span>
+            <button class="plate-row-hit" type="button" aria-label="选择盘 1 史蒂夫_01_012214"></button>
+            <button class="plate-material-hit" type="button" data-chip="left" data-target="prepareMaterial" aria-label="盘 1 料架上的耗材颜色，选择打印耗材"></button>
+            <!-- 缩略图左上角：3D 图标 → 3D 预览页 -->
+            <button class="plate-3d-btn" type="button" data-preview-plate="盘 1" data-preview-name="史蒂夫_01_012214" data-preview-duration="2 h 16 min" data-preview-grams="72" aria-label="3D 预览：盘 1 史蒂夫_01_012214"><span class="plate-3d-btn__text" aria-hidden="true">3D</span></button>
+            <span class="plate-row-grip" aria-hidden="true"></span>
+          </div>
+          <div class="plate-row" data-plate="2" data-slot="1" role="option" aria-selected="false">
+            <img class="plate-row-art" src="assets/准备打印页-盘2.png" alt="盘 2：史蒂夫_02_012209，1 h 42 min，54 g">
+            <span class="plate-row-ring" aria-hidden="true"></span>
+            <button class="plate-row-hit" type="button" aria-label="选择盘 2 史蒂夫_02_012209"></button>
+            <button class="plate-material-hit" type="button" data-chip="left" data-target="prepareMaterial" aria-label="盘 2 的蓝色耗材，选择打印耗材"></button>
+            <button class="plate-material-hit" type="button" data-chip="right" data-target="prepareMaterial" aria-label="盘 2 的绿色耗材，选择打印耗材"></button>
+            <button class="plate-3d-btn" type="button" data-preview-plate="盘 2" data-preview-name="史蒂夫_02_012209" data-preview-duration="1 h 42 min" data-preview-grams="54" aria-label="3D 预览：盘 2 史蒂夫_02_012209"><span class="plate-3d-btn__text" aria-hidden="true">3D</span></button>
+            <span class="plate-row-grip" aria-hidden="true"></span>
+          </div>
+          <div class="plate-row" data-plate="3" data-slot="2" role="option" aria-selected="false">
+            <img class="plate-row-art" src="assets/准备打印页-盘3.png" alt="盘 3：史蒂夫_03_012207，3 h 08 min，96 g">
+            <span class="plate-row-ring" aria-hidden="true"></span>
+            <button class="plate-row-hit" type="button" aria-label="选择盘 3 史蒂夫_03_012207"></button>
+            <button class="plate-material-hit" type="button" data-chip="left" data-target="prepareMaterial" aria-label="盘 3 的蓝色耗材，选择打印耗材"></button>
+            <button class="plate-material-hit plate-material-hit--mismatch" type="button" data-chip="right" data-target="prepareEmpty" aria-label="盘 3 的绿色耗材带红框提示不匹配，查看耗材不匹配原因"></button>
+            <button class="plate-3d-btn" type="button" data-preview-plate="盘 3" data-preview-name="史蒂夫_03_012207" data-preview-duration="3 h 08 min" data-preview-grams="96" aria-label="3D 预览：盘 3 史蒂夫_03_012207"><span class="plate-3d-btn__text" aria-hidden="true">3D</span></button>
+            <span class="plate-row-grip" aria-hidden="true"></span>
+          </div>
+        </div>
+        <!-- 延时摄影勾选：勾选态直接让原图里烘焙的绿框透出来，取消勾选时盖上自绘的白框 -->
+        <button id="timelapse-toggle" class="timelapse-check" type="button" role="checkbox" aria-checked="true" aria-label="延时摄影"><span class="timelapse-check-box" aria-hidden="true"></span></button>
+        <button id="start-print" class="reuse-hotspot reuse-hotspot--start-print" type="button" aria-label="开始打印"></button>
+      </div>
+    </div>
+    <button id="prepare-print-back" class="reuse-screen-back" type="button" aria-label="返回模型详情"></button>
+  </section>
+
+  <!-- 准备打印 · 任务状态版（复用准备打印页切片：底图 + 盘行，结构与空闲版一致），
+       正在打印 / 已取消 / 已打印的状态戳由 JS 按当前任务盘定位，任意盘都可被队列任务复用 -->
+  <section id="prepare-state-screen" class="reuse-screen" hidden tabindex="-1" aria-label="准备打印">
+    <div class="reuse-screen-frame">
+      <div id="prepare-state-stage" class="reuse-stage" style="--reuse-ratio: 311 / 675">
+        <img id="prepare-state-artwork" src="assets/准备打印页-底图.png" alt="准备打印页，包含打印机信息、打印选项、延时摄影开关与开始打印按钮">
+        <!-- 打印中 / 暂停中：打印机卡片由“空闲”改成“忙碌”（白底补丁盖住原字） -->
+        <div id="printer-busy-patch" class="printer-busy-patch" role="status" hidden><span class="printer-busy-dot" aria-hidden="true"></span>忙碌</div>
+        <!-- 状态戳：盖在处于当前任务状态的盘上（JS 按盘定位与换图） -->
+        <img id="state-stamp" class="state-stamp" src="assets/状态戳-正在打印.png" alt="正在打印" hidden>
+        <div class="state-plate-list" role="listbox" aria-label="选择要打印的盘">
+          <div class="state-row" data-row="1" role="option" aria-selected="false">
+            <img class="plate-row-art" src="assets/准备打印页-盘1.png" alt="盘 1：史蒂夫_01_012214，2 h 16 min，72 g">
+            <span class="state-row-ring" aria-hidden="true"></span>
+            <button class="state-row-hit" type="button" aria-label="选择盘 1"></button>
+            <button class="state-material-hit" type="button" aria-label="选择盘 1 的耗材"></button>
+            <button class="plate-3d-btn" type="button" data-preview-plate="盘 1" data-preview-name="史蒂夫_01_012214" data-preview-duration="2 h 16 min" data-preview-grams="72" aria-label="3D 预览：盘 1 史蒂夫_01_012214"><span class="plate-3d-btn__text" aria-hidden="true">3D</span></button>
+          </div>
+          <div class="state-row" data-row="2" role="option" aria-selected="false">
+            <img class="plate-row-art" src="assets/准备打印页-盘2.png" alt="盘 2：史蒂夫_02_012209，1 h 42 min，54 g">
+            <span class="state-row-ring" aria-hidden="true"></span>
+            <button class="state-row-hit" type="button" aria-label="选择盘 2"></button>
+            <button class="state-material-hit" type="button" aria-label="选择盘 2 的耗材"></button>
+            <button class="plate-3d-btn" type="button" data-preview-plate="盘 2" data-preview-name="史蒂夫_02_012209" data-preview-duration="1 h 42 min" data-preview-grams="54" aria-label="3D 预览：盘 2 史蒂夫_02_012209"><span class="plate-3d-btn__text" aria-hidden="true">3D</span></button>
+          </div>
+          <div class="state-row" data-row="3" role="option" aria-selected="false">
+            <img class="plate-row-art" src="assets/准备打印页-盘3.png" alt="盘 3：史蒂夫_03_012207，3 h 08 min，96 g">
+            <span class="state-row-ring" aria-hidden="true"></span>
+            <button class="state-row-hit" type="button" aria-label="选择盘 3"></button>
+            <button class="state-material-hit" type="button" aria-label="选择盘 3 的耗材"></button>
+            <button class="plate-3d-btn" type="button" data-preview-plate="盘 3" data-preview-name="史蒂夫_03_012207" data-preview-duration="3 h 08 min" data-preview-grams="96" aria-label="3D 预览：盘 3 史蒂夫_03_012207"><span class="plate-3d-btn__text" aria-hidden="true">3D</span></button>
+          </div>
+        </div>
+        <button id="prepare-state-toggle" class="timelapse-check" type="button" role="checkbox" aria-checked="true" aria-label="延时摄影"><span class="timelapse-check-box" aria-hidden="true"></span></button>
+        <button id="prepare-state-start" class="reuse-hotspot reuse-hotspot--start-print" type="button" aria-label="开始打印"></button>
+        <!-- 正在打印 / 暂停中：开始打印不可用，盖一层半透明白让原按钮看上去变淡 -->
+        <span id="prepare-state-dim" class="start-print-dim" hidden aria-hidden="true"></span>
+      </div>
+    </div>
+    <button id="prepare-state-back" class="reuse-screen-back" type="button" aria-label="返回打印页面"></button>
+  </section>
+
+  <!-- ============================ 3D 预览页 ============================
+       内容复用 R001「模型编辑与切片」原型的三维视图（真 Three.js 渲染 +
+       打印空间 180³ 示意框 + 打印平台 + 网格 + 视角缩放），按本次需求删除：
+         · 模型编辑页右上角「更多」按钮
+         · 底部「缩放 / 复制 / 删除」工具区（连带只服务于它的缩放面板与遮罩）
+         · 底部「去打印」CTA 区
+       左上角回退按钮返回准备打印页（走复用页栈，空闲版 / 任务状态版都能回）
+       ================================================================== -->
+  <section id="preview-3d-screen" class="reuse-screen preview3d-screen" hidden tabindex="-1" aria-label="3D 预览">
+    <div class="reuse-screen-frame pv3d-frame">
+      <div class="pv3d-statusbar" aria-hidden="true">
+        <span>9:41</span>
+        <span class="pv3d-statusbar-icons">
+          <svg width="18" height="12" viewBox="0 0 18 12" aria-hidden="true">
+            <rect x="0" y="7.6" width="3" height="4.4" rx="1" fill="currentColor"></rect>
+            <rect x="5" y="5.1" width="3" height="6.9" rx="1" fill="currentColor"></rect>
+            <rect x="10" y="2.6" width="3" height="9.4" rx="1" fill="currentColor"></rect>
+            <rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"></rect>
+          </svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+            <path d="M1.4 4.3a9.4 9.4 0 0 1 13.2 0"></path>
+            <path d="M4.1 6.9a5.9 5.9 0 0 1 7.8 0"></path>
+            <circle cx="8" cy="9.9" r="1.1" fill="currentColor" stroke="none"></circle>
+          </svg>
+          <svg width="26" height="13" viewBox="0 0 26 13" aria-hidden="true">
+            <rect x="0.6" y="0.6" width="20.8" height="11.8" rx="3.4" fill="none" stroke="currentColor" stroke-opacity="0.32" stroke-width="1.2"></rect>
+            <rect x="2.3" y="2.3" width="17.4" height="8.4" rx="2.2" fill="currentColor"></rect>
+            <path d="M23.2 4.4v4.2a2.1 2.1 0 0 0 0-4.2Z" fill="currentColor" fill-opacity="0.38"></path>
+          </svg>
+        </span>
+      </div>
+
+      <header class="pv3d-nav">
+        <button id="preview-3d-back" class="pv3d-back" type="button" aria-label="返回准备打印">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4.6 7.6 12 15 19.4"></path></svg>
+        </button>
+        <h1 class="pv3d-nav-title">3D 预览</h1>
+      </header>
+
+      <div class="pv3d-head">
+        <h2 id="pv3d-model-name" class="pv3d-name">史蒂夫_01_012214<span> · 1盘</span></h2>
+        <div id="pv3d-meta" class="pv3d-meta"></div>
+      </div>
+
+      <div class="pv3d-view">
+        <canvas id="pv3d-gl" aria-label="3D 模型视图区"></canvas>
+        <div class="pv3d-hud">
+          <span id="pv3d-hud-plate" class="pv3d-pill">打印空间 180 × 180 × 180 mm</span>
+        </div>
+        <div class="pv3d-axis" aria-hidden="true">
+          <span class="pv3d-axis__item"><i class="pv3d-axis__dot" style="background:#e11d48"></i>X</span>
+          <span class="pv3d-axis__item"><i class="pv3d-axis__dot" style="background:#16a34a"></i>Y</span>
+          <span class="pv3d-axis__item"><i class="pv3d-axis__dot" style="background:#2563eb"></i>Z</span>
+        </div>
+        <div class="pv3d-zoom">
+          <button id="pv3d-zoom-in" type="button" aria-label="放大视图">＋</button>
+          <button id="pv3d-zoom-out" type="button" aria-label="缩小视图">－</button>
+          <button id="pv3d-zoom-reset" type="button" aria-label="复位视角">⟲</button>
+        </div>
+        <span class="pv3d-tip" aria-hidden="true">单指拖动旋转 · 双指捏合 / 滚轮缩放</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 耗材设置（复用 耗材设置页.png） -->
+  <section id="material-settings-screen" class="reuse-screen" hidden tabindex="-1" aria-label="耗材设置">
+    <div class="reuse-screen-frame">
+      <div class="reuse-stage" style="--reuse-ratio: 307 / 647">
+        <img src="../../原型修改复用图片资源/耗材设置页.png" alt="耗材设置页，包含名称、类型、颜色与喷嘴温度">
+        <button id="open-material-name" class="reuse-hotspot reuse-hotspot--material-name" type="button" aria-label="修改名称"></button>
+        <button id="open-material-type" class="reuse-hotspot reuse-hotspot--material-type" type="button" aria-label="修改类型"></button>
+        <button id="open-material-color" class="reuse-hotspot reuse-hotspot--material-color" type="button" aria-label="修改颜色"></button>
+      </div>
+    </div>
+    <button id="material-settings-back" class="reuse-screen-back" type="button" aria-label="返回打印机页面"></button>
+  </section>
+
+  <!-- 名称修改（复用 名称修改页.png） -->
+  <section id="material-name-screen" class="reuse-screen" hidden tabindex="-1" aria-label="修改耗材名称">
+    <div class="reuse-screen-frame">
+      <div class="reuse-stage" style="--reuse-ratio: 352 / 766">
+        <img src="../../原型修改复用图片资源/名称修改页.png" alt="名称修改页，包含自定义名称输入框与取消、确定按钮">
+        <button id="material-name-cancel" class="reuse-hotspot reuse-hotspot--material-name-cancel" type="button" aria-label="取消，返回耗材设置"></button>
+        <button id="material-name-confirm" class="reuse-hotspot reuse-hotspot--material-name-confirm" type="button" aria-label="确定，返回耗材设置"></button>
+        <button id="material-name-return" class="reuse-hotspot reuse-hotspot--material-name-return" type="button" aria-label="返回耗材设置"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 耗材类型修改（复用 耗材类型修改页.png）：点击页面任意位置返回耗材设置 -->
+  <section id="material-type-screen" class="reuse-screen" hidden tabindex="-1" aria-label="修改耗材类型">
+    <div class="reuse-screen-frame">
+      <div class="reuse-stage" style="--reuse-ratio: 305 / 652">
+        <img src="../../原型修改复用图片资源/耗材类型修改页.png" alt="耗材类型下拉菜单，包含 PLA Basic、PLA Plus、Matte PLA、Silk PLA、Marble PLA">
+      </div>
+    </div>
+    <button id="material-type-anywhere" class="reuse-anywhere" type="button" aria-label="返回耗材设置"></button>
+  </section>
+
+  <!-- 颜色修改（复用 颜色修改页.png）：点击页面任意位置返回耗材设置 -->
+  <section id="material-color-screen" class="reuse-screen" hidden tabindex="-1" aria-label="修改耗材颜色">
+    <div class="reuse-screen-frame">
+      <div class="reuse-stage" style="--reuse-ratio: 307 / 658">
+        <img src="../../原型修改复用图片资源/颜色修改页.png" alt="颜色选择弹层，包含自研料箱中的颜色与颜色盘">
+      </div>
+    </div>
+    <button id="material-color-anywhere" class="reuse-anywhere" type="button" aria-label="返回耗材设置"></button>
+  </section>
+
+  <!-- 探索玩具（复用 探索玩具页.png）：点击任意位置进入模型详情页 -->
+  <section id="explore-toys-screen" class="reuse-screen" hidden tabindex="-1" aria-label="探索玩具">
+    <div class="reuse-screen-frame">
+      <div class="reuse-stage" style="--reuse-ratio: 941 / 1672">
+        <img src="../../原型修改复用图片资源/探索玩具页.png" alt="探索玩具页，包含搜索、筛选、3D 打印活动横幅、教程指南、社区与模型列表">
+        <!-- 回退热区放在画布内，百分比才会按原图比例计算；z-index 高于“点击任意位置”那一层 -->
+        <button id="explore-toys-back" class="reuse-hotspot reuse-hotspot--explore-back" type="button" aria-label="返回打印机页面"></button>
+      </div>
+    </div>
+    <button id="explore-toys-anywhere" class="reuse-anywhere" type="button" aria-label="进入模型详情"></button>
+  </section>
+
+  <!-- 模型详情（复用 模型详情页.png）：右下角“立即打印”进入准备打印 -->
+  <section id="model-detail-screen" class="reuse-screen" hidden tabindex="-1" aria-label="模型详情">
+    <div class="reuse-screen-frame">
+      <div class="reuse-stage" style="--reuse-ratio: 941 / 1672">
+        <img src="../../原型修改复用图片资源/模型详情页.png" alt="萌趣小黄鸭模型详情页，底部含打印设置与立即打印按钮">
+        <button id="open-prepare-print" class="reuse-hotspot reuse-hotspot--model-print" type="button" aria-label="立即打印"></button>
+      </div>
+    </div>
+    <button id="model-detail-back" class="reuse-screen-back" type="button" aria-label="返回探索玩具"></button>
+  </section>
+
+  <!-- 准备打印 · 选择要打印的耗材（复用 准备打印页选择耗材.png）：点击任意位置进入无耗材态 -->
+  <section id="prepare-material-screen" class="reuse-screen" hidden tabindex="-1" aria-label="选择要打印的耗材">
+    <div class="reuse-screen-frame">
+      <div class="reuse-stage" style="--reuse-ratio: 314 / 685">
+        <img src="../../原型修改复用图片资源/准备打印页选择耗材.png" alt="选择要打印的耗材弹层，料架蓝色耗材已选中并带绿色勾选">
+        <button id="prepare-material-confirm" class="reuse-hotspot reuse-hotspot--material-confirm" type="button" aria-label="确定，返回准备打印页"></button>
+        <button id="prepare-material-close" class="reuse-hotspot reuse-hotspot--sheet-close" type="button" aria-label="关闭耗材弹层，返回准备打印页"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 准备打印 · 无耗材（复用 准备打印页无耗材.png）：点中央料架进入选择耗材页 -->
+  <section id="prepare-empty-screen" class="reuse-screen" hidden tabindex="-1" aria-label="耗材不匹配提示">
+    <div class="reuse-screen-frame">
+      <div class="reuse-stage" style="--reuse-ratio: 308 / 680">
+        <img src="../../原型修改复用图片资源/准备打印页无耗材.png" alt="选择要打印的耗材弹层，提示颜色差异会导致耗材不匹配，确定按钮为不可用状态">
+        <button id="prepare-empty-spool" class="reuse-hotspot reuse-hotspot--empty-spool" type="button" aria-label="选择料架，进入选择要打印的耗材"></button>
+        <button id="prepare-empty-close" class="reuse-hotspot reuse-hotspot--sheet-close" type="button" aria-label="关闭耗材弹层，返回准备打印页"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 固件升级（复用 固件升级.png）：底部“立即升级” → 确认弹窗 → 升级进度 → 更新完成 -->
+  <section id="firmware-upgrade-screen" class="reuse-screen" hidden tabindex="-1" aria-label="固件升级">
+    <div class="reuse-screen-frame">
+      <div class="reuse-stage" style="--reuse-ratio: 375 / 812">
+        <img src="assets/固件升级页.png" alt="固件升级页，包含当前版本 2.01_7.0.9、最新版本 2.02、更新说明与立即升级按钮">
+        <button id="firmware-upgrade-now" class="reuse-hotspot reuse-hotspot--firmware-upgrade" type="button" aria-label="立即升级"></button>
+      </div>
+    </div>
+    <button id="firmware-upgrade-back" class="reuse-screen-back" type="button" aria-label="返回设备设置"></button>
+  </section>
+
+  <!-- 固件版本（复用 固件版本.png）：当前已是最新版本的纯信息页 -->
+  <section id="firmware-version-screen" class="reuse-screen" hidden tabindex="-1" aria-label="固件版本">
+    <div class="reuse-screen-frame">
+      <div class="reuse-stage" style="--reuse-ratio: 375 / 812">
+        <img src="assets/固件版本页.png" alt="固件版本页，显示当前版本 2.01_7.0.9、当前已是最新版本与查看更多说明">
+      </div>
+    </div>
+    <button id="firmware-version-back" class="reuse-screen-back" type="button" aria-label="返回设备设置"></button>
+  </section>
+
+  <!-- 固件升级打印页（复用 固件升级打印页.png）：盖住原图烘焙的 50%，用真实的 0→100% 白字进度模拟 -->
+  <section id="firmware-progress-screen" class="reuse-screen" hidden tabindex="-1" aria-label="固件更新中">
+    <div class="reuse-screen-frame">
+      <div class="reuse-stage" style="--reuse-ratio: 375 / 812">
+        <img src="assets/固件升级打印页.png" alt="打印机打印页，任务面板显示固件更新中与圆形进度">
+        <span class="firmware-progress-disc" aria-hidden="true"></span>
+        <span id="firmware-progress-percent" class="firmware-progress-percent" role="progressbar" aria-label="固件更新进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">0%</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 更新完成（复用 更新完成.png）：点“我知道了”回到打印页首页 -->
+  <section id="firmware-done-screen" class="reuse-screen" hidden tabindex="-1" aria-label="固件更新完成">
+    <div class="reuse-screen-frame">
+      <div class="reuse-stage" style="--reuse-ratio: 375 / 812">
+        <img src="assets/更新完成页.png" alt="打印机打印页上的更新成功弹窗，包含绿色对勾、更新成功文案与我知道了按钮">
+        <button id="firmware-done-ok" class="reuse-hotspot reuse-hotspot--firmware-done" type="button" aria-label="我知道了，返回打印机页面"></button>
+      </div>
+    </div>
+  </section>
+
+  <section id="reference-screen" class="reference-screen" hidden aria-label="打印任务详情页">
+    <div class="reference-toolbar"><button id="reference-back" type="button" aria-label="返回打印机设备页">‹</button><strong id="reference-title">准备打印</strong><span></span></div>
+    <div id="reference-content" class="reference-content">
+      <img id="reference-image" src="" alt="">
+    </div>
+  </section>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- 设备框内的细滚动指示条：不占布局宽度，只在内容超出 812 高时滚动出现 -->
+  <div id="scroll-indicator" class="scroll-indicator" hidden aria-hidden="true"><span></span></div>
+
+  <dialog id="action-dialog" class="app-dialog">
+    <form method="dialog">
+      <button id="dialog-close" class="app-dialog-close" type="button" aria-label="关闭弹窗">×</button>
+      <h2 id="dialog-title">是否要取消任务</h2>
+      <p id="dialog-copy"></p>
+      <div class="dialog-actions">
+        <button id="dialog-dismiss" value="cancel" data-tone="danger-ghost">取消当前任务</button>
+        <button id="dialog-confirm" value="confirm" data-tone="danger">取消全部任务</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- 暂停中 / 继续打印中 / 取消中 过渡弹窗：遮罩 + 蓝色小人 + 文案 + 右上角关闭，可关闭弹窗等待指令执行完成 -->
+  <div id="transition-overlay" class="transition-overlay" role="alertdialog" aria-modal="true" aria-labelledby="transition-label" hidden>
+    <div class="transition-card">
+      <button id="transition-close" class="transition-close" type="button" aria-label="关闭弹窗">×</button>
+      <img class="transition-mascot" src="assets/过渡-蓝色小人.png" alt="">
+      <p id="transition-label" class="transition-label">暂停中...</p>
+    </div>
+  </div>
+
+  <!-- 进料中 / 退料中：点「取消」中止进程前的二次确认 -->
+  <dialog id="filament-cancel-dialog" class="app-dialog">
+    <form method="dialog">
+      <button id="filament-cancel-close" class="app-dialog-close" type="button" aria-label="关闭弹窗">×</button>
+      <h2 id="filament-cancel-title">取消进料？</h2>
+      <p id="filament-cancel-copy"></p>
+      <div class="dialog-actions">
+        <button id="filament-cancel-dismiss" value="cancel" data-tone="outline">继续进料</button>
+        <button id="filament-cancel-confirm" value="confirm" data-tone="danger">取消进料</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="firmware-dialog" class="app-dialog app-dialog--firmware">
+    <form method="dialog">
+      <h2 id="firmware-dialog-title">最新版本：2.02，是否确认升级</h2>
+      <p id="firmware-dialog-copy">升级过程中请保持打印机通电，不要断电或退出。</p>
+      <div class="dialog-actions">
+        <button id="firmware-dialog-cancel" value="cancel" data-tone="outline">取消</button>
+        <button id="firmware-dialog-confirm" value="confirm" data-tone="upgrade">确认升级</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="share-code-pool.js?v=r008"></script>
+  <!-- 3D 预览页逻辑；three.js 与内嵌模型数据（base64 STL，约 1.2 MB，绕开 file:// 的 CORS 限制）
+       由它在第一次打开预览页时才按需加载，不拖慢打印页面首屏 -->
+  <script src="prototype-3d-preview.js?v=r008"></script>
+  <script src="prototype.js?v=r011"></script>
+</body>
+</html>

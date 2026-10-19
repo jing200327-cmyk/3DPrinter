@@ -1,0 +1,81 @@
+{
+  "version": "1.1.0",
+  "sourceOfTruth": {
+    "figma": "https://www.figma.com/design/HIdwhID3ssLIIE8P0rgTut/Untitled",
+    "designTokens": "./tokens/tokens.json"
+  },
+  "components": {
+    "Button": {
+      "figmaComponent": "AI/Button",
+      "codeComponent": "@/components/ui/button",
+      "registryItem": "button",
+      "localReference": "./components/button/button.tsx",
+      "variants": {
+        "Primary": "variant=default; intent=primaryGradient",
+        "Secondary": "variant=secondary",
+        "Outline": "variant=outline",
+        "Ghost": "variant=ghost",
+        "Loading": "variant=default; state=loading; disabled=true",
+        "Disabled": "variant=default; disabled=true",
+        "Destructive": "variant=destructive"
+      }
+    },
+    "Dialog": {
+      "figmaComponent": "AI/Dialog",
+      "codeComponent": "@/components/ui/dialog",
+      "registryItem": "dialog",
+      "localReference": "./components/dialog/dialog.tsx",
+      "slots": {
+        "Trigger": "DialogTrigger",
+        "Content": "DialogContent",
+        "Title": "DialogTitle",
+        "Description": "DialogDescription",
+        "Actions": "DialogFooter"
+      },
+      "variants": {
+        "Default": "Dialog + DialogContent",
+        "Alert": "@/components/ui/alert-dialog",
+        "Confirmation": "Dialog + DialogFooter + Button variant=outline + Button variant=default"
+      }
+    },
+    "Card": {
+      "figmaComponent": "AI/Card",
+      "codeComponent": "@/components/ui/card",
+      "registryItem": "card",
+      "availability": "official-registry-only",
+      "variants": {
+        "Default": "Card",
+        "Interactive": "Card + Button or Link composition; no custom clickable-card component"
+      }
+    },
+    "Input": {
+      "figmaComponent": "AI/Input",
+      "codeComponent": "@/components/ui/input",
+      "registryItem": "input",
+      "availability": "official-registry-only",
+      "variants": {
+        "Text": "Input",
+        "Search": "Input + Button variant=ghost size=icon composition",
+        "Select": "@/components/ui/select; registryItem=select"
+      }
+    },
+    "Toast": {
+      "figmaComponent": "AI/Toast",
+      "codeComponent": "@/components/ui/sonner",
+      "registryItem": "sonner",
+      "availability": "official-registry-only"
+    },
+    "Badge": {
+      "figmaComponent": "AI/Badge",
+      "codeComponent": "@/components/ui/badge",
+      "registryItem": "badge",
+      "availability": "official-registry-only"
+    },
+    "Progress": {
+      "figmaComponent": "AI/Progress",
+      "codeComponent": "@/components/ui/progress",
+      "registryItem": "progress",
+      "availability": "official-registry-only"
+    }
+  }
+}

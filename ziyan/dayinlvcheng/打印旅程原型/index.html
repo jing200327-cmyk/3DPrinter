@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f3f4f8">
+  <title>自研款打印机打印旅程原型</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="phone-shell" aria-label="自研款 3D 打印机打印旅程">
+    <section id="screen-model" class="journey-screen model-screen is-active" data-screen="model" aria-label="模型详情">
+      <img id="model-reference" src="../../src/dayinji/模型详情页.jpg" alt="愤怒的史蒂夫模型详情页">
+      <button id="print-now" class="image-hotspot print-now-hotspot" type="button" aria-label="立即打印愤怒的史蒂夫"></button>
+    </section>
+
+    <section id="screen-settings" class="journey-screen settings-screen" data-screen="settings" data-job-status="idle" hidden aria-labelledby="settings-title">
+      <header class="settings-header">
+        <button id="settings-back" type="button" aria-label="返回上一页">‹</button>
+        <h1 id="settings-title" tabindex="-1">准备打印</h1>
+        <span aria-hidden="true">♧</span>
+      </header>
+      <p id="printing-notice" class="printing-notice" role="status" hidden>打印机正在打印</p>
+
+      <div class="settings-content">
+        <section class="settings-card plate-section" aria-labelledby="plate-title">
+          <h2 id="plate-title">选择要打印的盘</h2>
+          <div id="plate-carousel" class="plate-carousel" role="listbox" aria-label="选择要打印的盘">
+            <button class="plate-card is-selected" type="button" data-plate="1" role="option" aria-selected="true">
+              <span class="plate-number">1</span>
+              <span class="plate-status-tag" aria-live="polite"></span>
+              <img src="../../src/dayinji/选中要打印的盘1.jpg" alt="盘 1，史蒂夫 01，打印约 5 小时 15 分钟，耗材 62 克">
+            </button>
+            <button class="plate-card" type="button" data-plate="2" role="option" aria-selected="false">
+              <span class="plate-number">2</span>
+              <span class="plate-status-tag" aria-live="polite"></span>
+              <img src="../../src/dayinji/选择要打印的盘2（修改）.jpg" alt="盘 2，史蒂夫 02，打印约 3 小时 48 分钟，耗材 50 克">
+            </button>
+            <button class="plate-card" type="button" data-plate="3" role="option" aria-selected="false">
+              <span class="plate-number">3</span>
+              <span class="plate-status-tag" aria-live="polite"></span>
+              <img src="../../src/dayinji/选择要打印的盘3.jpg" alt="盘 3，史蒂夫 03，打印约 1 小时 35 分钟，耗材 20 克">
+            </button>
+          </div>
+          <h3 id="part-title">选择要打印的零件</h3>
+          <div class="part-selection" aria-label="已选择要打印的零件"><span><strong>1</strong>/1</span> 已选</div>
+        </section>
+
+        <section class="settings-card material-section" aria-labelledby="material-title">
+          <h2 id="material-title">匹配我的耗材</h2>
+          <div class="model-preview">
+            <img id="selected-model-image" src="../../src/dayinji/选中要打印的盘1.jpg" alt="当前选择盘 1 的模型">
+            <button id="open-preview" type="button">预览</button>
+          </div>
+
+          <fieldset class="feed-source-options">
+            <legend class="sr-only">选择耗材来源</legend>
+            <label class="source-option is-selected"><input type="radio" name="feed-source" value="cfs" checked><span>启用 CFS lite</span></label>
+            <label class="source-option"><input type="radio" name="feed-source" value="external"><span>使用外挂料盘</span></label>
+          </fieldset>
+
+          <button id="open-filament-picker" class="filament-choice" type="button" aria-haspopup="dialog">
+            <span id="filament-swatch" class="filament-swatch is-blue" aria-hidden="true"></span>
+            <span><strong id="filament-slot-number">4</strong><small id="filament-label">PLA · 蓝色</small></span>
+            <span class="choice-arrow" aria-hidden="true">›</span>
+          </button>
+        </section>
+
+        <section class="settings-reference-card" aria-label="打印份数、打印校准与延时摄影">
+          <img src="../../src/dayinji/打印份数和打印校准及延时摄影.jpg" alt="打印份数、打印校准与延时摄影参考面板">
+          <button id="copy-minus" class="reference-control copy-minus" type="button" aria-label="减少打印份数"></button>
+          <output id="copy-count" aria-live="polite">1</output>
+          <button id="copy-plus" class="reference-control copy-plus" type="button" aria-label="增加打印份数"></button>
+          <button id="print-calibration" class="option-control calibration-control is-selected" type="button" aria-pressed="true"><span aria-hidden="true">✓</span><span class="sr-only">打印校准</span></button>
+          <button id="timelapse" class="option-control timelapse-control is-selected" type="button" aria-pressed="true"><span aria-hidden="true">✓</span><span class="sr-only">延时摄影</span></button>
+          <button id="start-print" class="image-hotspot start-print-hotspot" type="button" aria-label="开始打印"></button>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="filament-picker" class="filament-dialog" aria-labelledby="filament-picker-title">
+    <div class="filament-picker-frame">
+      <h2 id="filament-picker-title" class="sr-only">选择 CFS lite 仓内耗材</h2>
+      <img src="../../src/dayinji/选择仓内耗材.jpg" alt="CFS lite 仓内耗材：1 黑色，2 灰色，3 无耗材，4 蓝色">
+      <button id="close-filament-picker" class="picker-close image-hotspot" type="button" aria-label="关闭仓内耗材选择"></button>
+      <div class="picker-options" role="radiogroup" aria-label="仓内耗材">
+        <button type="button" data-filament-slot="1" data-color="black" data-label="PLA · 黑色" role="radio" aria-checked="false" aria-label="选择 1 号仓黑色 PLA"></button>
+        <button type="button" data-filament-slot="2" data-color="gray" data-label="PLA · 灰色" role="radio" aria-checked="false" aria-label="选择 2 号仓灰色 PLA"></button>
+        <button type="button" data-filament-slot="3" role="radio" aria-checked="false" aria-label="3 号仓无耗材，不可选择" disabled></button>
+        <button class="is-selected" type="button" data-filament-slot="4" data-color="blue" data-label="PLA · 蓝色" role="radio" aria-checked="true" aria-label="选择 4 号仓蓝色 PLA"></button>
+      </div>
+      <button id="confirm-filament" class="image-hotspot picker-confirm" type="button" aria-label="确认仓内耗材选择"></button>
+    </div>
+  </dialog>
+
+  <dialog id="upload-dialog" class="upload-dialog" aria-labelledby="upload-title">
+    <div class="upload-spinner" aria-hidden="true"></div>
+    <h2 id="upload-title">正在上传打印任务</h2>
+    <p><span id="upload-percent">0%</span> · 请保持应用开启</p>
+    <div id="upload-progress" class="upload-progress" role="progressbar" aria-label="打印任务上传进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="prototype.js"></script>
+</body>
+</html>

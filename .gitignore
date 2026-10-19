@@ -1,0 +1,29 @@
+# ===== WorkBuddy 内部状态（个人/项目记忆，非项目源码） =====
+.workbuddy/
+
+# ===== 无头浏览器测试缓存（自动再生，约 840MB） =====
+_verify/
+**/chrome-*/
+**/GPUCache/
+**/WasmTtsEngine/
+**/Code Cache/
+**/Service Worker/
+
+# ===== 发布构建副本 / 部署产物 =====
+_publish-*/
+_publish-prototypes*/
+_publish-r002-v11/
+
+# ===== 飞书文档同步脚本的缓存（XML/JSON/HTML/TXT/PY） =====
+_r_*.xml
+_r_*.json
+_r_*.html
+_r_*.txt
+_r_*.py
+_r_media/
+_r_media_tokens.json
+
+# ===== 仓库根目录调试截图 =====
+_dbg_*.png
+_prev_assets.png
+_lj_doc_shots/

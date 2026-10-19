@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f5fa">
+  <title>自研款打印机打印页面原型</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="device-page" class="phone-shell" aria-label="自研款 3D 打印机设备页">
+    <header class="printer-header" aria-label="打印机连接状态">
+      <div class="source-crop source-crop--header" aria-hidden="true">
+        <img src="../../ugee/Ugee打印机页面原型/assets/ugee-page-1.jpg" alt="">
+      </div>
+      <div id="printer-connection-state" class="printer-connection-state" data-connection-status="idle" role="status" aria-live="polite">
+        <img id="printer-connection-state-image" src="../../src/lianjiezhuangtai/空闲.png" data-idle-src="../../src/lianjiezhuangtai/空闲.png" data-offline-src="../../src/lianjiezhuangtai/离线.png" alt="空闲状态">
+        <span id="printer-connection-state-label" class="sr-only">空闲</span>
+      </div>
+      <button id="printer-switch" class="hotspot hotspot--switch" type="button" aria-label="切换或添加打印机"></button>
+      <button id="printer-settings" class="hotspot hotspot--settings" type="button" aria-label="打开设备设置"></button>
+    </header>
+
+    <div class="page-content">
+      <section id="timelapse-placeholder" class="source-crop source-crop--timelapse" data-camera-state="on" aria-label="摄像头实时监控模块">
+        <img id="camera-monitor-image" src="../../src/shexiangtou/空闲延时摄影.jpg" data-off-src="../../src/shexiangtou/关闭摄像头状态.jpg" alt="打印机摄像头实时监控画面">
+        <button id="timelapse-action" class="timelapse-action" type="button" aria-label="延时摄影，暂未开放">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h10.5v13H4zM14.5 9l5-2.5v11L14.5 15zM8.5 8.5l4 3.5-4 3.5z"/></svg><span>延时摄影</span><span class="timelapse-chevron" aria-hidden="true"></span>
+        </button>
+        <button id="camera-toggle" class="camera-toggle" type="button" aria-label="关闭摄像头" aria-pressed="true"></button>
+      </section>
+
+      <section id="task-panel" class="task-panel" data-status="ready" aria-labelledby="task-title">
+        <div class="task-status" role="status" aria-live="polite">
+          <span class="status-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+          <span id="task-state">可打印</span>
+        </div>
+
+        <div id="task-navigation" class="task-navigation" aria-label="任务导航区">
+          <p id="ready-queue-message">当前打印机处于空闲状态，可以开始打印队列中的任务啦。</p>
+          <button id="start-queued-print" class="start-queued-print" type="button">开始打印</button>
+        </div>
+
+        <div class="task-summary" hidden>
+          <div id="active-task-owner-card" class="model-crop owner-task-card owner-task-card--boy" data-owner="boy">
+            <img id="active-task-image" src="../../src/dayinji/选中要打印的盘1.jpg" alt="正在打印的史蒂夫 01 模型">
+            <img id="active-task-owner-avatar" class="task-owner-avatar" src="../../src/dayinjirenwukongzhi/人物头像-男孩.png" alt="男孩发起的任务">
+          </div>
+          <div class="task-copy">
+            <h1 id="task-title" class="sr-only">史蒂夫_01_012214</h1>
+            <p class="task-meta sr-only">5 h 15 min · PLA · 62 g</p>
+            <div class="progress-head">
+              <span id="progress-state">准备打印</span>
+              <strong id="task-percent" hidden>0%</strong>
+            </div>
+            <div class="time-line">
+              <strong id="remaining-time" hidden>05:15:00</strong>
+              <button id="finish-now" class="finish-now" type="button" title="演示打印完成" aria-label="一键完成打印演示" hidden>完成</button>
+            </div>
+            <div id="preparation-progress" class="preparation-progress" role="status" aria-live="polite">
+              <span id="preparation-spinner" class="preparation-spinner" aria-hidden="true"></span>
+              <span class="preparation-copy">
+                <span id="preparation-label">正在分析模型</span>
+                <strong id="preparation-percent">0%</strong>
+              </span>
+            </div>
+            <div id="task-progress" class="progress-track" role="progressbar" aria-label="打印进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden>
+              <span></span>
+            </div>
+          </div>
+        </div>
+
+        <div id="task-actions" class="task-actions" aria-label="打印任务操作">
+          <button id="pause-print" class="outline-action outline-action--pause" type="button" hidden>
+            <span class="action-icon action-icon--pause" aria-hidden="true"></span><span>暂停</span>
+          </button>
+          <button id="cancel-print" class="outline-action outline-action--cancel" type="button">
+            <span class="action-icon action-icon--cancel" aria-hidden="true">×</span><span>取消</span>
+          </button>
+        </div>
+
+        <div id="completion-actions" class="completion-actions" hidden aria-label="打印完成操作">
+          <button id="restart-print" type="button"><span class="repeat-icon" aria-hidden="true">↻</span><span>重新打印</span></button>
+          <button id="next-plate" type="button" aria-label="探索玩具"><span class="next-icon" aria-hidden="true">▶|</span><span id="next-plate-label">探索玩具</span></button>
+          <button id="local-file" class="local-file-action" type="button" aria-label="本地文件" hidden><img src="../../src/dayinji/本地文件.jpg" alt=""></button>
+        </div>
+
+        <button id="queue-toggle" class="queue-toggle" type="button" aria-expanded="false" aria-controls="print-queue" hidden>
+          <span><strong>打印队列</strong><small>2 个待打印任务</small></span>
+          <span class="chevron" aria-hidden="true"></span>
+        </button>
+        <div id="print-queue" class="print-queue" hidden>
+          <div class="queue-list">
+            <button id="queued-task" class="queue-item owner-task-card owner-task-card--boy" type="button" data-queue-task="1" data-plate="2" data-owner="boy" aria-label="男孩发起的盘 2，打开打印设置">
+              <img id="queue-task-image-one" class="queue-task-artwork" src="../../src/dayinji/打印队列2.jpg" alt="盘 2，等待打印">
+              <img id="queue-task-owner-avatar-one" class="task-owner-avatar" src="../../src/dayinjirenwukongzhi/人物头像-男孩.png" alt="" aria-hidden="true">
+            </button>
+            <button id="queued-task-second" class="queue-item owner-task-card owner-task-card--boy" type="button" data-queue-task="2" data-plate="3" data-owner="boy" aria-label="男孩发起的盘 3，打开打印设置">
+              <img id="queue-task-image-two" class="queue-task-artwork" src="../../src/dayinji/打印队列3.jpg" alt="盘 3，等待打印">
+              <img id="queue-task-owner-avatar-two" class="task-owner-avatar" src="../../src/dayinjirenwukongzhi/人物头像-男孩.png" alt="" aria-hidden="true">
+            </button>
+            <button id="queued-girl-task-one" class="queue-item owner-task-card owner-task-card--girl" type="button" data-queue-task="3" data-task="girl-1" data-owner="girl" aria-label="女孩发起的待打印任务 1，打开打印设置">
+              <img id="queue-task-image-girl-one" class="queue-task-artwork" src="../../src/dayinjirenwukongzhi/女孩的待打印任务__1.jpg" alt="女孩的待打印任务 1">
+              <img id="queue-task-owner-avatar-girl-one" class="task-owner-avatar" src="../../src/dayinjirenwukongzhi/人物头像-女孩.png" alt="" aria-hidden="true">
+            </button>
+            <button id="queued-girl-task-two" class="queue-item owner-task-card owner-task-card--girl" type="button" data-queue-task="4" data-task="girl-2" data-owner="girl" aria-label="女孩发起的待打印任务 2，打开打印设置">
+              <img id="queue-task-image-girl-two" class="queue-task-artwork" src="../../src/dayinjirenwukongzhi/女孩的待打印任务_2.jpg" alt="女孩的待打印任务 2">
+              <img id="queue-task-owner-avatar-girl-two" class="task-owner-avatar" src="../../src/dayinjirenwukongzhi/人物头像-女孩.png" alt="" aria-hidden="true">
+            </button>
+            <button id="queued-task-fifth" class="queue-item owner-task-card owner-task-card--boy" type="button" data-queue-task="5" hidden>
+              <img id="queue-task-image-five" class="queue-task-artwork" alt="">
+              <img id="queue-task-owner-avatar-five" class="task-owner-avatar" src="../../src/dayinjirenwukongzhi/人物头像-男孩.png" alt="" aria-hidden="true">
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="filament-panel" aria-label="耗材控制面板">
+        <div class="filament-panel-frame">
+          <div class="filament-panel-canvas">
+            <img id="filament-panel-image" src="../../src/dayinjihaocai/耗材面板.png" alt="Food 耗材面板，包含左侧 Tray、四个 Box 槽位及 Load、Unload 按钮">
+            <span id="filament-pointer" class="filament-pointer" data-slot-index="4" aria-hidden="true"></span>
+            <div class="filament-slot-hotspots" role="group" aria-label="选择 Tray 或 Food Box 槽位">
+              <button class="filament-slot-hotspot filament-slot-hotspot--rack" type="button" data-slot-index="rack" aria-label="Tray 外置料盘" aria-pressed="false"></button>
+              <button class="filament-slot-hotspot" type="button" data-slot-index="1" aria-label="Food Box 1 黑色料槽" aria-pressed="false"></button>
+              <button class="filament-slot-hotspot" type="button" data-slot-index="2" aria-label="Food Box 2 灰色料槽" aria-pressed="false"></button>
+              <button class="filament-slot-hotspot" type="button" data-slot-index="3" aria-label="Food Box 3 白色料槽" aria-pressed="false"></button>
+              <button class="filament-slot-hotspot is-selected" type="button" data-slot-index="4" aria-label="Food Box 4 蓝色料槽，已选择" aria-pressed="true"></button>
+            </div>
+            <button id="load-filament" class="filament-action-hotspot filament-action-hotspot--load" type="button" aria-label="Load，进料"></button>
+            <button id="unload-filament" class="filament-action-hotspot filament-action-hotspot--unload" type="button" aria-label="Unload，退料"></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="controls-section" aria-labelledby="controls-title">
+        <div class="section-heading section-heading--outside">
+          <h2 id="controls-title">控制</h2>
+          <button id="control-settings" class="icon-settings" type="button" aria-label="打开打印机控制设置">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.7a3.3 3.3 0 1 0 0 6.6 3.3 3.3 0 0 0 0-6.6Z"/><path d="m19 13.1 1.4 1-.4 1.3-1.8.1c-.3.5-.6 1-1.1 1.4l.4 1.7-1.2.7-1.3-1.2c-.6.2-1.2.3-1.8.3l-.9 1.6H11l-.8-1.6c-.6-.1-1.2-.2-1.8-.5L7 19l-1.1-.8.5-1.7c-.4-.4-.8-.9-1-1.5l-1.8-.2-.3-1.3 1.5-1c-.1-.6 0-1.2.1-1.8l-1.3-1.2.6-1.2 1.8.3c.3-.5.8-.9 1.3-1.3L7.1 5.5l1.2-.6 1.2 1.4c.6-.2 1.2-.3 1.8-.3l.9-1.5h1.3l.8 1.6c.6.1 1.2.3 1.7.6l1.4-1 1 .8-.5 1.7c.4.5.7 1 1 1.6l1.7.2.3 1.3-1.5 1c.1.3.1.5.1.8Z"/></svg>
+          </button>
+        </div>
+        <div id="control-carousel" class="control-carousel" role="region" aria-label="打印机控制菜单，可左右拖动">
+          <div class="control-track">
+            <article class="control-item" data-control="cabin-light">
+              <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="7" width="34" height="34" rx="9"/><path d="M18 22a6 6 0 1 1 12 0c0 3-2 4-3 6h-6c-1-2-3-3-3-6Zm4 10h4M24 11v3m-10 3 3 2m17-2-3 2"/></svg>
+              <strong>舱内灯</strong><button class="switch is-on" type="button" aria-label="关闭舱内灯" aria-pressed="true"><span></span></button>
+            </article>
+            <article class="control-item" data-control="outer-light">
+              <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="9" y="14" width="30" height="28" rx="7"/><path d="M18 10V7m6 3V6m6 4V7M20 34h8"/></svg>
+              <strong>舱外灯</strong><button class="switch is-on" type="button" aria-label="关闭舱外灯" aria-pressed="true"><span></span></button>
+            </article>
+            <article class="control-item" data-control="fan">
+              <svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="4"/><path d="M24 20c-3-8 1-13 6-12 5 2 4 9-2 14M28 24c8-3 13 1 12 6-2 5-9 4-14-2M24 28c3 8-1 13-6 12-5-2-4-9 2-14M20 24c-8 3-13-1-12-6 2-5 9-4 14 2"/></svg>
+              <strong>风扇</strong><button class="switch is-on" type="button" aria-label="关闭风扇" aria-pressed="true"><span></span></button>
+            </article>
+            <article class="control-item" data-control="sound">
+              <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 20h8l9-8v24l-9-8h-8zM32 19c3 3 3 7 0 10m4-14c6 5 6 13 0 18"/></svg>
+              <strong>提示音</strong><button class="switch is-on" type="button" aria-label="关闭提示音" aria-pressed="true"><span></span></button>
+            </article>
+          </div>
+        </div>
+        <div class="carousel-dots" aria-hidden="true"><span class="is-active"></span><span></span></div>
+      </section>
+    </div>
+
+    <nav class="bottom-nav" aria-label="主导航">
+      <div class="source-crop source-crop--nav" aria-hidden="true"><img src="../../ugee/Ugee打印机页面原型/assets/ugee-page-2.jpg" alt=""></div>
+    </nav>
+  </main>
+
+  <section id="filament-operation-screen" class="filament-operation-screen" data-operation="feed" hidden tabindex="-1" aria-label="耗材操作进度页">
+    <div class="filament-operation-frame">
+      <img id="filament-operation-image" src="" alt="">
+      <button id="close-filament-operation" class="filament-operation-hotspot close-filament-operation" type="button" aria-label="关闭耗材操作"></button>
+      <button id="cancel-filament-operation" class="filament-operation-hotspot cancel-filament-operation" type="button" aria-label="取消耗材操作"></button>
+    </div>
+  </section>
+
+  <section id="reference-screen" class="reference-screen" hidden aria-label="打印任务详情页">
+    <div class="reference-toolbar"><button id="reference-back" type="button" aria-label="返回打印机设备页">‹</button><strong id="reference-title">准备打印</strong><span></span></div>
+    <div id="reference-content" class="reference-content">
+      <img id="reference-image" src="" alt="">
+      <button id="explore-journey-hotspot" class="explore-journey-hotspot" type="button" aria-label="打开打印旅程" hidden></button>
+    </div>
+  </section>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <dialog id="action-dialog" class="app-dialog">
+    <form method="dialog">
+      <h2 id="dialog-title">确认操作</h2><p id="dialog-copy"></p>
+      <div class="dialog-actions"><button id="dialog-dismiss" value="cancel">暂不</button><button id="dialog-confirm" value="confirm">确认</button></div>
+    </form>
+  </dialog>
+
+  <script src="prototype.js"></script>
+</body>
+</html>

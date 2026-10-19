@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>R001 模型编辑与切片 · 核心操作流程</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#fff}
+  body{
+    width:1720px;padding:36px 40px 30px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    color:#0f172a; -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- 页头 ---------- */
+  .head{display:flex;align-items:flex-end;gap:22px;padding-bottom:16px;border-bottom:3px solid #1d4ed8}
+  .head h1{font-size:31px;font-weight:800;letter-spacing:-.6px;line-height:1.15}
+  .head h1 em{font-style:normal;color:#1d4ed8}
+  .head .meta{margin-left:auto;text-align:right;font-size:12.5px;color:#64748b;line-height:1.85}
+  .head .meta b{color:#0f172a}
+  .pill{display:inline-block;padding:2px 9px;border-radius:99px;background:#eff6ff;color:#1d4ed8;font-weight:700;font-size:11.5px}
+
+  /* ---------- 区块 ---------- */
+  .zone{margin-top:22px}
+  .zone-hd{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .zone-no{
+    flex:0 0 auto;width:26px;height:26px;border-radius:8px;background:#1d4ed8;color:#fff;
+    font-size:14px;font-weight:800;display:grid;place-items:center
+  }
+  .zone-t{font-size:17px;font-weight:800;letter-spacing:-.2px}
+  .zone-s{font-size:11.5px;color:#94a3b8}
+  .zone-hd::after{content:"";flex:1;height:1px;background:#e2e8f0}
+
+  .zone--blue .zone-no{background:#1d4ed8}
+  .zone--teal .zone-no{background:#0d9488}
+  .zone--violet .zone-no{background:#7c3aed}
+  .zone--amber .zone-no{background:#d97706}
+
+  /* ---------- 通用卡片 ---------- */
+  .card{
+    background:#fff;border:1.5px solid #dbe4f5;border-radius:13px;
+    padding:9px 11px;box-shadow:0 2px 6px rgba(29,78,216,.05)
+  }
+  .card__t{font-size:12.5px;font-weight:700;line-height:1.35}
+  .card__d{font-size:10px;color:#64748b;line-height:1.5;margin-top:3px}
+  .card__tag{
+    display:inline-block;margin-top:5px;padding:1px 6px;border-radius:5px;
+    font-size:9px;font-weight:700;letter-spacing:.2px
+  }
+
+  .c-blue{background:#f5f9ff;border-color:#c7dbfb}
+  .c-blue .card__t{color:#1d4ed8}
+  .c-blue .card__tag{background:#dbeafe;color:#1d4ed8}
+
+  .c-teal{background:#f3fdfb;border-color:#b6ece4}
+  .c-teal .card__t{color:#0f766e}
+  .c-teal .card__tag{background:#ccfbf1;color:#0f766e}
+
+  .c-violet{background:#faf7ff;border-color:#ddd0f8}
+  .c-violet .card__t{color:#6d28d9}
+  .c-violet .card__tag{background:#ede9fe;color:#6d28d9}
+
+  .c-amber{background:#fffbf2;border-color:#f8dcae}
+  .c-amber .card__t{color:#b45309}
+  .c-amber .card__tag{background:#fef3c7;color:#b45309}
+
+  .c-red{background:#fff6f6;border-color:#f9cdcd}
+  .c-red .card__t{color:#b91c1c}
+  .c-red .card__tag{background:#fee2e2;color:#b91c1c}
+
+  /* ---------- 箭头 ---------- */
+  .arw{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0 2px}
+  .arw__lb{font-size:9.5px;color:#2563eb;white-space:nowrap;font-weight:600}
+  .arw__ln{position:relative;width:26px;border-top:2px solid #93c5fd}
+  .arw__ln::after{
+    content:"";position:absolute;right:-1px;top:-5.5px;
+    border-left:8px solid #93c5fd;border-top:5.5px solid transparent;border-bottom:5.5px solid transparent
+  }
+  .arw--down{flex-direction:row}
+  .arw--down .arw__ln{width:2px;height:26px;border-top:0;border-left:2px solid #93c5fd}
+  .arw--down .arw__ln::after{
+    right:-5px;top:auto;bottom:-1px;
+    border-left:5.5px solid transparent;border-right:5.5px solid transparent;
+    border-top:8px solid #93c5fd;border-bottom:0
+  }
+
+  /* ---------- 手机缩略图节点 ---------- */
+  .phones{display:flex;align-items:flex-start;gap:0}
+  .pnode{flex:0 0 auto;width:158px;text-align:center}
+  .pnode img{
+    width:130px;height:auto;display:block;margin:0 auto;border-radius:12px;
+    box-shadow:0 6px 18px rgba(15,23,42,.16), 0 0 0 1px rgba(15,23,42,.06)
+  }
+  .pnode__t{margin-top:8px;font-size:12px;font-weight:700;color:#0f172a}
+  .pnode__d{margin-top:2px;font-size:9.5px;color:#94a3b8;line-height:1.45}
+
+  /* ---------- 步骤链 ---------- */
+  .chain{display:flex;align-items:stretch;gap:0}
+  .chain .card{flex:1 1 0;min-width:0;display:flex;flex-direction:column}
+  .chain .card__t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chain .arw{align-self:center}
+
+  /* ---------- 两栏 ---------- */
+  .cols{display:flex;gap:26px;align-items:flex-start}
+  .col{flex:1 1 0;min-width:0}
+  .col__hd{
+    display:flex;align-items:center;gap:7px;margin-bottom:11px;
+    padding:6px 11px;border-radius:9px;font-size:13.5px;font-weight:800
+  }
+  .col__hd span{font-size:10.5px;font-weight:600;opacity:.75;margin-left:auto}
+
+  /* ---------- 真实界面条 ---------- */
+  .shots{display:flex;gap:18px;margin-top:16px;align-items:stretch}
+  .shot{flex:0 0 auto;text-align:center}
+  .shot img{
+    width:118px;height:auto;display:block;margin:0 auto;border-radius:10px;
+    box-shadow:0 5px 15px rgba(15,23,42,.15), 0 0 0 1px rgba(15,23,42,.06)
+  }
+  .shot__t{margin-top:7px;font-size:10.5px;font-weight:700;color:#1d4ed8}
+  .shot__d{font-size:9px;color:#94a3b8;margin-top:1px;line-height:1.4}
+
+  .shotbox{
+    margin-top:12px;border:1.5px dashed #c7dbfb;border-radius:14px;background:#fbfdff;
+    padding:13px 14px 14px
+  }
+  .shotbox__hd{font-size:11px;font-weight:800;color:#1d4ed8;letter-spacing:.3px;margin-bottom:10px}
+
+  /* ---------- 异常 ---------- */
+  .errs{display:flex;gap:10px;flex-wrap:wrap}
+  .err{
+    flex:1 1 0;min-width:0;background:#fff6f6;border:1.5px solid #f9cdcd;border-radius:11px;
+    padding:8px 10px
+  }
+  .err__t{font-size:11px;font-weight:700;color:#b91c1c}
+  .err__d{font-size:9.5px;color:#a16262;margin-top:2px;line-height:1.45}
+
+  /* ---------- 图例 ---------- */
+  .legend{
+    margin-top:22px;padding-top:14px;border-top:1px solid #e2e8f0;
+    display:flex;align-items:center;gap:18px;font-size:10.5px;color:#64748b;flex-wrap:wrap
+  }
+  .lg{display:flex;align-items:center;gap:6px}
+  .lg i{width:13px;height:13px;border-radius:4px;border:1.5px solid}
+  .lg-b{background:#f5f9ff;border-color:#c7dbfb}
+  .lg-t{background:#f3fdfb;border-color:#b6ece4}
+  .lg-v{background:#faf7ff;border-color:#ddd0f8}
+  .lg-a{background:#fffbf2;border-color:#f8dcae}
+  .lg-r{background:#fff6f6;border-color:#f9cdcd}
+  .legend .sp{margin-left:auto;font-weight:700;color:#1d4ed8}
+</style>
+</head>
+<body>
+
+<!-- ===================== 页头 ===================== -->
+<div class="head">
+  <h1>3D 打印机 APP ｜ <em>模型编辑与切片</em> · 核心操作流程</h1>
+  <div class="meta">
+    <b>打印空间</b> 180 × 180 × 180 mm &nbsp;·&nbsp; <b>分盘上限</b> 8 盘<br>
+    入口：<span class="pill">模型详情页 · 底部左侧「打印设置」</span><br>
+    截图均来自真实可交互原型（同页右侧演示控制台为评审用，正式产品中不存在）
+  </div>
+</div>
+
+<!-- ===================== ① 入口链路 ===================== -->
+<div class="zone zone--blue">
+  <div class="zone-hd">
+    <span class="zone-no">1</span>
+    <span class="zone-t">入口链路</span>
+    <span class="zone-s">从模型详情页进入编辑，编辑完成后回到详情页；参数页可随时进入</span>
+  </div>
+  <div class="phones">
+    <div class="pnode">
+      <img src="./thumbs_s/entry.png" alt="模型详情页">
+      <div class="pnode__t">模型详情页</div>
+      <div class="pnode__d">流程起点<br>底部左侧「打印设置」为跳转热区</div>
+    </div>
+    <div class="arw" style="align-self:flex-start;margin-top:150px"><div class="arw__lb">打印设置</div><div class="arw__ln"></div></div>
+    <div class="pnode">
+      <img src="./thumbs_s/editor-1.png" alt="模型编辑页">
+      <div class="pnode__t">模型编辑页</div>
+      <div class="pnode__d">本模块主页面 · 单盘时不展示盘号控件</div>
+    </div>
+    <div class="arw" style="align-self:flex-start;margin-top:150px"><div class="arw__lb">更多</div><div class="arw__ln"></div></div>
+    <div class="pnode">
+      <img src="./thumbs_s/prepare-settings.png" alt="打印设置页">
+      <div class="pnode__t">打印设置页</div>
+      <div class="pnode__d">打印模式 / 底座 / 温度 / 填充 / 支撑</div>
+    </div>
+    <div class="arw" style="align-self:flex-start;margin-top:150px"><div class="arw__lb">去打印</div><div class="arw__ln"></div></div>
+    <div class="pnode">
+      <img src="./thumbs_s/prepare.png" alt="准备打印页">
+      <div class="pnode__t">准备打印页</div>
+      <div class="pnode__d">切片成功后的落点 · 整页复用设计稿</div>
+    </div>
+
+    <div class="shotbox" style="margin:0 0 0 26px;flex:1 1 auto">
+      <div class="shotbox__hd">导航规则</div>
+      <div class="card c-teal" style="margin-bottom:8px">
+        <div class="card__t">返回 = 保留编辑结果</div>
+        <div class="card__d">编辑页「返回」回模型详情页，当前编辑与参数修改默认保留，本期不做退出二次确认</div>
+      </div>
+      <div class="card c-teal" style="margin-bottom:8px">
+        <div class="card__t">参数修改 = 当前任务立即生效</div>
+        <div class="card__d">从打印设置页返回编辑页，保留已改参数、无需重新加载模型、3D 编辑状态不变</div>
+      </div>
+      <div class="card c-violet">
+        <div class="card__t">「退出」触发保存范围（顶部右侧「保存」已删除）</div>
+        <div class="card__d">点顶部左侧「退出」→ 保存范围弹窗（单选：仅用于当前模型 / 后续模型默认使用）。未选范围时底部为「取消」→ 返回打印设置页；<b>选中后变「确定」</b> → 保存并返回模型编辑页 + Toast「打印设置已保存」。右上角 × 关闭亦返回打印设置页</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ② 主线 A ===================== -->
+<div class="zone zone--blue">
+  <div class="zone-hd">
+    <span class="zone-no">2</span>
+    <span class="zone-t">主线 A · 编辑并打印（理想路径）</span>
+    <span class="zone-s">编辑操作 → 自动摆盘 → 可打印性校验 → 云切片 → 准备打印 → 保存切片</span>
+  </div>
+
+  <div class="chain">
+    <div class="card c-amber"><div class="card__t">自动摆盘智能优化</div><div class="card__d">进入编辑页前由系统自动完成：多文件模型在不超过打印空间的前提下，<b>同色模型文件合摆至同一盘</b>，压缩盘数（示例 10 个文件 → 5 盘）</div><div class="card__tag">无手动入口 · 仅 Toast 告知结果</div></div>
+    <div class="arw"><div class="arw__ln"></div></div>
+    <div class="card c-blue"><div class="card__t">选中零件</div><div class="card__d">点击零件进入选中态（橙色包围框），点空白取消。同一时间仅允许选中一个零件</div><div class="card__tag">未选中点按钮 → Toast</div></div>
+    <div class="arw"><div class="arw__ln"></div></div>
+    <div class="card c-blue"><div class="card__t">缩放</div><div class="card__d">面板：尺寸(mm) / 百分比(10–300%)、等比例、应用至所有盘的零件。实时生效，无需确定</div><div class="card__tag">默认只缩放选中的零件</div></div>
+    <div class="arw"><div class="arw__ln"></div></div>
+    <div class="card c-blue"><div class="card__t">复制</div><div class="card__d">副本继承尺寸 / 缩放比例 / 方向，默认进入选中态；优先在当前盘摆放</div><div class="card__tag">空间不足则不新建盘</div></div>
+    <div class="arw"><div class="arw__ln"></div></div>
+    <div class="card c-blue"><div class="card__t">删除</div><div class="card__d">常规删除不弹确认；<b>删任务最后一个零件时二次确认</b>，确认后任务自动移除、不可恢复。该盘无零件则回收空盘、盘号前移</div><div class="card__tag">取消 → 留在编辑页</div></div>
+    <div class="arw"><div class="arw__ln"></div></div>
+    <div class="card c-amber"><div class="card__t">自动摆盘</div><div class="card__d">缩放结束 / 复制 / 删除后触发，仅作用于当前盘。不越界、不碰撞、保留间距、尽量减少位置变化</div><div class="card__tag">静默完成，无动画</div></div>
+    <div class="arw"><div class="arw__ln"></div></div>
+    <div class="card c-amber"><div class="card__t">可打印性校验</div><div class="card__d">6 个时机触发：首次加载 / 切换盘 / 缩放 / 复制 / 删除 / 摆盘完成</div><div class="card__tag">越界 / 碰撞 → 红态</div></div>
+    <div class="arw"><div class="arw__ln"></div></div>
+    <div class="card c-teal"><div class="card__t">去打印</div><div class="card__d">5 个条件同时满足才可点，否则置灰并在按钮上方显示阻断原因</div><div class="card__tag">Loading 期禁止重复提交</div></div>
+    <div class="arw"><div class="arw__ln"></div></div>
+    <div class="card c-violet"><div class="card__t">云切片</div><div class="card__d">云端依次完成：合法性校验 → 自动支撑 → 切片 → 路径计算 → 时间估算 → 耗材估算</div><div class="card__tag">提示「正在生成打印方案」</div></div>
+    <div class="arw"><div class="arw__ln"></div></div>
+    <div class="card c-violet"><div class="card__t">准备打印页</div><div class="card__d">返回预计打印时间、耗材用量、盘数量与每盘结果，逐盘展示零件数与缩略图；底部为<b>「保存 / 开始打印」双按钮</b></div><div class="card__tag">切片成功落点</div></div>
+    <div class="arw"><div class="arw__ln"></div></div>
+    <div class="card c-violet"><div class="card__t">保存切片</div><div class="card__d">底部左侧「保存」→ <b>命名弹窗</b>（默认填模型名、可自定义，空名不能提交）→ <b>保存进度</b> → <b>保存成功弹窗</b></div><div class="card__tag">立即查看 → 我的切片（本期无原型）</div></div>
+  </div>
+
+  <div class="shotbox">
+    <div class="shotbox__hd">关键界面 · 均为真实原型截图</div>
+    <div class="shots">
+      <div class="shot"><img src="./thumbs_s/selected.png" alt="选中零件"><div class="shot__t">选中零件</div><div class="shot__d">橙色包围框</div></div>
+      <div class="shot"><img src="./thumbs_s/scale-percent.png" alt="缩放面板"><div class="shot__t">缩放 · 百分比模式</div><div class="shot__d">只缩放选中的零件</div></div>
+      <div class="shot"><img src="./thumbs_s/copy.png" alt="复制后"><div class="shot__t">复制后自动摆盘</div><div class="shot__d">副本默认选中</div></div>
+      <div class="shot"><img src="./thumbs_s/scale-scale.png" alt="尺寸模式"><div class="shot__t">缩放 · 尺寸模式</div><div class="shot__d">XYZ 分轴，红绿蓝标识</div></div>
+      <div class="shot"><img src="./thumbs_s/out-of-bounds.png" alt="越界阻断"><div class="shot__t">越界 → 红态阻断</div><div class="shot__d">去打印置灰 + 显示原因</div></div>
+      <div class="shot"><img src="./thumbs_s/slicing.png" alt="云切片 Loading"><div class="shot__t">云切片 Loading</div><div class="shot__d">六步进度</div></div>
+      <div class="shot"><img src="./thumbs_s/slice-failed.png" alt="切片失败"><div class="shot__t">切片失败</div><div class="shot__d">保留编辑结果</div></div>
+      <div class="shot" style="flex:1 1 auto;min-width:0;text-align:left;align-self:stretch;display:flex;margin-left:4px">
+        <div class="card c-teal" style="text-align:left;flex:1 1 auto;display:flex;flex-direction:column;justify-content:center">
+          <div class="card__t">切片失败不丢成果</div>
+          <div class="card__d">停留编辑页、恢复「去打印」，按服务端错误类型给出具体原因（网络异常 / 服务暂不可用 / 模型结构无法处理）</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="shotbox">
+    <div class="shotbox__hd">保存切片 · 三步链路（准备打印页底部左侧「保存」）</div>
+    <div class="shots">
+      <div class="shot"><img src="./thumbs_s/prepare.png" alt="准备打印页"><div class="shot__t">① 准备打印页</div><div class="shot__d">底部左「保存」右「开始打印」</div></div>
+      <div class="shot"><img src="./thumbs_s/save-name.png" alt="命名弹窗"><div class="shot__t">② 命名弹窗</div><div class="shot__d">默认填模型名，可自定义</div></div>
+      <div class="shot"><img src="./thumbs_s/saving-progress.png" alt="保存进度"><div class="shot__t">③ 保存进度</div><div class="shot__d">进度条 + 百分比，不可取消</div></div>
+      <div class="shot"><img src="./thumbs_s/save-done.png" alt="保存成功"><div class="shot__t">④ 保存成功</div><div class="shot__d">「立即查看」→ 我的切片</div></div>
+      <div class="shot" style="flex:1 1 auto;min-width:0;text-align:left;align-self:stretch;display:flex;margin-left:4px">
+        <div class="card c-violet" style="text-align:left;flex:1 1 auto;display:flex;flex-direction:column;justify-content:center">
+          <div class="card__t">保存成功后可继续打印</div>
+          <div class="card__d">「完成」关闭弹窗并停留在准备打印页，可继续点「开始打印」或再次「保存」。跳转的「我的 - 我的切片」页本期不实现</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ③ 主线 B / C ===================== -->
+<div class="zone">
+  <div class="cols" style="margin-top:24px">
+    <div class="col">
+      <div class="col__hd" style="background:#f3fdfb;color:#0f766e">主线 B · 多盘任务的编辑 <span>盘号从 1 连续编号，上限 8 盘</span></div>
+      <div class="chain">
+        <div class="card c-teal"><div class="card__t">盘号切换</div><div class="card__d">默认选中第 1 盘；宽度不足时盘号区横向滑动。切盘 → 3D 视图只显示该盘零件、清空选中、关闭缩放面板</div></div>
+        <div class="arw"><div class="arw__ln"></div></div>
+        <div class="card c-teal"><div class="card__t">应用至所有盘的零件</div><div class="card__d">默认关闭，<b>单盘/多盘均展示</b>。关闭时只缩放选中的零件；开启后全部打印盘的零件一起缩放（单盘即该盘全部零件）</div></div>
+        <div class="arw"><div class="arw__ln"></div></div>
+        <div class="card c-teal"><div class="card__t">空盘回收</div><div class="card__d">某盘最后一个零件被删 → 该空盘自动删除、后续盘号前移重编号、切到最近有效盘</div></div>
+      </div>
+      <div class="shots">
+        <div class="shot"><img src="./thumbs_s/editor-8.png" alt="8 盘"><div class="shot__t">8 盘上限</div><div class="shot__d">盘号区可横向滑动</div></div>
+        <div class="shot"><img src="./thumbs_s/empty-plate.png" alt="空盘"><div class="shot__t">无零件 → 去打印置灰</div><div class="shot__d">保留唯一空盘</div></div>
+        <div class="card c-amber" style="margin-left:8px;text-align:left;align-self:center;flex:1 1 auto">
+          <div class="card__t">打印参数默认作用于整个任务</div>
+          <div class="card__d">打印模式 / 底座 / 喷嘴温度 / 填充密度对所有打印盘统一生效；用户指定的支撑开关与类型作为整个任务的统一策略。本期不支持每盘独立参数</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="col__hd" style="background:#faf7ff;color:#6d28d9">主线 C · 参数调整与持久化 <span>修改即时生效，保存决定持久化</span></div>
+      <div class="chain">
+        <div class="card c-violet"><div class="card__t">打印参数（6 项）</div><div class="card__d">打印模式（快速 / 标准 / 精细）、底座（带 / 不带）、喷嘴温度、填充密度、支撑开关、支撑类型</div></div>
+        <div class="arw"><div class="arw__ln"></div></div>
+        <div class="card c-violet"><div class="card__t">支撑由算法推荐</div><div class="card__d">首次进入由切片算法分析模型给出推荐并提示「已根据模型自动推荐」；用户手动改过后以用户设置为准，不再自动覆盖</div></div>
+        <div class="arw"><div class="arw__ln"></div></div>
+        <div class="card c-violet"><div class="card__t">恢复默认值</div><div class="card__d">二次确认后 6 项复位；支撑参数重新执行一次模型自动分析，恢复为算法推荐值</div></div>
+        <div class="arw"><div class="arw__ln"></div></div>
+        <div class="card c-violet"><div class="card__t">保存范围</div><div class="card__d">仅用于当前模型 / 后续模型默认使用 / 取消</div></div>
+      </div>
+      <div class="shots">
+        <div class="shot"><img src="./thumbs_s/support-off.png" alt="关闭支撑"><div class="shot__t">关闭支撑</div><div class="shot__d">类型区置灰但保留上次选择</div></div>
+        <div class="shot"><img src="./thumbs_s/save-scope.png" alt="保存范围弹窗"><div class="shot__t">① 保存范围弹窗</div><div class="shot__d">未选范围 → 底部「取消」</div></div>
+        <div class="shot"><img src="./thumbs_s/save-scope-selected.png" alt="选中范围"><div class="shot__t">② 选中后 → 「确定」</div><div class="shot__d">确定 = 保存并返回编辑页</div></div>
+        <div class="card c-blue" style="margin-left:8px;text-align:left;align-self:center;flex:1 1 auto">
+          <div class="card__t">参数读取优先级（5 层）</div>
+          <div class="card__d">① 当前任务手动修改值 → ② 当前模型已保存参数 → ③ 用户默认参数 → ④ 系统默认参数 → ⑤ 算法自动推荐。支撑参数特殊：用户未手改时允许算法按当前模型重新推荐</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ④ 异常与边界 ===================== -->
+<div class="zone zone--amber">
+  <div class="zone-hd">
+    <span class="zone-no">4</span>
+    <span class="zone-t">异常与边界</span>
+    <span class="zone-s">所有失败都给具体原因与下一步动作，绝不静默</span>
+  </div>
+  <div class="errs">
+    <div class="err"><div class="err__t">零件越界 / 重叠</div><div class="err__d">红色异常态 + 该盘标记异常；任一盘异常则整个任务不可打印</div></div>
+    <div class="err"><div class="err__t">复制空间不足</div><div class="err__d">不自动新建打印盘，复制失败并提示「当前打印盘空间不足，无法复制」</div></div>
+    <div class="err"><div class="err__t">删除最后一个零件</div><div class="err__d">二次确认「任务将自动被移除且不可恢复」；取消则返回编辑页</div></div>
+    <div class="err"><div class="err__t">网络 / 服务异常</div><div class="err__d">网络异常请检查网络后重试；切片服务暂不可用请稍后重试</div></div>
+    <div class="err"><div class="err__t">模型解析失败</div><div class="err__d">模型文件异常，暂无法打印</div></div>
+    <div class="err"><div class="err__t">未选中零件</div><div class="err__d">三个编辑按钮不置灰，点击提示「请先选择一个零件」</div></div>
+  </div>
+</div>
+
+<!-- ===================== 图例 ===================== -->
+<div class="legend">
+  <div class="lg"><i class="lg-b"></i>编辑操作</div>
+  <div class="lg"><i class="lg-a"></i>系统自动（摆盘 / 校验）</div>
+  <div class="lg"><i class="lg-t"></i>打印任务与状态</div>
+  <div class="lg"><i class="lg-v"></i>云切片与参数</div>
+  <div class="lg"><i class="lg-r"></i>异常与阻断</div>
+  <div class="sp">R001 · 模型编辑与切片 · v1.0</div>
+</div>
+
+</body>
+</html>

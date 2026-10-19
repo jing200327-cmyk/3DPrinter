@@ -1,0 +1,618 @@
+/* ==========================================================================
+   演示台 · 账号类型（家长不受限 / 儿童受限）
+   + 儿童受限起始页按钮改写（添加打印机 → 前往认证、购买打印机 → 家长授权）
+   + 加入共享打印机三页（加入共享打印机 / 确认邀请 / 加入成功）
+   设计语言与「分享打印机」页一致：主色 #4388F5、底色 #F7F9FC、卡片 16px 圆角 + 轻阴影。
+   全部规则收在 .demo-* / .jo-* / .start-* 作用域内，不改动原有配网流程页面。
+   ========================================================================== */
+
+:root {
+  --jo-blue: #4388f5;
+  --jo-blue-deep: #2f6fe0;
+  --jo-blue-soft: #eaf2fe;
+  --jo-bg: #f7f9fc;
+  --jo-ink: #1f242c;
+  --jo-ink-2: #5b6474;
+  --jo-muted: #98a2b3;
+  --jo-line: #eef1f6;
+  --jo-green: #12b76a;
+  --jo-green-soft: #e7f8f0;
+  --jo-warn: #f79009;
+  --jo-warn-soft: #fff5e8;
+  --jo-danger: #ef4655;
+  --jo-radius: 16px;
+  --jo-shadow: 0 1px 2px rgb(31 36 44 / 4%), 0 8px 22px rgb(31 36 44 / 6%);
+  --jo-nav-height: 56px;
+}
+
+/* ========================== 固定顶栏（新页面共用） ========================== */
+.jo-nav {
+  position: fixed;
+  z-index: 6;
+  top: 0;
+  left: 50%;
+  display: flex;
+  width: min(100vw, var(--device-width));
+  height: var(--jo-nav-height);
+  align-items: center;
+  padding: 0 16px;
+  transform: translateX(-50%);
+  background: rgb(247 249 252 / 94%);
+  box-shadow: 0 1px 0 rgb(31 36 44 / 5%);
+  backdrop-filter: blur(12px);
+}
+.jo-nav__back {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  margin-left: -10px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--jo-ink);
+  cursor: pointer;
+}
+.jo-nav__back:active { background: rgb(31 36 44 / 6%); }
+.jo-nav__back svg { width: 22px; height: 22px; fill: none; stroke: currentcolor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.jo-nav__title {
+  position: absolute;
+  left: 50%;
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: var(--jo-ink);
+  transform: translateX(-50%);
+}
+
+/* 页面主体：让激活的页面自然撑高、由 body 滚动（原有页面用内部滚动，新页面不干扰它们） */
+.app-screen.jo-page {
+  overflow: visible;
+  padding-bottom: 0;
+  background: var(--jo-bg);
+}
+.jo-body {
+  display: grid;
+  gap: 14px;
+  padding: calc(var(--jo-nav-height) + 14px) 16px 28px;
+  align-content: start;
+}
+.jo-card {
+  border-radius: var(--jo-radius);
+  background: #fff;
+  box-shadow: var(--jo-shadow);
+}
+
+/* ========================== 通用按钮 ========================== */
+.jo-primary {
+  display: grid;
+  width: 100%;
+  height: 48px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  color: #fff;
+  background: linear-gradient(135deg, #4f93f7, #3a7ce8);
+  box-shadow: 0 6px 16px rgb(67 136 245 / 26%);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+}
+.jo-primary:active { background: linear-gradient(135deg, #4488f0, #336fd8); }
+.jo-primary[disabled] {
+  color: #a9b1bd;
+  background: #eef1f6;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.jo-text-button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 12px;
+  color: var(--jo-blue-deep);
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.jo-text-button:active { background: var(--jo-blue-soft); }
+
+/* ========================== 演示台 chip（原型附属控件） ========================== */
+.demo-chip {
+  position: fixed;
+  z-index: 40;
+  right: max(10px, calc((100vw - min(100vw, var(--device-width))) / 2 + 10px));
+  /* 起始页是整图复用页、下半部分是空白，放在按钮下方；新 DOM 页面把导航栏右侧的空白区用起来 */
+  top: auto;
+  bottom: 140px;
+  display: inline-flex;
+  height: 30px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 11px;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 999px;
+  color: #fff;
+  background: rgb(31 36 44 / 68%);
+  font-size: 11.5px;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: opacity 180ms ease;
+}
+.demo-chip:hover { background: rgb(31 36 44 / 84%); }
+.demo-chip[hidden] { display: none; }
+.demo-chip svg { width: 13px; height: 13px; fill: none; stroke: currentcolor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+/* 放在导航栏右侧：与 56px 高的导航栏垂直居中 */
+.demo-chip[data-placement="top"] { top: 13px; bottom: auto; }
+.demo-chip__extra[hidden] { display: none; }
+.demo-chip__sep { opacity: 0.55; }
+.demo-chip__mode { color: #8cb8ff; font-weight: 600; }
+.demo-chip[data-account="child"] .demo-chip__mode { color: #ffc27a; }
+
+/* ========================== 演示台页面 ========================== */
+.demo-hero {
+  display: grid;
+  gap: 6px;
+  padding: 4px 4px 2px;
+}
+.demo-hero h2 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 0.2px; color: var(--jo-ink); }
+.demo-hero p { margin: 0; font-size: 13px; line-height: 1.65; color: var(--jo-muted); }
+.demo-group { display: grid; gap: 8px; }
+.demo-group__title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--jo-ink-2);
+}
+.demo-group__title small { font-size: 11px; font-weight: 400; color: var(--jo-muted); }
+.demo-option {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  padding: 14px;
+  border: 1.5px solid var(--jo-line);
+  border-radius: 14px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+.demo-option[aria-pressed="true"] { border-color: rgb(67 136 245 / 60%); background: var(--jo-blue-soft); }
+.demo-option__tick {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border: 1.6px solid #d5dbe5;
+  border-radius: 50%;
+}
+.demo-option[aria-pressed="true"] .demo-option__tick {
+  border-color: var(--jo-blue);
+  background: var(--jo-blue);
+  box-shadow: inset 0 0 0 3.5px #fff;
+}
+.demo-option__main { display: grid; gap: 4px; min-width: 0; }
+.demo-option__main strong { font-size: 15px; font-weight: 600; color: var(--jo-ink); }
+.demo-option__main span { font-size: 12px; line-height: 1.6; color: var(--jo-muted); }
+.demo-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.demo-tag {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #f2f5fa;
+  color: #6b7686;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+}
+.demo-option[aria-pressed="true"] .demo-tag { background: #fff; color: var(--jo-blue-deep); }
+.demo-badge {
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: #7a5cf0;
+  background: #f1edff;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.demo-note { padding: 0 4px; font-size: 11.5px; line-height: 1.7; color: var(--jo-muted); }
+
+/* ========================== 起始页按钮改写（儿童受限账号） ========================== */
+/* 起始页是整图复用页：图片按 object-fit: cover 绘制，所以覆盖层用 JS 摆到
+   「真实绘制的图片矩形」上（left/top 为图片内的百分比），缩放用 --img-scale 跟随。 */
+.start-overlay {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+.start-overlay > * { pointer-events: auto; }
+.start-cta-pill {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  background: linear-gradient(90deg, #a869ff 0%, #5490ff 100%);
+  font-size: calc(30px * var(--img-scale, 1));
+  font-weight: 700;
+  letter-spacing: calc(1px * var(--img-scale, 1));
+  cursor: pointer;
+}
+.start-cta-pill:active { filter: brightness(0.95); }
+.start-cta-link {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  color: #333a44;
+  background: #f5f6fa;
+  font-size: calc(26px * var(--img-scale, 1));
+  font-weight: 500;
+  cursor: pointer;
+}
+.start-cta-link > span {
+  text-decoration: underline;
+  text-decoration-thickness: calc(1.5px * var(--img-scale, 1));
+  text-underline-offset: calc(4px * var(--img-scale, 1));
+}
+.start-cta-link:active { color: var(--jo-blue-deep); }
+.start-overlay[hidden] { display: none !important; }
+
+/* 起始页 686 × 1530 原图上量到的两个按钮本体（覆盖层以「真实绘制的图片矩形」为包含块，
+   所以这些百分比就是图片内的百分比，与视口高度无关）：
+   渐变胶囊 x 176~509 / y 960~1055；购买打印机 x 268~418 / y 1076~1114。
+   选择器用类名（元素 id 是 start-cta-auth / start-cta-authorize，供 JS 绑定用）。 */
+.start-cta-pill { left: 25.656%; top: 62.745%; width: 48.688%; height: 6.275%; }
+.start-cta-link { left: 39.067%; top: 70.327%; width: 22.012%; height: 2.549%; }
+
+/* ========================== 认证占位页（本期不实现） ========================== */
+.auth-todo {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 30px 22px 24px;
+  text-align: center;
+}
+.auth-todo__art {
+  display: grid;
+  width: 84px;
+  height: 84px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--jo-blue);
+  background: var(--jo-blue-soft);
+}
+.auth-todo__art svg { width: 42px; height: 42px; fill: none; stroke: currentcolor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.auth-todo h2 { margin: 2px 0 0; font-size: 19px; font-weight: 700; color: var(--jo-ink); }
+.auth-todo p { margin: 0; font-size: 13px; line-height: 1.7; color: var(--jo-muted); }
+.auth-todo__list { display: grid; gap: 8px; width: 100%; text-align: left; }
+.auth-todo__list li { display: flex; gap: 8px; font-size: 12.5px; line-height: 1.65; color: var(--jo-ink-2); }
+.auth-todo__list li::before { flex: none; width: 6px; height: 6px; margin-top: 7px; border-radius: 50%; background: #c9d4e4; content: ""; }
+
+/* ========================== 家庭共享插画 ========================== */
+.jo-illustration {
+  display: grid;
+  place-items: center;
+  padding: 2px 0 6px;
+}
+.jo-illustration svg { width: 100%; max-width: 300px; height: auto; }
+
+/* ========================== 页面一：加入共享打印机 ========================== */
+.jo-intro { display: grid; gap: 6px; padding: 0 4px; text-align: center; }
+.jo-intro h2 { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: 0.2px; color: var(--jo-ink); }
+.jo-intro p { margin: 0; font-size: 13px; line-height: 1.65; color: var(--jo-muted); }
+
+.jo-scan-card {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 22px 18px 18px;
+  text-align: center;
+}
+.jo-scan-card__icon { display: grid; width: 100px; height: 100px; place-items: center; color: var(--jo-blue); }
+.jo-scan-card__icon svg { width: 100%; height: 100%; }
+.jo-scan-card h3 { margin: 0; font-size: 17px; font-weight: 600; color: var(--jo-ink); }
+.jo-scan-card p { margin: 0 0 4px; font-size: 12.5px; line-height: 1.6; color: var(--jo-muted); }
+.jo-scan-card .jo-primary { margin-top: 2px; }
+
+.jo-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 4px;
+  color: var(--jo-muted);
+  font-size: 12px;
+}
+.jo-divider::before, .jo-divider::after {
+  height: 1px;
+  flex: 1;
+  background: #e3e8f0;
+  content: "";
+}
+
+.jo-code-card { display: grid; gap: 9px; padding: 16px; }
+.jo-code-card h3 { margin: 0; font-size: 15px; font-weight: 600; color: var(--jo-ink); }
+.jo-code-input {
+  width: 100%;
+  height: 54px;
+  padding: 0 16px;
+  border: 1.5px solid #e3e8f0;
+  border-radius: 14px;
+  color: var(--jo-ink);
+  background: #f9fbfe;
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+.jo-code-input::placeholder {
+  color: #b6bfcc;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  text-transform: none;
+}
+.jo-code-input:focus { border-color: rgb(67 136 245 / 60%); background: #fff; outline: none; }
+.jo-code-input[aria-invalid="true"] { border-color: var(--jo-danger); background: #fff6f7; }
+.jo-code-help { margin: 0; font-size: 12px; line-height: 1.6; color: var(--jo-muted); }
+.jo-code-error {
+  display: flex;
+  gap: 5px;
+  align-items: flex-start;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--jo-danger);
+}
+.jo-code-error[hidden] { display: none; }
+.jo-code-error::before { flex: none; content: "!"; font-weight: 700; }
+.jo-code-card .jo-primary { margin-top: 3px; }
+
+/* ========================== 页面二：确认邀请 ========================== */
+.jo-inviter { display: grid; justify-items: center; gap: 8px; padding: 0 4px 2px; text-align: center; }
+.jo-inviter h2 { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: 0.2px; color: var(--jo-ink); }
+.jo-inviter > p { margin: 0; font-size: 13px; line-height: 1.65; color: var(--jo-muted); }
+.jo-inviter__person {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 8px 16px 8px 8px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: var(--jo-shadow);
+}
+.jo-inviter__avatar {
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #eef2f8;
+}
+.jo-inviter__avatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.jo-inviter__copy { display: grid; gap: 2px; text-align: left; }
+.jo-inviter__copy strong { font-size: 15px; font-weight: 600; color: var(--jo-ink); }
+.jo-inviter__copy span { font-size: 11.5px; color: var(--jo-muted); }
+
+.jo-device { display: flex; align-items: center; gap: 12px; padding: 14px; }
+.jo-device__art {
+  display: grid;
+  flex: none;
+  width: 62px;
+  height: 74px;
+  place-items: center;
+  background: radial-gradient(62% 58% at 50% 54%, #eaf2fe 0%, rgb(234 242 254 / 0%) 72%);
+}
+.jo-device__art img { width: 100%; height: 100%; object-fit: contain; }
+.jo-device__info { display: grid; gap: 6px; min-width: 0; }
+.jo-device__info strong { font-size: 15px; font-weight: 600; color: var(--jo-ink); }
+.jo-device__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.jo-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px 3px 7px;
+  border-radius: 999px;
+  background: var(--jo-green-soft);
+  color: #0e9b5c;
+  font-size: 11px;
+  font-weight: 600;
+}
+.jo-status i { width: 6px; height: 6px; border-radius: 50%; background: currentcolor; }
+.jo-status[data-status="offline"] { background: #f1f3f7; color: #78818f; }
+.jo-device__sn { font-size: 11.5px; color: var(--jo-muted); letter-spacing: 0.3px; }
+
+.jo-perms { display: grid; gap: 12px; padding: 16px; }
+.jo-perms h3 { margin: 0; font-size: 15px; font-weight: 600; color: var(--jo-ink); }
+.jo-perms ul { display: grid; gap: 11px; margin: 0; padding: 0; list-style: none; }
+.jo-perms li { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.55; color: var(--jo-ink-2); }
+.jo-perms__icon {
+  display: grid;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  margin-top: -2px;
+  place-items: center;
+  border-radius: 8px;
+  color: var(--jo-blue);
+  background: var(--jo-blue-soft);
+}
+.jo-perms__icon svg { width: 15px; height: 15px; fill: none; stroke: currentcolor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.jo-perms p { margin: 0; padding-top: 2px; border-top: 1px solid var(--jo-line); font-size: 11.5px; line-height: 1.65; color: var(--jo-muted); }
+
+.jo-actions { display: grid; gap: 4px; justify-items: center; margin-top: 2px; }
+
+/* ========================== 页面三：加入成功 ========================== */
+.jo-success { display: grid; justify-items: center; gap: 10px; padding: 26px 20px 22px; text-align: center; }
+.jo-success__art { width: 168px; height: 138px; }
+.jo-success h2 { margin: 2px 0 0; font-size: 23px; font-weight: 700; letter-spacing: 0.3px; color: var(--jo-ink); }
+.jo-success p { margin: 0; font-size: 13px; line-height: 1.7; color: var(--jo-muted); }
+.jo-success__hint {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 4px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  color: var(--jo-blue-deep);
+  background: var(--jo-blue-soft);
+  font-size: 11.5px;
+}
+
+/* ========================== 模拟扫码界面 ========================== */
+.jo-camera { background: #10141c !important; }
+.jo-camera .jo-nav { background: transparent; box-shadow: none; backdrop-filter: none; }
+.jo-camera .jo-nav__back { color: #e8edf5; }
+.jo-camera .jo-nav__title { color: #f2f5fa; }
+.jo-camera__view {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin: calc(var(--jo-nav-height) + 18px) 16px 0;
+  height: min(56vh, 420px);
+  overflow: hidden;
+  border-radius: 20px;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgb(67 136 245 / 22%), transparent 62%),
+    linear-gradient(160deg, #1b2130, #0d1016);
+}
+.jo-camera__frame { position: relative; width: 216px; height: 216px; }
+.jo-camera__frame span {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border: 4px solid #7fb2ff;
+  border-radius: 4px;
+}
+.jo-camera__frame span:nth-child(1) { top: 0; left: 0; border-right: 0; border-bottom: 0; border-top-left-radius: 14px; }
+.jo-camera__frame span:nth-child(2) { top: 0; right: 0; border-left: 0; border-bottom: 0; border-top-right-radius: 14px; }
+.jo-camera__frame span:nth-child(3) { bottom: 0; left: 0; border-right: 0; border-top: 0; border-bottom-left-radius: 14px; }
+.jo-camera__frame span:nth-child(4) { right: 0; bottom: 0; border-left: 0; border-top: 0; border-bottom-right-radius: 14px; }
+.jo-camera__laser {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #7fb2ff, transparent);
+  box-shadow: 0 0 12px rgb(127 178 255 / 80%);
+  animation: jo-laser 2.4s ease-in-out infinite;
+}
+@keyframes jo-laser { 0%, 100% { top: 12%; } 50% { top: 86%; } }
+.jo-camera__hint { padding: 16px 20px 0; text-align: center; color: #aeb8c8; font-size: 12.5px; line-height: 1.7; }
+.jo-camera__demo { display: grid; gap: 9px; padding: 16px 16px 26px; }
+.jo-camera__demo .jo-primary { box-shadow: none; }
+.jo-ghost {
+  display: grid;
+  width: 100%;
+  height: 46px;
+  place-items: center;
+  padding: 0;
+  border: 1.5px solid #3a4457;
+  border-radius: 14px;
+  color: #d3dae5;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.jo-ghost:active { background: rgb(255 255 255 / 8%); }
+.jo-demo-badge {
+  display: inline-flex;
+  justify-self: center;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 2px;
+  padding: 4px 11px;
+  border: 1px dashed #46516a;
+  border-radius: 999px;
+  color: #8d9ab0;
+  font-size: 11px;
+}
+
+/* ========================== 弹窗补充 ========================== */
+.app-dialog.jo-dialog p { margin-bottom: 18px; }
+.app-dialog .jo-dialog__hint {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 0 24px 18px;
+  padding: 11px 12px;
+  border-radius: 12px;
+  background: #f5f8fd;
+  color: var(--jo-ink-2);
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+.app-dialog .jo-dialog__hint b { color: var(--jo-ink); font-weight: 600; }
+
+/* ========================== 儿童账号个人二维码页（v2 · 群组外分支） ========================== */
+/* 参考微信个人二维码页的布局：头像 + 姓名 + 二维码 + 一句提示文案 */
+.child-qr-card {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  padding: 26px 22px 24px;
+  text-align: center;
+}
+.child-qr__person { display: grid; justify-items: center; gap: 8px; }
+.child-qr__avatar {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--jo-blue-soft);
+  box-shadow: 0 0 0 3px #fff, 0 4px 14px rgb(31 36 44 / 12%);
+}
+.child-qr__avatar img { width: 100%; height: 100%; object-fit: cover; }
+.child-qr__ident { display: grid; gap: 2px; }
+.child-qr__ident strong { font-size: 18px; font-weight: 600; color: var(--jo-ink); }
+.child-qr__account { font-size: 12px; color: var(--jo-muted); }
+.child-qr__frame {
+  position: relative;
+  display: grid;
+  width: 236px;
+  height: 236px;
+  place-items: center;
+  padding: 12px;
+  border: 1px solid var(--jo-line);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: var(--jo-shadow);
+}
+.child-qr__svg { display: block; width: 100%; height: 100%; }
+/* 二维码中心头像徽章（类微信二维码中心头像） */
+.child-qr__badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #fff;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 3px #fff, 0 2px 8px rgb(31 36 44 / 18%);
+}
+.child-qr__badge img { width: 100%; height: 100%; object-fit: cover; }
+.child-qr__hint { margin: 0; max-width: 264px; font-size: 14px; font-weight: 600; line-height: 1.7; color: var(--jo-ink); }
+.child-qr__note { margin: 0; padding: 0 4px; font-size: 11.5px; line-height: 1.7; color: var(--jo-muted); text-align: center; }

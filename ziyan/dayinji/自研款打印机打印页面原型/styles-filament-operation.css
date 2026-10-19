@@ -1,0 +1,252 @@
+/* ==========================================================================
+   进料中 / 退料中（真实 DOM 高保真页，替代原先的「整图复用 + 拖动看板」实现）
+   --------------------------------------------------------------------------
+   设计稿来源：原型修改复用图片资源/进料中.png（4 屏）、退料中.png（3 屏）
+   量取口径：每屏 686 px 宽 = 设备框 375 逻辑像素 → 换算系数 375 / 686 = 0.5466
+     圆环：外径 402 → 220 px；描边 6 → 3.3 px；轨迹 #F6D4C4；弧 #EB5D11
+     步骤点：直径 34 → 19 px，圆心间距 178.5 → 97.6 px，连接线 2.5 px
+     步骤胶囊：422 × 89 → 231 × 49 px（定宽，圆角全圆）
+     提示胶囊：474 × 101 → 259 × 55 px（底 #FFF2E0，描边 #E2D1B8）
+     底部提示条：整宽 × 136 → 整宽 × 74 px（圆角 11px）
+     主按钮：328 × 108 → 179 × 59 px（渐变 #7654EE → #3A80F3）
+   全部规则收在 .fo-* 作用域内，不影响原型既有样式。
+   ========================================================================== */
+.fo-screen {
+  --fo-orange: #eb5d11;        /* 进度弧 */
+  --fo-orange-2: #f06415;      /* 步骤点 / 步骤胶囊 / 温度 */
+  --fo-track: #f6d4c4;         /* 未完成轨迹 */
+  --fo-ink: #1f2329;
+  --fo-muted: #6d7587;
+  --fo-pill-bg: #fff2e0;
+  --fo-pill-line: #e2d1b8;
+  --fo-warn-bg: #ffeded;
+  --fo-warn-ink: #d4484c;
+  --fo-info-bg: #dae9ff;
+  --fo-info-ink: #5048dd;
+  --fo-gradient: linear-gradient(90deg, #7654ee 0%, #3a80f3 100%);
+
+  position: fixed;
+  z-index: 35;
+  top: var(--frame-top);
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  width: min(100vw, var(--device-width));
+  height: var(--frame-height);
+  margin: 0;
+  overflow: hidden auto;
+  color: var(--fo-ink);
+  background: #fff;
+  transform: translateX(-50%);
+}
+.fo-screen:focus { outline: 0; }
+/* .fo-screen 自身写了 display: flex，特异性高于 UA 的 [hidden]{display:none}，
+   必须显式兜一条，否则未进入进料/退料页时它会一直盖在打印页上面。 */
+.fo-screen[hidden] { display: none; }
+.fo-screen [hidden] { display: none !important; }
+
+/* ---------- 状态栏（与分享打印机页同一套示意状态栏） ---------- */
+.fo-statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+  height: 44px;
+  padding: 0 22px 0 26px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: #000;
+}
+.fo-statusbar-icons { display: inline-flex; align-items: center; gap: 5px; color: #000; }
+.fo-statusbar-icons svg { display: block; }
+
+/* ---------- 导航栏 ---------- */
+.fo-nav { position: relative; display: flex; align-items: center; flex: none; height: 48px; padding: 0 16px; }
+.fo-nav-back {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  margin-left: -10px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #3f434b;
+  background: transparent;
+  cursor: pointer;
+}
+.fo-nav-back:active { background: rgb(31 36 44 / 6%); }
+.fo-nav-back svg { width: 22px; height: 22px; fill: none; stroke: currentcolor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.fo-nav-title {
+  position: absolute;
+  left: 50%;
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  transform: translateX(-50%);
+}
+
+/* ---------- 步骤条：3 个圆点 + 橙色连接线 ---------- */
+.fo-steps { display: flex; align-items: center; justify-content: center; flex: none; margin: 32px 0 0; padding: 0; list-style: none; }
+.fo-step { display: flex; align-items: center; }
+.fo-step-dot {
+  display: grid;
+  width: 19px;
+  height: 19px;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #a1a1a1;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+.fo-step-line { width: 78.6px; height: 2.5px; background: #dedede; }
+.fo-step[data-state="done"] .fo-step-dot,
+.fo-step[data-state="active"] .fo-step-dot { background: var(--fo-orange-2); }
+.fo-step[data-state="done"] .fo-step-line,
+.fo-step[data-state="active"] .fo-step-line { background: var(--fo-orange-2); }
+
+/* ---------- 「可退出页面，进料将继续进行」提示胶囊 ---------- */
+.fo-hint {
+  display: flex;
+  align-items: center;
+  align-self: center;
+  justify-content: center;
+  flex: none;
+  height: 55px;
+  margin: 29px 0 0;
+  padding: 0 31px;
+  border: 2px solid var(--fo-pill-line);
+  border-radius: 999px;
+  color: var(--fo-ink);
+  background: var(--fo-pill-bg);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+/* ---------- 进度圆环 + 中心内容 ---------- */
+/* 设计稿：圆环顶边 281（逻辑 px），圆环上方 34px 是「75%」的占位（加热步只是隐藏、不塌位） */
+.fo-stage { display: flex; flex-direction: column; align-items: center; flex: none; margin-top: 20px; }
+.fo-percent {
+  margin: 0 0 10px;
+  color: var(--fo-orange);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.5px;
+}
+.fo-percent.is-hidden { visibility: hidden; }
+.fo-ring { position: relative; width: 220px; height: 220px; }
+/* 插画在圆环之下（与设计稿一致：圆环描边压在料盘上） */
+.fo-ring-art { position: absolute; top: -2.2388%; left: -4.4776%; width: 111.9403%; height: 105.2239%; }
+.fo-ring-svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.fo-ring-track { fill: none; stroke: var(--fo-track); stroke-width: 3.3; }
+.fo-ring-arc {
+  fill: none;
+  stroke: var(--fo-orange);
+  stroke-width: 3.3;
+  stroke-linecap: round;
+  /* 2πr，r = 108.4：负偏移让弧从 12 点开始顺时针生长（与设计稿 75% 弧向一致） */
+  stroke-dasharray: 681.1;
+  stroke-dashoffset: -681.1;
+  transition: stroke-dashoffset 120ms linear;
+}
+.fo-ring-content { position: absolute; inset: 0; display: grid; place-items: center; }
+.fo-ring.is-heating .fo-ring-track { opacity: 0; }
+.fo-ring.is-heating .fo-ring-arc { animation: fo-heat-pulse 2s ease-in-out infinite; }
+@keyframes fo-heat-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+/* 温度块：三项文字的字号/间距按 退料中.png 第 1 屏量取（当前温度 14px、28°C 55px、目标 19px），
+   整块再整体上移约 11px —— 设计稿里温度块的中心在圆环中心之上。 */
+.fo-temp { display: flex; flex-direction: column; align-items: center; margin-bottom: 21px; text-align: center; }
+.fo-temp-label { color: var(--fo-orange-2); font-size: 14px; font-weight: 700; letter-spacing: 0.5px; }
+.fo-temp-value { margin-top: 9.5px; margin-bottom: 6.5px; color: var(--fo-orange-2); font-size: 55px; font-weight: 700; line-height: 1.05; letter-spacing: -1px; }
+.fo-temp-target { color: var(--fo-muted); font-size: 19px; font-weight: 500; letter-spacing: 0.2px; }
+
+/* 加热耗时提示：设计稿里是压在圆环下部的半透明黑胶囊 */
+.fo-tip {
+  position: absolute;
+  z-index: 3;
+  bottom: 4px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 238px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  color: #fff;
+  background: rgb(0 0 0 / 50%);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  text-align: center;
+  transform: translateX(-50%);
+}
+
+/* ---------- 当前步骤胶囊 ---------- */
+.fo-step-label {
+  display: flex;
+  align-items: center;
+  align-self: center;
+  justify-content: center;
+  flex: none;
+  min-width: 231px;
+  height: 49px;
+  margin: 10px 0 0;
+  padding: 0 18px;
+  border-radius: 999px;
+  color: var(--fo-orange-2);
+  background: var(--fo-pill-bg);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.fo-spacer { flex: 1 1 auto; min-height: 0; }
+
+/* ---------- 底部提示条（整宽）+ 主按钮 ---------- */
+.fo-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  height: 74px;
+  margin: 0;
+  padding: 0 18px;
+  border-radius: 11px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.2px;
+  text-align: center;
+}
+.fo-banner[data-tone="warn"] { color: var(--fo-warn-ink); background: var(--fo-warn-bg); }
+.fo-banner[data-tone="info"] { color: var(--fo-info-ink); background: var(--fo-info-bg); }
+.fo-primary {
+  display: flex;
+  align-items: center;
+  align-self: center;
+  justify-content: center;
+  flex: none;
+  width: 179px;
+  height: 59px;
+  margin: 13px 0 12px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--fo-gradient);
+  box-shadow: 0 8px 18px rgb(89 96 238 / 26%);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+.fo-primary:active { filter: brightness(0.94); }

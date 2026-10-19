@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f3f4f8">
+  <title>自研款打印机打印旅程原型</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="phone-shell" aria-label="自研款 3D 打印机打印旅程">
+    <section id="screen-model" class="journey-screen model-screen is-active" data-screen="model" aria-label="模型详情">
+      <img id="model-reference" src="../src/dayinji/模型详情页.jpg" alt="愤怒的史蒂夫模型详情页">
+      <div class="model-actions">
+        <button id="model-settings" class="model-action" type="button">Settings</button>
+        <button id="print-now" class="model-action" type="button">Create it</button>
+      </div>
+    </section>
+
+    <section id="screen-settings" class="journey-screen settings-screen" data-screen="settings" data-job-status="idle" hidden aria-labelledby="settings-title">
+      <header class="settings-header">
+        <button id="settings-back" type="button" aria-label="返回上一页">‹</button>
+        <h1 id="settings-title" tabindex="-1">Choose your builder</h1>
+        <span aria-hidden="true">♧</span>
+      </header>
+      <p id="printing-notice" class="printing-notice" role="status" hidden>打印机正在打印</p>
+
+      <div class="settings-content">
+        <section id="step-plate" class="settings-step build-step" aria-label="Choose your builder">
+          <div id="plate-carousel" class="plate-carousel" role="listbox" aria-label="选择要打印的盘">
+            <button class="plate-card is-selected" type="button" data-task="girl-1" role="option" aria-selected="true">
+              <span class="plate-number">1</span>
+              <span class="plate-status-tag" aria-live="polite"></span>
+              <img src="../src/dayinjirenwukongzhi/女孩的打印任务_1.jpg" alt="女孩的待打印任务 1">
+            </button>
+            <button class="plate-card" type="button" data-task="girl-2" role="option" aria-selected="false">
+              <span class="plate-number">2</span>
+              <span class="plate-status-tag" aria-live="polite"></span>
+              <img src="../src/dayinjirenwukongzhi/女孩的打印任务_2.jpg" alt="女孩的待打印任务 2">
+            </button>
+          </div>
+          <button id="choose-color" class="step-action" type="button">Choose your color</button>
+        </section>
+
+        <section id="step-material" class="settings-step material-step" aria-label="Choose  your  color" hidden>
+          <div class="settings-card material-section">
+            <div class="model-preview">
+              <img id="selected-model-image" src="../src/dayinjirenwukongzhi/女孩的打印任务_1.jpg" alt="当前选择女孩的待打印任务 1">
+              <button id="open-preview" type="button">Preview</button>
+            </div>
+
+            <fieldset class="feed-source-options">
+              <legend class="sr-only">Choose a material source</legend>
+              <label class="source-option is-selected"><input type="radio" name="feed-source" value="cfs" checked><span>Food Box</span></label>
+              <label class="source-option"><input type="radio" name="feed-source" value="external"><span>Food Tray</span></label>
+            </fieldset>
+
+            <button id="open-filament-picker" class="filament-choice" type="button" aria-haspopup="dialog">
+              <span id="filament-swatch" class="filament-swatch is-blue" aria-hidden="true"></span>
+              <span class="filament-copy"><strong id="filament-choice-title">pick your color</strong><small><span id="filament-slot-number">4</span> · <span id="filament-label">PLA · 蓝色</span></small></span>
+              <span class="choice-arrow" aria-hidden="true">›</span>
+            </button>
+          </div>
+          <button id="start-print" class="step-action" type="button">Add it</button>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="filament-picker" class="filament-dialog" aria-labelledby="filament-picker-visible-title">
+    <div class="filament-picker-frame">
+      <img src="../src/dayinji/选择仓内耗材.jpg" alt="CFS lite 仓内耗材：1 黑色，2 灰色，3 无耗材，4 蓝色">
+      <h2 id="filament-picker-visible-title" class="filament-picker-visible-title">pick your color</h2>
+      <button id="close-filament-picker" class="picker-close image-hotspot" type="button" aria-label="关闭仓内耗材选择"></button>
+      <div class="picker-options" role="radiogroup" aria-label="仓内耗材">
+        <button type="button" data-filament-slot="1" data-color="black" data-label="PLA · 黑色" role="radio" aria-checked="false" aria-label="选择 1 号仓黑色 PLA"></button>
+        <button type="button" data-filament-slot="2" data-color="gray" data-label="PLA · 灰色" role="radio" aria-checked="false" aria-label="选择 2 号仓灰色 PLA"></button>
+        <button type="button" data-filament-slot="3" role="radio" aria-checked="false" aria-label="3 号仓无耗材，不可选择" disabled></button>
+        <button class="is-selected" type="button" data-filament-slot="4" data-color="blue" data-label="PLA · 蓝色" role="radio" aria-checked="true" aria-label="选择 4 号仓蓝色 PLA"></button>
+      </div>
+      <button id="confirm-filament" class="image-hotspot picker-confirm" type="button" aria-label="确认仓内耗材选择"></button>
+    </div>
+  </dialog>
+
+  <dialog id="upload-dialog" class="upload-dialog" aria-labelledby="upload-title">
+    <div class="upload-spinner" aria-hidden="true"></div>
+    <h2 id="upload-title">正在上传打印任务</h2>
+    <p><span id="upload-percent">0%</span> · 请保持应用开启</p>
+    <div id="upload-progress" class="upload-progress" role="progressbar" aria-label="打印任务上传进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="prototype.js"></script>
+</body>
+</html>

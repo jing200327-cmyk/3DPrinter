@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>R002 模型导入 · 核心操作流程</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#fff}
+  body{
+    width:1720px;padding:36px 40px 30px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    color:#0f172a; -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- 页头 ---------- */
+  .head{display:flex;align-items:flex-end;gap:22px;padding-bottom:16px;border-bottom:3px solid #1d4ed8}
+  .head h1{font-size:31px;font-weight:800;letter-spacing:-.6px;line-height:1.15}
+  .head h1 em{font-style:normal;color:#1d4ed8}
+  .head .meta{margin-left:auto;text-align:right;font-size:12.5px;color:#64748b;line-height:1.85}
+  .head .meta b{color:#0f172a}
+  .pill{display:inline-block;padding:2px 9px;border-radius:99px;background:#eff6ff;color:#1d4ed8;font-weight:700;font-size:11.5px}
+
+  /* ---------- 区块 ---------- */
+  .zone{margin-top:22px}
+  .zone-hd{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .zone-no{
+    flex:0 0 auto;width:26px;height:26px;border-radius:8px;background:#1d4ed8;color:#fff;
+    font-size:14px;font-weight:800;display:grid;place-items:center
+  }
+  .zone-t{font-size:17px;font-weight:800;letter-spacing:-.2px}
+  .zone-s{font-size:11.5px;color:#94a3b8}
+  .zone-hd::after{content:"";flex:1;height:1px;background:#e2e8f0}
+
+  .zone--blue .zone-no{background:#1d4ed8}
+  .zone--teal .zone-no{background:#0d9488}
+  .zone--violet .zone-no{background:#7c3aed}
+  .zone--amber .zone-no{background:#d97706}
+
+  /* ---------- 通用卡片 ---------- */
+  .card{
+    background:#fff;border:1.5px solid #dbe4f5;border-radius:13px;
+    padding:9px 11px;box-shadow:0 2px 6px rgba(29,78,216,.05)
+  }
+  .card__t{font-size:12.5px;font-weight:700;line-height:1.35}
+  .card__d{font-size:10px;color:#64748b;line-height:1.5;margin-top:3px}
+  .card__tag{
+    display:inline-block;margin-top:5px;padding:1px 6px;border-radius:5px;
+    font-size:9px;font-weight:700;letter-spacing:.2px
+  }
+
+  .c-blue{background:#f5f9ff;border-color:#c7dbfb}
+  .c-blue .card__t{color:#1d4ed8}
+  .c-blue .card__tag{background:#dbeafe;color:#1d4ed8}
+
+  .c-teal{background:#f3fdfb;border-color:#b6ece4}
+  .c-teal .card__t{color:#0f766e}
+  .c-teal .card__tag{background:#ccfbf1;color:#0f766e}
+
+  .c-violet{background:#faf7ff;border-color:#ddd0f8}
+  .c-violet .card__t{color:#6d28d9}
+  .c-violet .card__tag{background:#ede9fe;color:#6d28d9}
+
+  .c-amber{background:#fffbf2;border-color:#f8dcae}
+  .c-amber .card__t{color:#b45309}
+  .c-amber .card__tag{background:#fef3c7;color:#b45309}
+
+  .c-red{background:#fff6f6;border-color:#f9cdcd}
+  .c-red .card__t{color:#b91c1c}
+  .c-red .card__tag{background:#fee2e2;color:#b91c1c}
+
+  /* ---------- 箭头 ---------- */
+  .arw{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0 2px}
+  .arw__lb{font-size:9.5px;color:#2563eb;white-space:nowrap;font-weight:600}
+  .arw__ln{position:relative;width:26px;border-top:2px solid #93c5fd}
+  .arw__ln::after{
+    content:"";position:absolute;right:-1px;top:-5.5px;
+    border-left:8px solid #93c5fd;border-top:5.5px solid transparent;border-bottom:5.5px solid transparent
+  }
+  .arw--down{flex-direction:row}
+  .arw--down .arw__ln{width:2px;height:26px;border-top:0;border-left:2px solid #93c5fd}
+  .arw--down .arw__ln::after{
+    right:-5px;top:auto;bottom:-1px;
+    border-left:5.5px solid transparent;border-right:5.5px solid transparent;
+    border-top:8px solid #93c5fd;border-bottom:0
+  }
+
+  /* ---------- 手机缩略图节点 ---------- */
+  .phones{display:flex;align-items:flex-start;gap:0}
+  .pnode{flex:0 0 auto;width:158px;text-align:center}
+  .pnode img{
+    width:130px;height:auto;display:block;margin:0 auto;border-radius:12px;
+    box-shadow:0 6px 18px rgba(15,23,42,.16), 0 0 0 1px rgba(15,23,42,.06)
+  }
+  .pnode__t{margin-top:8px;font-size:12px;font-weight:700;color:#0f172a}
+  .pnode__d{margin-top:2px;font-size:9.5px;color:#94a3b8;line-height:1.45}
+
+  /* ---------- 步骤链 ---------- */
+  .chain{display:flex;align-items:stretch;gap:0}
+  .chain .card{flex:1 1 0;min-width:0;display:flex;flex-direction:column}
+  .chain .card__t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chain .arw{align-self:center}
+
+  /* ---------- 两栏 ---------- */
+  .cols{display:flex;gap:26px;align-items:flex-start}
+  .col{flex:1 1 0;min-width:0}
+  .col__hd{
+    display:flex;align-items:center;gap:7px;margin-bottom:11px;
+    padding:6px 11px;border-radius:9px;font-size:13.5px;font-weight:800
+  }
+  .col__hd span{font-size:10.5px;font-weight:600;opacity:.75;margin-left:auto}
+
+  /* ---------- 真实界面条 ---------- */
+  .shots{display:flex;gap:18px;margin-top:16px;align-items:stretch}
+  .shot{flex:0 0 auto;text-align:center}
+  .shot img{
+    width:118px;height:auto;display:block;margin:0 auto;border-radius:10px;
+    box-shadow:0 5px 15px rgba(15,23,42,.15), 0 0 0 1px rgba(15,23,42,.06)
+  }
+  .shot__t{margin-top:7px;font-size:10.5px;font-weight:700;color:#1d4ed8}
+  .shot__d{font-size:9px;color:#94a3b8;margin-top:1px;line-height:1.4}
+
+  .shotbox{
+    margin-top:12px;border:1.5px dashed #c7dbfb;border-radius:14px;background:#fbfdff;
+    padding:13px 14px 14px
+  }
+  .shotbox__hd{font-size:11px;font-weight:800;color:#1d4ed8;letter-spacing:.3px;margin-bottom:10px}
+
+  /* ---------- 异常 ---------- */
+  .errs{display:flex;gap:10px;flex-wrap:wrap}
+  .err{
+    flex:1 1 0;min-width:210px;background:#fff6f6;border:1.5px solid #f9cdcd;border-radius:11px;
+    padding:8px 10px
+  }
+  .err__t{font-size:11px;font-weight:700;color:#b91c1c}
+  .err__d{font-size:9.5px;color:#a16262;margin-top:2px;line-height:1.45}
+
+  /* ---------- 图例 ---------- */
+  .legend{
+    margin-top:22px;padding-top:14px;border-top:1px solid #e2e8f0;
+    display:flex;align-items:center;gap:18px;font-size:10.5px;color:#64748b;flex-wrap:wrap
+  }
+  .lg{display:flex;align-items:center;gap:6px}
+  .lg i{width:13px;height:13px;border-radius:4px;border:1.5px solid}
+  .lg-b{background:#f5f9ff;border-color:#c7dbfb}
+  .lg-t{background:#f3fdfb;border-color:#b6ece4}
+  .lg-v{background:#faf7ff;border-color:#ddd0f8}
+  .lg-a{background:#fffbf2;border-color:#f8dcae}
+  .lg-r{background:#fff6f6;border-color:#f9cdcd}
+  .legend .sp{margin-left:auto;font-weight:700;color:#1d4ed8}
+</style>
+</head>
+<body>
+
+<!-- ===================== 页头 ===================== -->
+<div class="head">
+  <h1>3D 打印机 APP ｜ <em>模型导入</em> · 核心操作流程</h1>
+  <div class="meta">
+    <b>单文件</b> ≤ 100MB · ≤ 100 万三角面 &nbsp;·&nbsp; <b>批量</b> ≤ 20 个 · 总量 ≤ 300MB &nbsp;·&nbsp; <b>打印盘上限</b> 8 盘<br>
+    入口：<span class="pill">创意空间 · 顶部左侧「导入模型」</span><br>
+    截图均来自真实可交互原型（同页右侧演示控制台为评审用，正式产品中不存在）
+  </div>
+</div>
+
+<!-- ===================== ① 入口链路 ===================== -->
+<div class="zone zone--blue">
+  <div class="zone-hd">
+    <span class="zone-no">1</span>
+    <span class="zone-t">入口链路</span>
+    <span class="zone-s">从创意空间进入空态编辑页，导入选择弹窗自动升起；三种来源殊途同归</span>
+  </div>
+  <div class="phones">
+    <div class="pnode">
+      <img src="./thumbs/entry.png" alt="创意空间">
+      <div class="pnode__t">创意空间</div>
+      <div class="pnode__d">流程起点<br>顶部左侧「导入模型」为跳转热区</div>
+    </div>
+    <div class="arw" style="align-self:flex-start;margin-top:150px"><div class="arw__lb">导入模型</div><div class="arw__ln"></div></div>
+    <div class="pnode">
+      <img src="./thumbs/empty-editor.png" alt="编辑页空态">
+      <div class="pnode__t">模型编辑页 · 空态</div>
+      <div class="pnode__d">3D 展示区保留但无零件<br>「去打印」置灰并显示原因</div>
+    </div>
+    <div class="arw" style="align-self:flex-start;margin-top:150px"><div class="arw__lb">自动升起</div><div class="arw__ln"></div></div>
+    <div class="pnode">
+      <img src="./thumbs/import-sheet.png" alt="导入选择弹窗">
+      <div class="pnode__t">导入选择弹窗</div>
+      <div class="pnode__d">我的 AI 创作 / 我的切片<br>底部「导入本地模型」固定</div>
+    </div>
+
+    <div class="shotbox" style="margin:0 0 0 26px;flex:1 1 auto">
+      <div class="shotbox__hd">导航规则</div>
+      <div class="card c-teal" style="margin-bottom:8px">
+        <div class="card__t">返回 = 按入口分支回退</div>
+        <div class="card__d">从创意空间进入（空态与导入完成后均为）→ 回创意空间；从模型详情页「打印设置」进入 → 回模型详情页。返回不做退出确认，编辑结果默认保留</div>
+      </div>
+      <div class="card c-teal" style="margin-bottom:8px">
+        <div class="card__t">空态保留 3D 展示区</div>
+        <div class="card__d">打印空间示意框（180×180×180）与平台网格照常渲染、可拖动旋转，仅无任何零件；空态提示沉底展示，不占据页面中央</div>
+      </div>
+      <div class="card c-violet">
+        <div class="card__t">导入 = 追加新盘（顶部左侧「添加」可随时再次导入）</div>
+        <div class="card__d">编辑页已有零件时再次导入 → 追加为新的打印盘，不覆盖、不重置现有任务；每盘以来源文件名独立命名（如「电击小子 1盘 · 恐龙小夜灯 2盘」）</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ② 主线 A ===================== -->
+<div class="zone zone--blue">
+  <div class="zone-hd">
+    <span class="zone-no">2</span>
+    <span class="zone-t">主线 A · 本地导入（理想路径）</span>
+    <span class="zone-s">选择文件 → 逐文件校验 → 超限压缩 → 批量上限 → 导入中 → 自动分盘 → 编辑页 → 接 R001</span>
+  </div>
+
+  <div class="chain">
+    <div class="card c-blue"><div class="card__t">选择本地文件</div><div class="card__d">拉起手机系统文件目录，支持多选 + 已选计数 + 全选；模拟页演示，正式产品调系统选择器</div><div class="card__tag">单次 ≤ 20 个 · ≤ 300MB</div></div>
+    <div class="arw"><div class="arw__ln"></div></div>
+    <div class="card c-blue"><div class="card__t">逐文件校验</div><div class="card__d">固定顺序：格式白名单 → 单文件体积 ≤ 100MB → 三角面 ≤ 100 万。体积小但面数超限的文件同样被拦</div><div class="card__tag">校验顺序错了功能等于不存在</div></div>
+    <div class="arw"><div class="arw__ln"></div></div>
+    <div class="card c-amber"><div class="card__t">超限压缩</div><div class="card__d">体积超限先给选择：按类型自动压缩（3mf 减面 / stl·obj 公差 / gcode 精度 / stp 弦高）或取消重选</div><div class="card__tag">压缩后仍超限 → 拒绝</div></div>
+    <div class="arw"><div class="arw__ln"></div></div>
+    <div class="card c-amber"><div class="card__t">批量上限</div><div class="card__d">超出 20 个 / 300MB 的文件不导入；校验通过的照常进入队列</div><div class="card__tag">丢弃并明确提示</div></div>
+    <div class="arw"><div class="arw__ln"></div></div>
+    <div class="card c-blue"><div class="card__t">导入中</div><div class="card__d">进度条 + 当前文件名 + i / N，导入过程可见、可感知</div><div class="card__tag">传输失败可重试</div></div>
+    <div class="arw"><div class="arw__ln"></div></div>
+    <div class="card c-blue"><div class="card__t">自动分盘</div><div class="card__d">通过的文件自动分盘（追加新盘）+ 自动布局；每盘以来源文件名独立命名</div><div class="card__tag">最多 8 盘</div></div>
+    <div class="arw"><div class="arw__ln"></div></div>
+    <div class="card c-blue"><div class="card__t">编辑页 · 多盘态</div><div class="card__d">标题 = 文件名 · N盘，盘号区可横滑；顶部「添加」随时再次导入</div><div class="card__tag">全部成功仅 Toast 提示</div></div>
+    <div class="arw"><div class="arw__ln"></div></div>
+    <div class="card c-violet"><div class="card__t">结果弹窗（有未导入项时）</div><div class="card__d">失败项在前、逐条列「文件名 + 原因」；「重试未导入项」自动回填失败文件到勾选态</div><div class="card__tag">导入完成即落编辑页</div></div>
+    <div class="arw"><div class="arw__ln"></div></div>
+    <div class="card c-violet"><div class="card__t">接 R001 链路</div><div class="card__d">编辑 → 打印设置 → 云切片 → 准备打印页「保存」→ 我的切片（写读闭环：R001 写，R002 读）</div><div class="card__tag">与 R001 无缝衔接</div></div>
+  </div>
+
+  <div class="shotbox">
+    <div class="shotbox__hd">关键界面 · 均为真实原型截图</div>
+    <div class="shots">
+      <div class="shot"><img src="./thumbs/picker-multi.png" alt="文件目录多选"><div class="shot__t">文件目录 · 多选</div><div class="shot__d">已选计数 + 全选</div></div>
+      <div class="shot"><img src="./thumbs/compress.png" alt="压缩确认"><div class="shot__t">超限压缩确认</div><div class="shot__d">展示压缩策略</div></div>
+      <div class="shot"><img src="./thumbs/progress.png" alt="导入进度"><div class="shot__t">导入中</div><div class="shot__d">进度 + i / N</div></div>
+      <div class="shot"><img src="./thumbs/editor-3.png" alt="编辑页多盘态"><div class="shot__t">编辑页 · 多盘态</div><div class="shot__d">每盘独立命名</div></div>
+      <div class="shot"><img src="./thumbs/r001-detail.png" alt="模型详情页"><div class="shot__t">接 R001 · 模型详情页</div><div class="shot__d">「打印设置」继续链路</div></div>
+      <div class="shot" style="flex:1 1 auto;min-width:0;text-align:left;align-self:stretch;display:flex;margin-left:4px">
+        <div class="card c-teal" style="text-align:left;flex:1 1 auto;display:flex;flex-direction:column;justify-content:center">
+          <div class="card__t">导入完成即落编辑页</div>
+          <div class="card__d">文件目录是"死路"——导入已发生，不再把用户留在目录页。导入结束即切到编辑页；结果弹窗浮在编辑页之上做信息确认，全部成功时仅 Toast</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ③ 主线 B / C ===================== -->
+<div class="zone">
+  <div class="cols" style="margin-top:24px">
+    <div class="col">
+      <div class="col__hd" style="background:#f3fdfb;color:#0f766e">主线 B · 从「我的 AI 创作 / 我的切片」导入 <span>点选即直接导入，无需走文件目录</span></div>
+      <div class="chain">
+        <div class="card c-teal"><div class="card__t">导入选择弹窗</div><div class="card__d">左右菜单切换来源；底部「导入本地模型」固定 → 走主线 A</div></div>
+        <div class="arw"><div class="arw__ln"></div></div>
+        <div class="card c-teal"><div class="card__t">我的 AI 创作</div><div class="card__d">两排多列网格，卡片 = 缩略图 + 名称；点选一条即直接导入</div></div>
+        <div class="arw"><div class="arw__ln"></div></div>
+        <div class="card c-teal"><div class="card__t">我的切片</div><div class="card__d">数据源 =「我的」页保存的切片记录（R001 准备打印页「保存」写入）；点选一条即直接导入</div></div>
+        <div class="arw"><div class="arw__ln"></div></div>
+        <div class="card c-teal"><div class="card__t">同主线 A 落地</div><div class="card__d">导入后同样自动分盘 + 独立命名 + 落编辑页；缩略图由服务端提供</div></div>
+      </div>
+      <div class="shots">
+        <div class="shot"><img src="./thumbs/import-sheet.png" alt="导入选择弹窗"><div class="shot__t">① 选择来源</div><div class="shot__d">左右菜单 + 底部固定按钮</div></div>
+        <div class="shot"><img src="./thumbs/my-slice.png" alt="我的切片"><div class="shot__t">② 我的切片</div><div class="shot__d">卡片 = 缩略图 + 名称</div></div>
+        <div class="card c-amber" style="margin-left:8px;text-align:left;align-self:center;flex:1 1 auto">
+          <div class="card__t">离线时跳过库选入口</div>
+          <div class="card__d">「我的 AI 创作 / 我的切片」数据来自云端存档，离线本地导入时跳过这两个入口、直达文件目录；未绑定打印机的设备阻塞到传输页</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="col__hd" style="background:#faf7ff;color:#6d28d9">主线 C · 无网打印链路 <span>无网也可用，仅支持 gcode</span></div>
+      <div class="chain">
+        <div class="card c-violet"><div class="card__t">网络提醒</div><div class="card__d">顶部常驻提醒条（并列「无网打印 &gt;」）+ 自动弹窗（每登录会话一次）；两个入口殊途同归</div></div>
+        <div class="arw"><div class="arw__ln"></div></div>
+        <div class="card c-violet"><div class="card__t">仅 gcode</div><div class="card__d">无网文件目录里非 gcode 文件锁定并提示「无网打印仅支持 gcode 文件」</div></div>
+        <div class="arw"><div class="arw__ln"></div></div>
+        <div class="card c-amber"><div class="card__t">绑定握手（双向门禁）</div><div class="card__d">APP 校验设备 ID · 设备校验 APP 凭证；未绑定 / 凭证失效 / 未登录 → 禁止进入传输页并给下一步</div></div>
+        <div class="arw"><div class="arw__ln"></div></div>
+        <div class="card c-violet"><div class="card__t">传输与上传</div><div class="card__d">无网文件传输页（进度条）→「上传中」替代云切片 Loading → 完成弹窗「当前已成功上传模型文件，请联网查看当前打印机状态」</div></div>
+      </div>
+      <div class="shots">
+        <div class="shot"><img src="./thumbs/offline-banner.png" alt="网络提醒"><div class="shot__t">① 提醒条 + 自动弹窗</div><div class="shot__d">每会话只弹一次</div></div>
+        <div class="shot"><img src="./thumbs/offline-picker.png" alt="仅 gcode"><div class="shot__t">② 仅 gcode 可选</div><div class="shot__d">其他格式锁定</div></div>
+        <div class="shot"><img src="./thumbs/offline-transfer.png" alt="无网传输"><div class="shot__t">③ 局域网传输</div><div class="shot__d">进度条 + 已传/总计</div></div>
+        <div class="shot"><img src="./thumbs/offline-prepare.png" alt="准备打印页"><div class="shot__t">④ 准备打印页</div><div class="shot__d">顶部无网标签覆盖标题</div></div>
+        <div class="card c-red" style="margin-left:8px;text-align:left;align-self:center;flex:1 1 auto">
+          <div class="card__t">凭证超期不硬拦</div>
+          <div class="card__d">本地凭证 &gt; 30 天未联网校验：允许继续无网打印，仅强提示「建议联网校验绑定状态」——离线可用是刚需，不因校验过期把用户挡在门外</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ④ 异常与边界 ===================== -->
+<div class="zone zone--amber">
+  <div class="zone-hd">
+    <span class="zone-no">4</span>
+    <span class="zone-t">异常与边界</span>
+    <span class="zone-s">所有失败都给具体原因与下一步动作，绝不静默</span>
+  </div>
+  <div class="errs">
+    <div class="err"><div class="err__t">格式不支持</div><div class="err__d">白名单外（stl / 3mf / obj / gcode / stp / zip 之外）记入失败清单，结果弹窗逐条列出</div></div>
+    <div class="err"><div class="err__t">压缩后仍超限</div><div class="err__d">「文件过大，无法继续导入」，提示导出精简版本后重试</div></div>
+    <div class="err"><div class="err__t">批量超限</div><div class="err__d">超出 20 个 / 300MB 的部分不导入，明确提示丢弃数量</div></div>
+    <div class="err"><div class="err__t">8 盘上限</div><div class="err__d">触达上限后剩余文件直接丢弃并提示「已达 8 盘上限」，不合并、不生成第 9 盘</div></div>
+    <div class="err"><div class="err__t">部分成功</div><div class="err__d">通过的文件正常导入，失败不阻断、不整体回滚；失败项在前逐条列原因</div></div>
+    <div class="err"><div class="err__t">上传失败</div><div class="err__d">保留已选文件清单，「重试未导入项」自动回填勾选，无需重新找文件</div></div>
+    <div class="err"><div class="err__t">绑定拦截</div><div class="err__d">未绑定 / 凭证失效 / 未登录 → 禁止进入传输页，明确原因 + 下一步（去绑定需联网）</div></div>
+    <div class="err"><div class="err__t">凭证超期</div><div class="err__d">&gt; 30 天未联网校验：允许继续 + 强提示，不做硬拦截</div></div>
+  </div>
+</div>
+
+<!-- ===================== 图例 ===================== -->
+<div class="legend">
+  <div class="lg"><i class="lg-b"></i>导入主流程</div>
+  <div class="lg"><i class="lg-t"></i>选择来源 / 库选</div>
+  <div class="lg"><i class="lg-v"></i>无网链路</div>
+  <div class="lg"><i class="lg-a"></i>校验 / 压缩 / 门禁</div>
+  <div class="lg"><i class="lg-r"></i>异常与拦截</div>
+  <div class="sp">R002 · 模型导入 · v1.0</div>
+</div>
+
+</body>
+</html>
