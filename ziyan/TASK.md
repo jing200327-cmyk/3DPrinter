@@ -1233,3 +1233,12 @@
 - 已用原有 build-publish.py 准备 `ziyan/_publish-prototypes-fixed`，共 93 个文件，14.4 MB，资源检查无断链；index.html / prototype.js / styles.css 与 c112412 源文件逐字节哈希一致，新增设备标记和 r012 版本串齐全。
 - 更新包：`E:\3Dprinter\prd-output\prototype-release-20261019\prototype-release-c112412.zip`，同目录 release-manifest.json 记录目标链接、源提交及包哈希，状态为 ready_not_deployed。
 - 待完成：当前工具、插件目录及项目部署配置均未找到 WorkBuddy 的发布能力，已询问用户原站点项目入口或发布方式；有可用入口后必须更新原站点并回读验证，不能将本地构建或 Git 推送表述为上线成功。
+
+## 2026-10-19｜选择较短发布路径并发布新 Sites 链接
+
+- 用户补充允许新旧两条发布路径中选择步骤更少者。旧址需原 WorkBuddy 工作区与其内置运行时，本环境均不具备；采用可直接调用的 Sites，未改原 WorkBuddy 站点。
+- 新地址：`https://ziyan-printer-prototypes.upbeattide17.chatgpt.site`，默认仅本人访问。配网/打印原型完整捆绑发布，包含 UG-01 已绑定拦截与 UG-02 直接连接，未改功能代码。
+- Sites 源码提交 `ba295e0ab83f174aff1c88ffb41a6ac03025387e` 已推送；官方发布包打包成功；部署 `appgdep_6ad5cfd7fd4c81918e68e2c56ede28a7` 返回 succeeded 和正式 URL。
+- 验证发布目录四个变更文件与已验收源码逐字节一致。沿用上轮专项/分享回归结果；未声称已完成登录后线上浏览器复验。
+- Windows 发布兼容处理：Git HTTP/1.1 + 请求缓冲、Git Bash 优先于系统 WSL、tar force-local；临时凭证续签后通过隐藏 stdin 输入，无凭证写盘。
+- Project.md、SITEMAP、README 已记录新地址及最新授权，具体站点身份与可复用步骤见 `_memory/SITES_HOSTING.md`，后续无需重复创建站点。
