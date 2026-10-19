@@ -152,7 +152,7 @@
 | 发布目录生成器 | `lianjiepeiwnag/打印机首次配网连接流程原型/tests/build-publish.py` → `ziyan/_publish-prototypes`（约 14 MB，只复制被引用到的资源，自带发布根页） |
 | 发布后互通校验 | `lianjiepeiwnag/打印机首次配网连接流程原型/tests/publish-links-check.mjs <站点根URL>`（28 项断言） |
 | 目录结构要求 | `lianjiepeiwnag/…`、`dayinji/…`、`src/`、`原型修改复用图片资源/`、`ugee/` 的层级不变；分开发布成两个站点会让跨原型跳转 404 |
-| 当前线上地址（2026-10-19） | `https://ziyan-printer-prototypes.upbeattide17.chatgpt.site`，Sites 部署成功，默认仅本人访问，包含 r012 的 UG-01/UG-02 修改。用户最新授权按新旧两条路径中步骤更少者执行；后续复用此站点，详见 `SITES_HOSTING.md`。旧 WorkBuddy 地址 `https://9cc38d446e9c46c590783b982a6f0e68.app.workbuddy.host/` 保留未改，更新需要原工作区运行时。 |
+| 当前线上地址（2026-10-19） | `https://ziyan-printer-prototypes.upbeattide17.chatgpt.site`，Sites 部署成功，所有人可访问，包含 r012 的 UG-01/UG-02 修改。用户最新授权按新旧两条路径中步骤更少者执行；后续复用此站点，详见 `SITES_HOSTING.md`。旧 WorkBuddy 地址 `https://9cc38d446e9c46c590783b982a6f0e68.app.workbuddy.host/` 保留未改，更新需要原工作区运行时。 |
 | 静态资源版本串 | `?v=r007`（2026-10-08 抬起；源 `dayinji/自研款打印机打印页面原型/index.html` 与发布目录同步维护），改文件必须抬版本号；由 `tests/prototype-contract.ps1` 强制校验 |
 | 线上验收脚本 | `dayinji/自研款打印机打印页面原型/tests/check-online-filament.mjs <站点根URL> [查询串]`（真实浏览器断言句柄注入 + 插画 `naturalWidth > 0`）。注意：`publish-links-check.mjs` 固定 900ms 等待，对线上跑会因网络延迟误报（2026-10-08 实测本地 28/28 过、线上误报 6 项，线上字节与本地一致），线上验收以专项探测为准 |
 | 跨原型链路 | 配网终页「已完成，取消」→ 打印页面原型；打印页「添加打印机 → 配置新的打印机」→ 配网 `?screen=printer-select`；加入成功「查看我的打印机」→ 打印页面原型 |

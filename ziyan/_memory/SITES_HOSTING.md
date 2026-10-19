@@ -3,7 +3,7 @@
 2026-10-19 用户授权：比较重用旧链接和发布新链接，执行步骤更少的方法。本环境缺 WorkBuddy 运行时，故使用 Sites 发布新链接。后续复用此站点，避免重复创建。
 
 - 当前地址：https://ziyan-printer-prototypes.upbeattide17.chatgpt.site
-- 访问范围：Sites 新站默认仅本人访问，未设置公开访问。
+- 访问范围：2026-10-19 按用户要求改为 public，所有人可通过链接访问；后续发布保持公开。
 - project_id：`appgprj_6ad5cca2861081918956f044fcb9b305`
 - 发布 checkout：`E:\3Dprinter\sites\printer-prototypes`
 - 身份文件：上述 checkout 的 `.openai/hosting.json`，静态目录为 `dist`。

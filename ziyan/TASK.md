@@ -1242,3 +1242,9 @@
 - 验证发布目录四个变更文件与已验收源码逐字节一致。沿用上轮专项/分享回归结果；未声称已完成登录后线上浏览器复验。
 - Windows 发布兼容处理：Git HTTP/1.1 + 请求缓冲、Git Bash 优先于系统 WSL、tar force-local；临时凭证续签后通过隐藏 stdin 输入，无凭证写盘。
 - Project.md、SITEMAP、README 已记录新地址及最新授权，具体站点身份与可复用步骤见 `_memory/SITES_HOSTING.md`，后续无需重复创建站点。
+
+## 2026-10-19｜原型站点开放所有人访问
+
+- 用户明确要求所有人可访问。使用 Sites 原生访问策略接口将既有站点改为 public，回读确认 access_mode=public、revision=2。
+- URL 不变：https://ziyan-printer-prototypes.upbeattide17.chatgpt.site ，未重新构建或部署页面。
+- 已同步项目说明与发布记录，后续更新保留公开访问范围。

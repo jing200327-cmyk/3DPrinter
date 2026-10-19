@@ -225,7 +225,7 @@
 
 ## 发布（线上预览）
 
-**当前发布站点（2026-10-19）**：[趣打印原型站点](https://ziyan-printer-prototypes.upbeattide17.chatgpt.site)，默认仅本人访问。用户最新授权比较新旧发布路径并选择步骤更少者，故采用当前环境可直接调用的 Sites；已部署本次 UG-01/UG-02 更新。后续优先复用此站点，具体身份与发布步骤见 `../../_memory/SITES_HOSTING.md`。旧 WorkBuddy 链接保留未改；若需更新旧链接，必须在原 WorkBuddy 工作区使用其原发布目录。Git 推送和本地打包不等于上线。
+**当前发布站点（2026-10-19）**：[趣打印原型站点](https://ziyan-printer-prototypes.upbeattide17.chatgpt.site)，所有人可访问。用户最新授权比较新旧发布路径并选择步骤更少者，故采用当前环境可直接调用的 Sites；已部署本次 UG-01/UG-02 更新。后续优先复用此站点，具体身份与发布步骤见 `../../_memory/SITES_HOSTING.md`。旧 WorkBuddy 链接保留未改；若需更新旧链接，必须在原 WorkBuddy 工作区使用其原发布目录。Git 推送和本地打包不等于上线。
 
 两套原型用 `../../` 相对路径互跳，必须同站点发布；发布目录由 `lianjiepeiwnag/打印机首次配网连接流程原型/tests/build-publish.py` 生成（默认 `ziyan/_publish-prototypes`，也可传参指定新目录，例如 `ziyan/_publish-prototypes-r008`），互通校验用 `tests/publish-links-check.mjs <站点根URL>`。发布根页（启动器）会列出两个原型的入口，含「打印机离线状态」工作台直达链接。
 
