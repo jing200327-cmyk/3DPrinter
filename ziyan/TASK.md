@@ -1225,3 +1225,11 @@
 - 验收：先运行新增浏览器用例确认旧页面缺少其它打印机，再完成实现；添加打印机专项最终通过，覆盖鼠标与键盘、Owner 拦截、连接迁移/去重、返回保留、分享与配网跳转，以及 320×568 / 375×812 / 768×1024 / 1440×900 四种视口。分享打印机原有 221 项验收全部通过，浏览器无异常，git diff --check 通过。
 - 既有结构契约检查未通过：缺少 `id="timelapse-screen-frame"`；使用修改前 HEAD 的页面重跑同样失败，确认是基线问题，本次不扩展修改延时摄影模块。
 - 后续修改继续使用 `feature/prd-prototype-revision-20261019` 分支。
+
+## 2026-10-19｜固定原型发布地址与发布包准备
+
+- 用户指定以后所有原型统一发布至 `https://9cc38d446e9c46c590783b982a6f0e68.app.workbuddy.host/`，本次更新其“打印页面原型”入口。已同步 Project.md、SITEMAP 与打印原型 README，撤销通过换沙箱/域名规避缓存的旧建议。
+- 只读回查：根页及打印页面 HTTP 200；线上打印页仍引用 `prototype.js?v=r011`，不含 `other-printers-list`、`printer-ug01`、`printer-ug02`，因此当前尚未上线本次更新。
+- 已用原有 build-publish.py 准备 `ziyan/_publish-prototypes-fixed`，共 93 个文件，14.4 MB，资源检查无断链；index.html / prototype.js / styles.css 与 c112412 源文件逐字节哈希一致，新增设备标记和 r012 版本串齐全。
+- 更新包：`E:\3Dprinter\prd-output\prototype-release-20261019\prototype-release-c112412.zip`，同目录 release-manifest.json 记录目标链接、源提交及包哈希，状态为 ready_not_deployed。
+- 待完成：当前工具、插件目录及项目部署配置均未找到 WorkBuddy 的发布能力，已询问用户原站点项目入口或发布方式；有可用入口后必须更新原站点并回读验证，不能将本地构建或 Git 推送表述为上线成功。

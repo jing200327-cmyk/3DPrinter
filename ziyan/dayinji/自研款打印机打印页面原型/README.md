@@ -225,13 +225,15 @@
 
 ## 发布（线上预览）
 
+**固定发布站点（用户 2026-10-19 指定）**：[趣打印原型站点](https://9cc38d446e9c46c590783b982a6f0e68.app.workbuddy.host/)。以后所有原型发布均更新此站点，本次对应根页的“打印页面原型”入口。不得因缓存或工具限制另建站点或更换 URL；必须在原站点刷新发布并回读确认。Git 推送和本地打包都不等于已经上线。
+
 两套原型用 `../../` 相对路径互跳，必须同站点发布；发布目录由 `lianjiepeiwnag/打印机首次配网连接流程原型/tests/build-publish.py` 生成（默认 `ziyan/_publish-prototypes`，也可传参指定新目录，例如 `ziyan/_publish-prototypes-r008`），互通校验用 `tests/publish-links-check.mjs <站点根URL>`。发布根页（启动器）会列出两个原型的入口，含「打印机离线状态」工作台直达链接。
 
-**静态资源一律带 `?v=` 版本查询串**（`styles*.css` / `share-code-pool.js` / `prototype.js`）。原因：线上网关会按 `Accept-Encoding` 分片缓存静态文件，重新部署后浏览器仍可能命中旧分片（表现为新 HTML 配旧 JS → 页面报 `Cannot read properties of null`）。**以后每次改动这些文件，都要把 `index.html` 里的 `?v=` 值往上抬一版**（`styles.css` 与 `prototype.js` 当前 `r011`，其余仍 `r008`），并在契约测试里被强制校验。
+**静态资源一律带 `?v=` 版本查询串**（`styles*.css` / `share-code-pool.js` / `prototype.js`）。原因：线上网关会按 `Accept-Encoding` 分片缓存静态文件，重新部署后浏览器仍可能命中旧分片（表现为新 HTML 配旧 JS → 页面报 `Cannot read properties of null`）。**以后每次改动这些文件，都要把 `index.html` 里的 `?v=` 值往上抬一版**（`styles.css` 与 `prototype.js` 当前 `r012`，其余仍 `r008`），并在契约测试里被强制校验。
 
 > `?v=` 只需抬高**被改动的那几个文件**。例如只改了 `styles.css`，就只把 `styles.css?v=` 抬一版（`index.html` 与 `index-offline.html` 两处都要改），其它文件保持不动。
 
-> **注意：网关连 `index.html` 本身也会缓存**（`Eo-Cache-Status: HIT`，两种 `Accept-Encoding` 变体都是旧的）。所以「改了 `?v=` 但线上还是旧版」时，根因往往不在子资源，而是**入口 HTML 根本没刷新**——此时抬版本号也没用（HTML 旧 → 里面引的还是旧 `?v=`）。可靠的处置是**换一个冷缓存的沙箱**（把发布目录复制成新目录再部署，会分配新沙箱），发布后用 `tests/check-online-firmware.mjs <站点根URL>` 断言「线上 JS 里已经是新函数名」再交付。
+> **注意：网关连 `index.html` 本身也可能缓存**。出现旧内容时，检查原站点的部署是否更新、入口 HTML 与静态资源版本是否一致，并在原发布平台刷新缓存。按用户固定链接约定，不再通过更换沙箱或域名规避缓存。发布后须回读原地址的 HTML、JS，并验证 UG-01 绑定拦截与 UG-02 连接交互。
 
 ## 验证
 
