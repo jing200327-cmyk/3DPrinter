@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f4f5fa">
   <title>自研款打印机打印页面原型</title>
-  <link rel="stylesheet" href="styles.css?v=r011">
+  <link rel="stylesheet" href="styles.css?v=r012">
   <link rel="stylesheet" href="styles-share-printer.css?v=r008">
   <link rel="stylesheet" href="styles-filament-operation.css?v=r008">
   <link rel="stylesheet" href="styles-3d-preview.css?v=r008">
@@ -311,7 +311,40 @@
   <section id="add-printer-screen" class="reuse-screen" hidden tabindex="-1" aria-label="添加打印机">
     <div class="reuse-screen-frame">
       <div class="reuse-stage" style="--reuse-ratio: 846 / 1720">
-        <img src="../../原型修改复用图片资源/添加打印机.png" alt="添加打印机页，包含我的打印机列表与配置新的打印机按钮">
+        <img src="../../原型修改复用图片资源/添加打印机.png" alt="" aria-hidden="true">
+        <div class="add-printer-catalog">
+          <section aria-labelledby="my-printers-heading">
+            <h2 id="my-printers-heading">我的打印机</h2>
+            <div id="my-printers-list" class="printer-list">
+              <button class="printer-card" type="button" aria-pressed="true">
+                <span class="printer-card-icon" aria-hidden="true"></span>
+                <span class="printer-card-copy"><span class="printer-name">Ugee Funbox</span><span class="printer-status">空闲</span></span>
+                <span class="printer-selected" aria-hidden="true">✓</span>
+              </button>
+              <button class="printer-card" type="button" aria-pressed="false">
+                <span class="printer-card-icon" aria-hidden="true"></span>
+                <span class="printer-card-copy"><span class="printer-name">Ugee Ufun</span><span class="printer-status printer-status--busy">忙碌</span></span>
+                <span class="printer-selected" aria-hidden="true">✓</span>
+              </button>
+            </div>
+          </section>
+          <section aria-labelledby="other-printers-heading">
+            <h2 id="other-printers-heading">其它打印机</h2>
+            <div id="other-printers-list" class="printer-list">
+              <button id="printer-ug01" class="printer-card" type="button">
+                <span class="printer-card-icon" aria-hidden="true"></span>
+                <span class="printer-card-copy"><span class="printer-name">UG-01</span></span>
+                <span class="printer-selected" aria-hidden="true">✓</span>
+              </button>
+              <button id="printer-ug02" class="printer-card" type="button">
+                <span class="printer-card-icon" aria-hidden="true"></span>
+                <span class="printer-card-copy"><span class="printer-name">UG-02</span></span>
+                <span class="printer-selected" aria-hidden="true">✓</span>
+              </button>
+            </div>
+          </section>
+          <p id="printer-add-announcement" class="sr-only" role="status"></p>
+        </div>
         <!-- 顶部右侧、略低于标题「添加打印机」的新入口：分享打印机。
              原图此处是空白，所以按钮需要自绘文字（不是透明热区）。 -->
         <button id="open-share-printer" class="add-printer-share-entry" type="button" aria-label="分享打印机">
@@ -964,6 +997,15 @@
   <!-- 3D 预览页逻辑；three.js 与内嵌模型数据（base64 STL，约 1.2 MB，绕开 file:// 的 CORS 限制）
        由它在第一次打开预览页时才按需加载，不拖慢打印页面首屏 -->
   <script src="prototype-3d-preview.js?v=r008"></script>
-  <script src="prototype.js?v=r011"></script>
+  <dialog id="printer-bound-dialog" class="app-dialog" aria-labelledby="printer-bound-title" aria-describedby="printer-bound-copy">
+    <form method="dialog">
+      <h2 id="printer-bound-title">无法连接打印机</h2>
+      <p id="printer-bound-copy">当前该打印机已被其它用户绑定，请联系设备 Owner，通过分享打印机加入其家庭群组后使用。</p>
+      <div class="dialog-actions">
+        <button id="printer-bound-confirm" value="confirm" data-tone="primary" autofocus>我知道了</button>
+      </div>
+    </form>
+  </dialog>
+  <script src="prototype.js?v=r012"></script>
 </body>
 </html>

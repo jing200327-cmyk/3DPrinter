@@ -1054,6 +1054,26 @@ timelapseActionButton.addEventListener('click', () => openReuseScreen('timelapse
 
 
 /* ---------- 添加打印机 → 配置新的打印机 ---------- */
+/* 仅为当前页面的发现/绑定演示数据；已有 Owner 的设备必须通过分享使用。 */
+const myPrintersList = document.querySelector('#my-printers-list');
+const printerBoundDialog = document.querySelector('#printer-bound-dialog');
+document.querySelector('#printer-ug01').addEventListener('click', () => printerBoundDialog.showModal());
+myPrintersList.addEventListener('click', (event) => {
+  const card = event.target.closest('.printer-card');
+  if (!card) return;
+  myPrintersList.querySelectorAll('.printer-card').forEach(item => item.setAttribute('aria-pressed', String(item === card)));
+});
+document.querySelector('#printer-ug02').addEventListener('click', (event) => {
+  const card = event.currentTarget;
+  if (card.parentElement === myPrintersList) return;
+  const status = document.createElement('span');
+  status.className = 'printer-status';
+  status.textContent = '已连接';
+  card.querySelector('.printer-card-copy').append(status);
+  myPrintersList.append(card);
+  myPrintersList.querySelectorAll('.printer-card').forEach(item => item.setAttribute('aria-pressed', String(item === card)));
+  document.querySelector('#printer-add-announcement').textContent = 'UG-02 已连接，已加入我的打印机。';
+});
 document.querySelector('#add-printer-back').addEventListener('click', goBackInReuseScreens);
 document.querySelector('#configure-new-printer').addEventListener('click', () => {
   /* 真实跳转到首次配网连接流程原型的第二页「选择要设置的打印机」 */

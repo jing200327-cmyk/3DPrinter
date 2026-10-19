@@ -466,6 +466,32 @@ body.operation-open { overflow: hidden; }
 .dialog-actions button[data-tone="outline"] { border: 1.5px solid #1c1c1e; color: #1c1c1e; background: #fff; }
 .dialog-actions button[data-tone="upgrade"] { color: #fff; background: linear-gradient(100deg, #7456ee 0%, #3981f1 100%); }
 /* 添加打印机页：底部“配置新的打印机”（坐标按 846×1720 原图量取） */
+.add-printer-catalog {
+  --printer-unit: calc(min(100vw, var(--device-width)) / 846);
+  position: absolute;
+  top: 15.5%;
+  right: 0;
+  bottom: 18%;
+  left: 0;
+  padding: 0 9.34%;
+  background: #fff;
+}
+.add-printer-catalog section + section { margin-top: calc(32 * var(--printer-unit)); }
+.add-printer-catalog h2 { margin: 0 0 calc(16 * var(--printer-unit)); font-size: calc(34 * var(--printer-unit)); font-weight: 600; line-height: calc(42 * var(--printer-unit)); color: #18191d; }
+.printer-list { display: grid; gap: calc(25 * var(--printer-unit)); }
+.printer-card { position: relative; display: flex; align-items: center; gap: calc(24 * var(--printer-unit)); width: 100%; height: calc(190 * var(--printer-unit)); padding: calc(24 * var(--printer-unit)); border: 1px solid #e4e7ed; border-radius: calc(20 * var(--printer-unit)); background: #f6f7fb; text-align: left; cursor: pointer; }
+.printer-card[aria-pressed="true"] { border-color: #a28cff; box-shadow: inset 0 0 0 .5px #a28cff; }
+.printer-card:active { background-color: #eef0fa; }
+/* 直接复用底图中原有的打印机插图，保持两组列表图标一致。 */
+.printer-card-icon { flex: 0 0 calc(128 * var(--printer-unit)); height: calc(142 * var(--printer-unit)); background: url("../../原型修改复用图片资源/添加打印机.png") calc(-107 * var(--printer-unit)) calc(-352 * var(--printer-unit)) / calc(846 * var(--printer-unit)) calc(1720 * var(--printer-unit)) no-repeat; }
+.printer-card-copy { display: grid; gap: calc(18 * var(--printer-unit)); min-width: 0; }
+.printer-name { color: #17181d; font-size: calc(38 * var(--printer-unit)); font-weight: 600; white-space: nowrap; }
+.printer-status { display: flex; align-items: center; gap: calc(10 * var(--printer-unit)); color: #828793; font-size: calc(28 * var(--printer-unit)); line-height: 1.3; }
+.printer-status::before { width: calc(12 * var(--printer-unit)); height: calc(12 * var(--printer-unit)); border-radius: 50%; background: #42cda4; content: ""; }
+.printer-status--busy::before { background: #ecad29; }
+.printer-selected { position: absolute; top: calc(12 * var(--printer-unit)); right: calc(20 * var(--printer-unit)); display: none; color: #9c80fb; font-size: calc(30 * var(--printer-unit)); }
+.printer-card[aria-pressed="true"] .printer-selected { display: block; }
+#printer-bound-dialog .dialog-actions { grid-template-columns: 1fr; }
 .reuse-hotspot--configure-printer { left: 13%; top: 86.4%; width: 74.23%; height: 7.67%; border-radius: 999px; }
 /* 移除打印机弹窗：取消 / 确认（坐标按 411×879 原图量取） */
 .reuse-hotspot--remove-cancel { left: 23%; top: 49.5%; width: 20%; height: 9%; border-radius: 999px; }
