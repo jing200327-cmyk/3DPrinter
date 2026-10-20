@@ -1248,3 +1248,11 @@
 - 用户明确要求所有人可访问。使用 Sites 原生访问策略接口将既有站点改为 public，回读确认 access_mode=public、revision=2。
 - URL 不变：https://ziyan-printer-prototypes.upbeattide17.chatgpt.site ，未重新构建或部署页面。
 - 已同步项目说明与发布记录，后续更新保留公开访问范围。
+
+## 2026-10-20｜GitHub Pages 公开原型发布与直连验证
+
+- 仓库公开且现有凭证具备管理权限。创建独立发布分支 gh-pages，源码分支不变；原 build-publish.py 输出 14.4 MB 捆绑包，资源无断链，新增 .nojekyll，发布提交 57f5fe2。
+- 推送后 GitHub 已自动启用 Pages；随后配置请求返回 already enabled，回读确认 built、gh-pages:/、HTTPS。部署任务 success。新地址：https://jing200327-cmyk.github.io/3DPrinter/ 。Sites 保留。
+- 验收脚本增加 PRINTER_PAGE_URL，支持线上复验；从 about:blank 显式导航并等待 load，避免线上导航导致执行上下文销毁。本地、线上专项均通过。页面功能代码未变。
+- 禁用 HTTP 代理请求打印页 HTML/JS 为 200；Python 根入口请求连接关闭，curl 根入口为 200、随后 index.html TLS 失败。已记录不稳定性，未声称国内全网无需代理稳定访问。
+- Project.md、README、SITEMAP 与 GITHUB_PAGES.md 已记录站点、发布方法和证据边界。

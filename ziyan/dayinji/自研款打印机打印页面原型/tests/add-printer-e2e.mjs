@@ -7,11 +7,12 @@ import { pathToFileURL } from 'node:url';
 import assert from 'node:assert/strict';
 
 const root = path.resolve(import.meta.dirname, '..');
+const pageUrl = process.env.PRINTER_PAGE_URL || pathToFileURL(path.join(root, 'index.html')).href;
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'printer-add-'));
 const shots = process.env.PRINTER_SCREENSHOTS || profile;
 const chrome = spawn('C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', [
   '--headless=new', '--disable-gpu', '--hide-scrollbars', '--remote-debugging-port=0',
-  `--user-data-dir=${profile}`, '--window-size=375,812', pathToFileURL(path.join(root, 'index.html')).href
+  `--user-data-dir=${profile}`, '--window-size=375,812', 'about:blank'
 ], { stdio: 'ignore' });
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 let socket;
@@ -24,8 +25,10 @@ try {
   const pending = new Map();
   const errors = [];
   let sequence = 0;
+  let finishLoad;
   socket.addEventListener('message', ({ data }) => {
     const message = JSON.parse(data);
+    if (message.method === 'Page.loadEventFired') finishLoad?.();
     if (message.id) {
       const item = pending.get(message.id);
       pending.delete(message.id);
@@ -40,6 +43,10 @@ try {
   const send = (method, params = {}) => new Promise((resolve, reject) => {
     pending.set(++sequence, { resolve, reject });
     socket.send(JSON.stringify({ id: sequence, method, params }));
+  });
+  const waitForLoad = () => new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('页面加载超时')), 60000);
+    finishLoad = () => { clearTimeout(timer); finishLoad = null; resolve(); };
   });
   const evaluate = async expression => {
     const result = await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true });
@@ -67,6 +74,16 @@ try {
   await send('Runtime.enable');
   await send('Page.enable');
   await send('Emulation.setDeviceMetricsOverride', {width:375,height:812,deviceScaleFactor:1,mobile:false});
+  const initialLoad = waitForLoad();
+  await send('Page.navigate', {url:pageUrl});
+  await initialLoad;
+  assert.equal(await evaluate(`(async () => {
+    for (let i=0;i<120;i++) {
+      if(document.readyState==='complete' && document.querySelector('#printer-ug01')) return true;
+      await new Promise(resolve=>setTimeout(resolve,500));
+    }
+    return false;
+  })()`), true, '页面与交互脚本加载完成');
   await evaluate('document.fonts.ready.then(() => true)');
   await click('#printer-switch');
   assert.equal(await evaluate('document.querySelector("#other-printers-heading")?.textContent'), '其它打印机');
@@ -113,7 +130,9 @@ try {
   assert.equal(await evaluate('document.querySelector("#share-printer-screen").hidden'), false);
   await click('#share-printer-back');
   assert.equal(await evaluate('document.querySelector("#other-printers-list #printer-ug01") !== null'), true);
+  const pairingLoad = waitForLoad();
   await click('#configure-new-printer');
+  await pairingLoad;
   assert.match(await evaluate('location.href'), /打印机首次配网连接流程原型\/index\.html\?screen=printer-select|%E6%89%93%E5%8D%B0.*screen=printer-select/);
   assert.deepEqual(errors, [], '浏览器无异常');
   console.log('PASS: UG-01 归属拦截、UG-02 连接与去重、返回保留、键盘、四种视口、分享入口、首次配网跳转；截图：'+shots);

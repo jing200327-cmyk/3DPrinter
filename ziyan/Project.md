@@ -187,3 +187,5 @@
 完成要求：每次进行新原型设计和修改都总结进入到TASKmd文档，并按时间线进行排版，每次进行新任务前都对该文档进行读取；每次完成任务前读取该项目文档。
 
 发布约定（2026-10-19 最新）：用户允许比较新旧链接并执行步骤更少的方案；当前采用 Sites，已发布 https://ziyan-printer-prototypes.upbeattide17.chatgpt.site （所有人可访问）。后续优先复用此站点，身份和发布步骤见 `_memory/SITES_HOSTING.md`。原 WorkBuddy 地址 https://9cc38d446e9c46c590783b982a6f0e68.app.workbuddy.host/ 保留未改；更新旧址需要原 WorkBuddy 工作区和运行时。配网与打印原型继续同站点、保持相对路径互跳。只有部署服务返回成功才可报告已上线。
+
+2026-10-20 新增 GitHub Pages 公开站点：https://jing200327-cmyk.github.io/3DPrinter/ ，用于按用户要求尝试国内无需代理访问。发布源为 gh-pages 根目录，源码修改仍在 feature/prd-prototype-revision-20261019。已确认 built、HTTPS 与线上交互通过；无 HTTP 代理请求有成功也有连接失败，不能保证国内所有网络稳定直连。Sites 保留，具体见 _memory/GITHUB_PAGES.md。
