@@ -152,9 +152,9 @@ assert(page.placeholderAllSquare, '占位图未按 1:1 方图排版');
 assert(page.placeholderAllDashed, '占位图应使用虚线边框表示待补图');
 assert(JSON.stringify(page.imagesPerStep) === JSON.stringify([2, 2, 2]), `每步应为 2 张图：${JSON.stringify(page.imagesPerStep)}`);
 
-assert(page.gotoFeedText === '去进料', `左侧按钮文案应为「去进料」，实际 ${page.gotoFeedText}`);
-assert(page.gotoPrintText === '去打印', `右侧按钮文案应为「去打印」，实际 ${page.gotoPrintText}`);
-assert(page.feedIsLeft, '「去进料」应在左侧、「去打印」在右侧');
+assert(page.gotoFeedText === '去进料', `右侧按钮文案应为「去进料」，实际 ${page.gotoFeedText}`);
+assert(page.gotoPrintText === '去打印', `左侧按钮文案应为「去打印」，实际 ${page.gotoPrintText}`);
+assert(!page.feedIsLeft, '「去打印」应在左侧、「去进料」在右侧');
 assert(page.feedBox.h >= 44 && page.printBox.h >= 44, '底部按钮高度不足 44px');
 assert(page.feedBox.inView && page.printBox.inView, '底部按钮需无需滚动即可点击');
 await shot(cdp, 'prototype-print-ready-real.png');

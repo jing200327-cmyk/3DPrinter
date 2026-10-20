@@ -297,7 +297,7 @@ try {
   assert(JSON.stringify(connection.stepTitles) === JSON.stringify(['插入耗材', '进料', '观察喷嘴']), `The three filament steps are wrong: ${JSON.stringify(connection.stepTitles)}`);
   assert(connection.mediaCount === 6 && JSON.stringify(connection.mediaTags) === JSON.stringify(['图片1', '图片2', '图片3', '图片4', '图片5', '图片6']), `The six filament placeholders are wrong: ${JSON.stringify(connection.mediaTags)}`);
   assert(connection.backButton.label === '返回打印机打印页面' && connection.backButton.width >= 44 && connection.backButton.height >= 44 && connection.backButton.inViewport, `The back button is not usable: ${JSON.stringify(connection.backButton)}`);
-  assert(connection.actions.feedText === '去进料' && connection.actions.printText === '去打印' && connection.actions.feedIsLeft, `The bottom actions are wrong: ${JSON.stringify(connection.actions)}`);
+  assert(connection.actions.feedText === '去进料' && connection.actions.printText === '去打印' && !connection.actions.feedIsLeft, `The bottom actions are wrong: ${JSON.stringify(connection.actions)}`);
   assert(connection.actions.feedHeight >= 44 && connection.actions.printHeight >= 44 && connection.actions.inViewport, `The bottom actions must be reachable: ${JSON.stringify(connection.actions)}`);
   await saveScreenshot(cdp, finalPreviewPath);
 
