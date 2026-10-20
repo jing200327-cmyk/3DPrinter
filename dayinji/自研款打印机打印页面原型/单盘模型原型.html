@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>单盘模型打印原型</title>
+  <style>
+    body { display: grid; min-height: 100vh; margin: 0; background: #f3f4f8; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; place-items: center; }
+    .card { display: grid; gap: 12px; width: min(320px, 86vw); padding: 28px 24px; border-radius: 20px; background: #fff; box-shadow: 0 12px 40px rgb(50 55 72 / 10%); text-align: center; }
+    h1 { margin: 0; color: #1c1c1e; font-size: 18px; }
+    p { margin: 0; color: #6b7280; font-size: 13px; line-height: 1.7; }
+    a { display: block; padding: 13px 0; border-radius: 999px; color: #fff; background: #4388f5; font-size: 15px; font-weight: 600; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>单盘模型打印原型</h1>
+    <p>单盘打印模型演示：无打印队列；取消弹窗为「暂不 / 取消任务」单盘版；重新打印进入只承接喷嘴升温的准备中。</p>
+    <a href="index.html?plates=single">进入单盘模型原型</a>
+    <a href="index.html?plates=single&amp;status=printing" style="background:#36b77e;">直接进入打印中</a>
+  </main>
+  <script>
+    window.location.replace('index.html?plates=single');
+  </script>
+</body>
+</html>

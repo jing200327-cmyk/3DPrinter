@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f5ff">
+  <title>打印机首次配网连接流程原型</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-join-share.css">
+  <link rel="stylesheet" href="styles-pairing-help.css">
+</head>
+<body>
+  <!-- 家庭共享插画（页面一 / 页面二共用） -->
+  <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+    <symbol id="art-family-share" viewBox="0 0 300 170">
+      <ellipse cx="150" cy="152" rx="126" ry="13" fill="#E8EFFA"></ellipse>
+      <circle cx="148" cy="84" r="78" fill="#F1F6FE"></circle>
+      <rect x="70" y="38" width="52" height="18" rx="7" fill="#CFE1FD"></rect>
+      <rect x="52" y="52" width="88" height="86" rx="24" fill="#FFFFFF" stroke="#DCE6F4" stroke-width="3"></rect>
+      <circle cx="96" cy="95" r="27" fill="#EAF2FE" stroke="#BCD6F8" stroke-width="4"></circle>
+      <circle cx="96" cy="95" r="18" fill="#D7E7FC"></circle>
+      <circle cx="118" cy="76" r="4" fill="#7FB2FF"></circle>
+      <rect x="66" y="136" width="13" height="7" rx="3.5" fill="#E2EAF6"></rect>
+      <rect x="113" y="136" width="13" height="7" rx="3.5" fill="#E2EAF6"></rect>
+      <path d="M146 98q22 15 40 5" fill="none" stroke="#BFD7FB" stroke-width="3" stroke-dasharray="4 6" stroke-linecap="round"></path>
+      <circle cx="152" cy="101" r="4" fill="#A9C9F6"></circle>
+      <circle cx="174" cy="104" r="3" fill="#A9C9F6"></circle>
+      <circle cx="204" cy="60" r="28" fill="#CFE1FD"></circle>
+      <circle cx="204" cy="52" r="10" fill="#3E7FE0"></circle>
+      <path d="M186 74a18 18 0 0 1 36 0z" fill="#3E7FE0"></path>
+      <circle cx="252" cy="106" r="21" fill="#4388F5"></circle>
+      <circle cx="252" cy="100" r="7.6" fill="#FFFFFF"></circle>
+      <path d="M240 115a12 12 0 0 1 24 0z" fill="#FFFFFF"></path>
+      <circle cx="272" cy="42" r="3.4" fill="#CFE1FD"></circle>
+      <circle cx="160" cy="34" r="4.4" fill="#DCE9FB"></circle>
+      <circle cx="36" cy="66" r="3" fill="#DCE9FB"></circle>
+    </symbol>
+    <symbol id="art-join-success" viewBox="0 0 200 160">
+      <circle cx="100" cy="80" r="72" fill="#F1F6FE"></circle>
+      <ellipse cx="100" cy="146" rx="82" ry="10" fill="#E8EFFA"></ellipse>
+      <rect x="58" y="34" width="44" height="15" rx="6" fill="#CFE1FD"></rect>
+      <rect x="43" y="46" width="74" height="72" rx="20" fill="#FFFFFF" stroke="#DCE6F4" stroke-width="3"></rect>
+      <circle cx="80" cy="82" r="22" fill="#EAF2FE" stroke="#BCD6F8" stroke-width="3.5"></circle>
+      <circle cx="80" cy="82" r="14" fill="#D7E7FC"></circle>
+      <rect x="55" y="116" width="11" height="6" rx="3" fill="#E2EAF6"></rect>
+      <rect x="94" y="116" width="11" height="6" rx="3" fill="#E2EAF6"></rect>
+      <circle cx="140" cy="58" r="30" fill="#12B76A"></circle>
+      <path d="M127 58l9 9 17-19" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path>
+      <circle cx="52" cy="26" r="4" fill="#DCE9FB"></circle>
+      <circle cx="150" cy="14" r="5" fill="#CFE1FD"></circle>
+      <circle cx="176" cy="104" r="3.6" fill="#DCE9FB"></circle>
+      <circle cx="24" cy="98" r="4.4" fill="#CFE1FD"></circle>
+    </symbol>
+  </svg>
+  <main class="phone-shell" aria-label="打印机首次配网连接流程">
+    <section id="screen-start" class="app-screen app-screen--reference is-active" data-screen="start" aria-label="添加打印机起始页">
+      <img id="start-reference" class="full-reference" src="../../src/lianjiepeiwnag/起始页.png" alt="趣打印设备起始页">
+      <button id="add-printer" class="image-hotspot image-hotspot--add" type="button">添加打印机</button>
+      <!-- 右上角「帮助」：整图上已烘焙「帮助」二字，这里叠透明热区放大到 ≥44px 可点范围 -->
+      <button id="start-help" class="hotspot-help" type="button" aria-label="帮助，查看连接配网常见问题">帮助</button>
+      <!-- 儿童受限账号下改写按钮文案：覆盖层由 JS 对齐到「真实绘制的图片矩形」，
+           left/top/width/height 是 686 × 1530 原图内的百分比（与视口高度无关）。 -->
+      <div id="start-account-overlay" class="start-overlay" hidden>
+        <button id="start-cta-auth" class="start-cta-pill" type="button">前往认证</button>
+        <button id="start-cta-authorize" class="start-cta-link" type="button"><span>家长授权</span></button>
+      </div>
+    </section>
+
+    <!-- 儿童受限账号起始页v2：首页内容与 v1 完全相同（同一张起始页整图 + 同一组改写按钮），
+         仅「家长授权」逻辑不同：先判断当前儿童账号是否在家庭群组内，
+         群组内弹 Toast「已向小明妈妈发起打印机授权申请」，群组外跳转儿童账号个人二维码页。 -->
+    <section id="screen-start-v2" class="app-screen app-screen--reference" data-screen="start-v2" hidden aria-label="儿童受限账号起始页v2">
+      <img id="start-reference-v2" class="full-reference" src="../../src/lianjiepeiwnag/起始页.png" alt="趣打印设备起始页（儿童受限账号 v2）">
+      <button id="add-printer-v2" class="image-hotspot image-hotspot--add" type="button">添加打印机</button>
+      <button id="start-help-v2" class="hotspot-help" type="button" aria-label="帮助，查看连接配网常见问题">帮助</button>
+      <div id="start-account-overlay-v2" class="start-overlay" hidden>
+        <button id="start-cta-auth-v2" class="start-cta-pill" type="button">前往认证</button>
+        <button id="start-cta-authorize-v2" class="start-cta-link" type="button"><span>家长授权</span></button>
+      </div>
+    </section>
+
+    <section id="screen-printer-select" class="app-screen app-screen--reference" data-screen="printer-select" hidden aria-labelledby="printer-select-title">
+      <img class="full-reference" src="../../src/lianjiepeiwnag/选择打印机类型.jpg" alt="选择要设置的打印机，Ugee Funbox">
+      <div id="printer-select-cover" class="reference-cover" aria-hidden="true"></div>
+      <h1 id="printer-select-title" class="sr-only" tabindex="-1">选择要设置的打印机</h1>
+      <button class="reference-back" type="button" data-back="start" aria-label="返回添加打印机起始页">‹</button>
+      <button id="printer-type" class="image-hotspot image-hotspot--printer" type="button" aria-label="选择 Ugee Funbox 打印机"></button>
+    </section>
+
+    <section id="screen-system-settings" class="app-screen system-screen" data-screen="system-settings" hidden aria-labelledby="system-settings-title">
+      <header class="system-header"><button id="settings-back" type="button" aria-label="返回 Ugee APP">‹ Ugee</button><h1 id="system-settings-title" tabindex="-1">设置</h1><span></span></header>
+      <div id="settings-location-view" class="settings-view">
+        <div class="settings-icon settings-icon--location" aria-hidden="true">⌖</div>
+        <h2>位置信息访问</h2>
+        <p>允许 Ugee 在配网时发现附近的打印机。</p>
+        <div class="system-group"><span>允许访问位置信息</span><button class="system-toggle is-on" type="button" aria-label="关闭位置信息访问" aria-pressed="true"><span></span></button></div>
+        <p class="system-note">位置权限仅用于发现附近设备，本原型不会读取真实位置。</p>
+      </div>
+      <div id="settings-wlan-view" class="settings-view" hidden>
+        <div class="settings-icon settings-icon--wifi" aria-hidden="true">⌁</div>
+        <h2>WLAN</h2>
+        <p>选择打印机创建的临时 WiFi 热点。</p>
+        <button id="wlan-home" class="system-group system-network is-connected" type="button" data-wlan="Home_5G" aria-pressed="true"><span><strong>Home_5G</strong><small>已连接</small></span><span class="checkmark" aria-hidden="true">✓</span></button>
+        <button id="wlan-printer" class="system-group system-network" type="button" data-wlan="Ugee Funbox-AP" aria-pressed="false"><span><strong>Ugee Funbox-AP</strong><small>打印机热点</small></span><span class="checkmark" aria-hidden="true" hidden>✓</span></button>
+        <button id="wlan-other" class="system-group system-network" type="button" data-wlan="STEM_Lab_2.4G" aria-pressed="false"><span><strong>STEM_Lab_2.4G</strong><small>已存储</small></span><span class="checkmark" aria-hidden="true" hidden>✓</span></button>
+      </div>
+    </section>
+
+    <section id="screen-printer-ready" class="app-screen flow-screen" data-screen="printer-ready" hidden aria-labelledby="printer-ready-title">
+      <header class="flow-header"><button type="button" data-back="printer-select" aria-label="返回选择打印机">‹</button><h1 id="printer-ready-title" tabindex="-1">打印机准备</h1><button type="button" data-close="confirm" aria-label="退出配网流程">×</button></header>
+      <div class="step-indicator" aria-label="第 2 步，共 4 步"><span class="is-done"></span><span class="is-current"></span><span></span><span></span></div>
+      <div class="scroll-content ready-content">
+        <section class="instruction-card" aria-labelledby="power-title">
+          <div class="instruction-number">1</div><div><h2 id="power-title">连接电源</h2><p>连接打印机和电源，按下打印机背面的开机按钮。</p></div>
+          <div class="reference-crop reference-crop--power"><img id="power-reference" src="../../src/lianjiepeiwnag/打印机准备.jpg" alt="连接电源与打开电源开关示意"></div>
+        </section>
+        <section class="instruction-card" aria-labelledby="network-ready-title">
+          <div class="instruction-number">2</div><div><h2 id="network-ready-title">配网准备</h2><p>长按打印机背面红色按钮，听到“嘀”声后等待黄色指示灯常亮。</p></div>
+          <div class="reference-crop reference-crop--network"><img id="network-reference" src="../../src/lianjiepeiwnag/打印机准备2.jpg" alt="长按配网按钮并确认黄色指示灯常亮"></div>
+        </section>
+      </div>
+      <div class="sticky-action"><button id="ready-next" class="primary-button" type="button">下一步</button></div>
+    </section>
+
+    <section id="screen-hotspot" class="app-screen flow-screen" data-screen="hotspot" hidden aria-labelledby="hotspot-title">
+      <header class="flow-header"><button type="button" data-back="printer-ready" aria-label="返回打印机准备">‹</button><h1 id="hotspot-title" tabindex="-1">连接打印机热点</h1><button type="button" data-close="confirm" aria-label="退出配网流程">×</button></header>
+      <div class="step-indicator" aria-label="第 3 步，共 4 步"><span class="is-done"></span><span class="is-done"></span><span class="is-current"></span><span></span></div>
+      <div class="scroll-content hotspot-content">
+        <div id="video-placeholder" class="media-placeholder" role="img" aria-label="开启打印机热点的视频演示占位符"><span class="play-icon">▶</span><strong>视频演示</strong><small>如何连接打印机 WiFi 热点</small></div>
+        <section class="copy-section">
+          <h2>设置 WiFi</h2>
+          <p>点击下方按钮跳转至 WiFi 设置界面，点击连接打印机 WiFi 热点 XXX。热点名称应该为“Ugee XXX”，例如下方图片：</p>
+        </section>
+        <figure id="wifi-example-placeholder" class="wifi-example">
+          <img id="wifi-example-reference" src="../../src/lianjiepeiwnag/WiFi设置示意图.jpg" alt="WiFi 设置中显示 Ugee Funbox 打印机热点的示意图">
+        </figure>
+        <p class="return-hint"><span aria-hidden="true">i</span>设置好后返回，将自动进入网络配置</p>
+      </div>
+      <div class="sticky-action"><button id="open-wlan" class="secondary-button" type="button">前往设置 WLAN</button></div>
+    </section>
+
+    <section id="screen-home-wifi" class="app-screen flow-screen" data-screen="home-wifi" hidden aria-labelledby="home-wifi-title">
+      <header class="flow-header"><button type="button" data-back="hotspot" aria-label="返回打印机热点连接">‹</button><h1 id="home-wifi-title" tabindex="-1">网络配置</h1><button type="button" data-close="confirm" aria-label="退出配网流程">×</button></header>
+      <div class="step-indicator" aria-label="第 4 步，共 4 步"><span class="is-done"></span><span class="is-done"></span><span class="is-done"></span><span class="is-current"></span></div>
+      <div class="scroll-content wifi-content">
+        <section class="copy-section">
+          <h2>为打印机配置家庭 WiFi</h2>
+          <p>在配置前确保手机已连接打印机 WiFi 热点。</p>
+        </section>
+        <form id="home-wifi-form" novalidate>
+          <label for="home-wifi-name">家庭 WiFi</label>
+          <div class="select-wrap"><select id="home-wifi-name"><option value="Home_5G">Home_5G</option><option value="STEM_Lab_2.4G">STEM_Lab_2.4G</option></select></div>
+          <label for="home-wifi-password">WiFi 密码</label>
+          <div class="password-wrap"><input id="home-wifi-password" type="password" autocomplete="off" placeholder="请输入 WiFi 密码" aria-describedby="wifi-password-help"><button id="toggle-password" type="button" aria-label="显示密码">◉</button></div>
+          <p id="wifi-password-help" class="field-help">演示网络 Home_5G 密码：12345678。打印机仅支持 2.4 GHz WiFi。</p>
+          <p id="wifi-error" class="field-error" role="alert" hidden>连接失败：请检查：1.WiFi密码是否正确；2.在点击连接前手机是否连接上打印机WiFi热点</p>
+        </form>
+      </div>
+      <div class="sticky-action"><button id="connect-home-wifi" class="primary-button" type="button">连接</button></div>
+    </section>
+
+    <section id="screen-print-ready" class="app-screen flow-screen print-ready-screen" data-screen="print-ready" hidden aria-labelledby="print-ready-title">
+      <header class="flow-header"><button type="button" id="print-ready-back" aria-label="返回打印机打印页面">‹</button><h1 id="print-ready-title" tabindex="-1">打印前准备</h1><button type="button" data-close="direct" aria-label="退出配网流程">×</button></header>
+      <div class="scroll-content print-ready-content">
+        <section class="connected-banner" aria-label="打印机已连接">
+          <span class="connected-check" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false"><path d="M5 12.5l4.6 4.6L19 7.7"/></svg>
+          </span>
+          <h2>打印机已连接</h2>
+          <p>网络配置完成，可以开始打印前准备。</p>
+        </section>
+
+        <h2 class="filament-guide-title">安装打印耗材，并进行进料。</h2>
+
+        <ol class="filament-steps">
+          <li class="filament-step" aria-labelledby="filament-step-1-title">
+            <div class="filament-step-head">
+              <span class="filament-step-index" aria-hidden="true">1</span>
+              <div class="filament-step-copy">
+                <h3 id="filament-step-1-title">插入耗材</h3>
+                <p>将耗材插入，向喷头里推送耗材，直至无法前进。</p>
+              </div>
+            </div>
+            <div class="filament-step-media">
+              <figure class="filament-media-placeholder"><span class="filament-media-tag">图片1</span><span class="filament-media-hint">示例图</span></figure>
+              <figure class="filament-media-placeholder"><span class="filament-media-tag">图片2</span><span class="filament-media-hint">示例图</span></figure>
+            </div>
+          </li>
+
+          <li class="filament-step" aria-labelledby="filament-step-2-title">
+            <div class="filament-step-head">
+              <span class="filament-step-index" aria-hidden="true">2</span>
+              <div class="filament-step-copy">
+                <h3 id="filament-step-2-title">进料</h3>
+                <p>APP自动识别到耗材进入，选中耗材，编辑耗材信息并点击进料。</p>
+              </div>
+            </div>
+            <div class="filament-step-media">
+              <figure class="filament-media-placeholder"><span class="filament-media-tag">图片3</span><span class="filament-media-hint">示例图</span></figure>
+              <figure class="filament-media-placeholder"><span class="filament-media-tag">图片4</span><span class="filament-media-hint">示例图</span></figure>
+            </div>
+          </li>
+
+          <li class="filament-step" aria-labelledby="filament-step-3-title">
+            <div class="filament-step-head">
+              <span class="filament-step-index" aria-hidden="true">3</span>
+              <div class="filament-step-copy">
+                <h3 id="filament-step-3-title">观察喷嘴</h3>
+                <p>如果喷头正常吐出料丝，则完成进料。</p>
+              </div>
+            </div>
+            <div class="filament-step-media">
+              <figure class="filament-media-placeholder"><span class="filament-media-tag">图片5</span><span class="filament-media-hint">示例图</span></figure>
+              <figure class="filament-media-placeholder"><span class="filament-media-tag">图片6</span><span class="filament-media-hint">示例图</span></figure>
+            </div>
+          </li>
+        </ol>
+      </div>
+      <div class="sticky-action print-ready-actions">
+        <button id="goto-filament" class="secondary-button" type="button">去进料</button>
+        <button id="goto-print" class="primary-button" type="button">去打印</button>
+      </div>
+    </section>
+  <!-- ==================== 演示台 ==================== -->
+  <section id="screen-demo" class="app-screen jo-page" data-screen="demo" hidden aria-labelledby="demo-title">
+    <header class="jo-nav">
+      <h1 id="demo-title" class="jo-nav__title" tabindex="-1">演示台</h1>
+    </header>
+    <div class="jo-body">
+      <div class="demo-hero">
+        <span class="demo-badge">演示 · 非最终视觉</span>
+        <h2>配网流程 · 两种账号情况</h2>
+        <p>同一套「首次配网连接流程」，按登录账号的类型分两种情况演示。儿童受限账号另提供起始页 v2：首页内容与 v1 相同，仅「家长授权」改为先判断家庭群组。切换后起始页的按钮文案与跳转都会跟着变。</p>
+      </div>
+
+      <div class="demo-group" role="group" aria-labelledby="demo-account-title">
+        <p class="demo-group__title" id="demo-account-title">① 账号类型<small>默认 · 家长</small></p>
+        <button id="demo-account-parent" class="demo-option" type="button" data-account="parent" aria-pressed="true">
+          <span class="demo-option__tick" aria-hidden="true"></span>
+          <span class="demo-option__main">
+            <strong>家长 · 不受限账号</strong>
+            <span>当前已有的默认情况，可以直接给打印机配网。</span>
+            <span class="demo-tags"><span class="demo-tag">添加打印机</span><span class="demo-tag">购买打印机</span></span>
+          </span>
+        </button>
+        <button id="demo-account-child" class="demo-option" type="button" data-account="child" aria-pressed="false">
+          <span class="demo-option__tick" aria-hidden="true"></span>
+          <span class="demo-option__main">
+            <strong>儿童 · 受限账号</strong>
+            <span>不能自己给打印机配网，需要家长认证或家长授权共享。</span>
+            <span class="demo-tags"><span class="demo-tag">前往认证</span><span class="demo-tag">家长授权</span></span>
+          </span>
+        </button>
+      </div>
+
+      <div class="demo-group" role="group" aria-labelledby="demo-invite-title">
+        <p class="demo-group__title" id="demo-invite-title">② 家长授权后的邀请数据<small>用于演示异常状态</small></p>
+        <button class="demo-option" type="button" data-invite="valid" aria-pressed="true">
+          <span class="demo-option__tick" aria-hidden="true"></span>
+          <span class="demo-option__main"><strong>有效邀请</strong><span>扫码或输入正确邀请码即可加入。</span></span>
+        </button>
+        <button class="demo-option" type="button" data-invite="invalid" aria-pressed="false">
+          <span class="demo-option__tick" aria-hidden="true"></span>
+          <span class="demo-option__main"><strong>邀请码错误</strong><span>输入任意其他 8 位码时提示「邀请码错误，请检查后重试」。</span></span>
+        </button>
+        <button class="demo-option" type="button" data-invite="expired" aria-pressed="false">
+          <span class="demo-option__tick" aria-hidden="true"></span>
+          <span class="demo-option__main"><strong>邀请已过期</strong><span>提示「邀请已过期，请家人重新分享」。</span></span>
+        </button>
+        <button class="demo-option" type="button" data-invite="already-joined" aria-pressed="false">
+          <span class="demo-option__tick" aria-hidden="true"></span>
+          <span class="demo-option__main"><strong>已经加入这台打印机</strong><span>提示「你已经加入这台打印机」并提供「查看打印机」。</span></span>
+        </button>
+        <button class="demo-option" type="button" data-invite="family-conflict" aria-pressed="false">
+          <span class="demo-option__tick" aria-hidden="true"></span>
+          <span class="demo-option__main"><strong>已加入其他家庭</strong><span>提示家庭冲突，不会直接替换原家庭。</span></span>
+        </button>
+      </div>
+
+      <div class="demo-group" role="group" aria-labelledby="demo-device-title">
+        <p class="demo-group__title" id="demo-device-title">③ 共享打印机状态</p>
+        <button class="demo-option" type="button" data-device="online" aria-pressed="true">
+          <span class="demo-option__tick" aria-hidden="true"></span>
+          <span class="demo-option__main"><strong>在线 · 已连接</strong><span>设备信息卡展示绿色「已连接」。</span></span>
+        </button>
+        <button class="demo-option" type="button" data-device="offline" aria-pressed="false">
+          <span class="demo-option__tick" aria-hidden="true"></span>
+          <span class="demo-option__main"><strong>离线</strong><span>仍允许加入，但设备信息卡展示灰色「离线」。</span></span>
+        </button>
+      </div>
+
+      <div class="demo-group" role="group" aria-labelledby="demo-version-title">
+        <p class="demo-group__title" id="demo-version-title">④ 儿童受限账号 · 起始页版本<small>v2 只改「家长授权」逻辑</small></p>
+        <button class="demo-option" type="button" data-version="v1" aria-pressed="true">
+          <span class="demo-option__tick" aria-hidden="true"></span>
+          <span class="demo-option__main">
+            <strong>v1 · 原逻辑</strong>
+            <span>家长授权 → 加入共享打印机（扫码 / 邀请码）。</span>
+            <span class="demo-tags"><span class="demo-tag">儿童受限账号起始页</span></span>
+          </span>
+        </button>
+        <button class="demo-option" type="button" data-version="v2" aria-pressed="false">
+          <span class="demo-option__tick" aria-hidden="true"></span>
+          <span class="demo-option__main">
+            <strong>v2 · 群组判断逻辑</strong>
+            <span>家长授权 → 先判断家庭群组：群组内弹 Toast，群组外展示个人二维码。</span>
+            <span class="demo-tags"><span class="demo-tag">儿童受限账号起始页v2</span></span>
+          </span>
+        </button>
+      </div>
+
+      <div class="demo-group" role="group" aria-labelledby="demo-family-title">
+        <p class="demo-group__title" id="demo-family-title">⑤ 家庭群组状态<small>仅 v2 的「家长授权」生效</small></p>
+        <button class="demo-option" type="button" data-family="in" aria-pressed="false">
+          <span class="demo-option__tick" aria-hidden="true"></span>
+          <span class="demo-option__main">
+            <strong>已在家庭群组内</strong>
+            <span>弹 Toast「已向小明妈妈发起打印机授权申请」，停留本页。</span>
+          </span>
+        </button>
+        <button class="demo-option" type="button" data-family="out" aria-pressed="true">
+          <span class="demo-option__tick" aria-hidden="true"></span>
+          <span class="demo-option__main">
+            <strong>未加入家庭群组</strong>
+            <span>跳转儿童账号个人二维码页，家长扫码加入家庭群组。</span>
+          </span>
+        </button>
+      </div>
+
+      <button id="demo-enter" class="jo-primary" type="button">进入演示（起始页）</button>
+      <p class="demo-note">演示数据说明：邀请码池与「分享打印机」页保持一致（ABCD1234 / K7MP4821 / TRQ96135 / WXHN2847 / JLPZ9406 / FGDR3728），其中 <b>FGDR3728</b> 预置为「已过期」，其余可用码任选其一即可走通。</p>
+    </div>
+  </section>
+
+  <!-- ==================== 成人认证占位页（本期不实现） ==================== -->
+  <section id="screen-auth-todo" class="app-screen jo-page" data-screen="auth-todo" hidden aria-labelledby="auth-todo-title">
+    <header class="jo-nav">
+      <button id="auth-todo-back" class="jo-nav__back" type="button" aria-label="返回起始页">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4.6 7.6 12 15 19.4"></path></svg>
+      </button>
+      <h1 id="auth-todo-title" class="jo-nav__title" tabindex="-1">成人认证</h1>
+    </header>
+    <div class="jo-body">
+      <section class="jo-card auth-todo">
+        <span class="auth-todo__art" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.6"></rect><circle cx="9" cy="11" r="2.2"></circle><path d="M14.6 10h4M14.6 13.6h4M6 15.6a3.6 3.6 0 0 1 6 0"></path></svg>
+        </span>
+        <span class="demo-badge">本期不实现原型</span>
+        <h2>儿童账号需要先完成成人认证</h2>
+        <p>受儿童模式限制，添加打印机前需要由家长完成实名与成人认证。认证通过后，本页会自动放开配网入口。</p>
+        <ul class="auth-todo__list">
+          <li>认证由家长在「我的 - 家庭与权限」中发起</li>
+          <li>认证信息只用于合规校验，不会展示给孩子</li>
+          <li>已经由家长授权的共享打印机不需要重复认证</li>
+        </ul>
+      </section>
+      <button id="auth-todo-back-cta" class="jo-primary" type="button">返回起始页</button>
+    </div>
+  </section>
+
+  <!-- ==================== 儿童账号个人二维码页（v2 · 家庭群组外分支） ==================== -->
+  <!-- 类微信个人二维码页：儿童头像 + 姓名 + 个人二维码 + 一句提示文案。
+       二维码图形由 JS 确定性生成（演示用），中心头像徽章为静态图片。 -->
+  <section id="screen-child-qr" class="app-screen jo-page" data-screen="child-qr" hidden aria-labelledby="child-qr-title">
+    <header class="jo-nav">
+      <button id="child-qr-back" class="jo-nav__back" type="button" aria-label="返回儿童受限账号起始页v2">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4.6 7.6 12 15 19.4"></path></svg>
+      </button>
+      <h1 id="child-qr-title" class="jo-nav__title" tabindex="-1">我的二维码</h1>
+    </header>
+    <div class="jo-body">
+      <section class="jo-card child-qr-card" aria-labelledby="child-qr-name">
+        <div class="child-qr__person">
+          <span class="child-qr__avatar"><img src="../../src/dayinjirenwukongzhi/人物头像-男孩.png" alt="小明头像"></span>
+          <span class="child-qr__ident">
+            <strong id="child-qr-name">小明</strong>
+            <span class="child-qr__account">儿童账号</span>
+          </span>
+        </div>
+        <div class="child-qr__frame">
+          <svg id="child-qr-svg" class="child-qr__svg" viewBox="0 0 116 116" role="img" aria-label="小明账号的个人二维码（演示图形）"></svg>
+          <span class="child-qr__badge"><img src="../../src/dayinjirenwukongzhi/人物头像-男孩.png" alt=""></span>
+        </div>
+        <p class="child-qr__hint">家长扫码添加至家庭群组后可分享打印机</p>
+      </section>
+      <p class="child-qr__note">演示说明：二维码为示意图形，真实场景中由服务端生成。</p>
+    </div>
+  </section>
+
+  <!-- ==================== 页面一 · 加入共享打印机 ==================== -->
+  <section id="screen-join-scan" class="app-screen jo-page" data-screen="join-scan" hidden aria-labelledby="join-scan-title">
+    <header class="jo-nav">
+      <button id="join-scan-back" class="jo-nav__back" type="button" aria-label="返回起始页">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4.6 7.6 12 15 19.4"></path></svg>
+      </button>
+      <h1 id="join-scan-title" class="jo-nav__title" tabindex="-1">加入共享打印机</h1>
+    </header>
+    <div class="jo-body">
+      <div class="jo-illustration">
+        <svg viewBox="0 0 300 170" role="img" aria-label="家庭共享插画：一台白色桌面 3D 打印机与两名家庭成员"><use href="#art-family-share"></use></svg>
+      </div>
+      <div class="jo-intro">
+        <h2>和家人一起创作！</h2>
+        <p>扫描家人的邀请二维码，或输入邀请码，即可使用共享打印机。</p>
+      </div>
+
+      <section class="jo-card jo-scan-card" aria-labelledby="join-scan-action">
+        <span class="jo-scan-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round">
+            <path d="M12 33V21a9 9 0 0 1 9-9h12"></path>
+            <path d="M67 12h12a9 9 0 0 1 9 9v12"></path>
+            <path d="M88 67v12a9 9 0 0 1-9 9H67"></path>
+            <path d="M33 88H21a9 9 0 0 1-9-9V67"></path>
+            <path d="M20 50h60"></path>
+            <rect x="36" y="28" width="11" height="11" rx="2.5" fill="currentColor" stroke="none"></rect>
+            <rect x="53" y="28" width="11" height="11" rx="2.5" fill="currentColor" stroke="none" opacity=".42"></rect>
+            <rect x="36" y="61" width="11" height="11" rx="2.5" fill="currentColor" stroke="none" opacity=".42"></rect>
+            <rect x="53" y="61" width="11" height="11" rx="2.5" fill="currentColor" stroke="none" opacity=".72"></rect>
+          </svg>
+        </span>
+        <h3 id="join-scan-action">扫描邀请二维码</h3>
+        <p>将摄像头对准家人分享的二维码</p>
+        <button id="join-scan-start" class="jo-primary" type="button">扫码加入</button>
+        <p id="join-scan-error" class="jo-code-error" role="alert" hidden></p>
+      </section>
+
+      <p class="jo-divider">或者输入邀请码</p>
+
+      <section class="jo-card jo-code-card" aria-labelledby="join-code-title">
+        <h3 id="join-code-title">输入邀请码</h3>
+        <label class="sr-only" for="join-code-input">邀请码</label>
+        <input id="join-code-input" class="jo-code-input" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="8" placeholder="请输入 8 位邀请码">
+        <p id="join-code-error" class="jo-code-error" role="alert" hidden></p>
+        <p class="jo-code-help">邀请码由家人分享，请在有效期内使用。</p>
+        <button id="join-code-next" class="jo-primary" type="button" disabled>下一步</button>
+      </section>
+    </div>
+  </section>
+
+  <!-- ==================== 页面一 · 模拟扫码界面 ==================== -->
+  <section id="screen-join-camera" class="app-screen jo-page jo-camera" data-screen="join-camera" hidden aria-labelledby="join-camera-title">
+    <header class="jo-nav">
+      <button id="join-camera-back" class="jo-nav__back" type="button" aria-label="返回加入共享打印机">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4.6 7.6 12 15 19.4"></path></svg>
+      </button>
+      <h1 id="join-camera-title" class="jo-nav__title" tabindex="-1">扫描二维码</h1>
+    </header>
+    <div class="jo-camera__view">
+      <div class="jo-camera__frame" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
+        <i class="jo-camera__laser"></i>
+      </div>
+    </div>
+    <p class="jo-camera__hint">把家人分享的邀请二维码放进框内，即可自动识别</p>
+    <div class="jo-camera__demo">
+      <span class="jo-demo-badge">演示控件 · 代替真实相机取景</span>
+      <button id="join-camera-valid" class="jo-primary" type="button">模拟扫描到有效二维码</button>
+      <button id="join-camera-invalid" class="jo-ghost" type="button">模拟扫描到无效二维码</button>
+    </div>
+  </section>
+
+  <!-- ==================== 页面二 · 确认邀请 ==================== -->
+  <section id="screen-join-confirm" class="app-screen jo-page" data-screen="join-confirm" hidden aria-labelledby="join-confirm-title">
+    <header class="jo-nav">
+      <button id="join-confirm-back" class="jo-nav__back" type="button" aria-label="返回加入共享打印机">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4.6 7.6 12 15 19.4"></path></svg>
+      </button>
+      <h1 id="join-confirm-title" class="jo-nav__title" tabindex="-1">确认邀请</h1>
+    </header>
+    <div class="jo-body">
+      <div class="jo-illustration">
+        <svg viewBox="0 0 300 170" role="img" aria-label="家庭共享插画：一台白色桌面 3D 打印机与两名家庭成员"><use href="#art-family-share"></use></svg>
+      </div>
+      <div class="jo-inviter">
+        <h2>你收到一份家庭邀请！</h2>
+        <p>家人邀请你一起使用 3D 打印机。</p>
+        <span class="jo-inviter__person">
+          <span class="jo-inviter__avatar"><img src="../../src/dayinjirenwukongzhi/人物头像家长.png" alt=""></span>
+          <span class="jo-inviter__copy"><strong>爸爸</strong><span>家庭管理员</span></span>
+        </span>
+      </div>
+
+      <section class="jo-card jo-device" aria-label="共享打印机信息">
+        <div class="jo-device__art">
+          <img src="../../dayinji/自研款打印机打印页面原型/assets/分享打印机-打印机.png" alt="白色封闭式桌面 3D 打印机">
+        </div>
+        <div class="jo-device__info">
+          <strong data-jo="device-name">My Printer</strong>
+          <div class="jo-device__meta">
+            <span class="jo-status" data-status="online" data-jo="device-status"><i aria-hidden="true"></i><span data-jo="device-status-text">已连接</span></span>
+            <span class="jo-device__sn" data-jo="device-sn">SN ****1234</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="jo-card jo-perms" aria-labelledby="join-perms-title">
+        <h3 id="join-perms-title">加入后，你可以</h3>
+        <ul>
+          <li>
+            <span class="jo-perms__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.6 12S6 5.8 12 5.8 21.4 12 21.4 12 18 18.2 12 18.2 2.6 12 2.6 12Z"></path><circle cx="12" cy="12" r="3.1"></circle></svg></span>
+            <span>查看打印机状态。</span>
+          </li>
+          <li>
+            <span class="jo-perms__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h14"></path><circle cx="9" cy="7" r="2.1"></circle><circle cx="15" cy="12" r="2.1"></circle><circle cx="8" cy="17" r="2.1"></circle></svg></span>
+            <span>选择模型并设置切片参数。</span>
+          </li>
+          <li>
+            <span class="jo-perms__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.4" y="7.4" width="17.2" height="11" rx="3.2"></rect><path d="M7 7.4V4.8a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2.6"></path><path d="M9.6 13.2h4.8"></path></svg></span>
+            <span>发起打印任务。</span>
+          </li>
+          <li>
+            <span class="jo-perms__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="7.4" y="4.4" width="3.6" height="15.2" rx="1.6"></rect><rect x="13" y="4.4" width="3.6" height="15.2" rx="1.6"></rect></svg></span>
+            <span>暂停、恢复或取消自己的打印任务。</span>
+          </li>
+        </ul>
+        <p>设备管理、固件更新等高级功能由家庭管理员负责。</p>
+      </section>
+
+      <div class="jo-actions">
+        <button id="join-confirm-accept" class="jo-primary" type="button">确认加入</button>
+        <button id="join-confirm-decline" class="jo-text-button" type="button">暂不加入</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 页面三 · 加入成功 ==================== -->
+  <section id="screen-join-done" class="app-screen jo-page" data-screen="join-done" hidden aria-labelledby="join-done-title">
+    <header class="jo-nav">
+      <h1 id="join-done-title" class="jo-nav__title" tabindex="-1">加入成功</h1>
+    </header>
+    <div class="jo-body">
+      <section class="jo-card jo-success">
+        <svg class="jo-success__art" viewBox="0 0 200 160" role="img" aria-label="加入成功插画：3D 打印机与绿色对勾"><use href="#art-join-success"></use></svg>
+        <h2>加入成功！</h2>
+        <p>现在你可以和家人一起使用这台打印机啦！</p>
+        <span class="jo-success__hint">已自动添加到「设备」列表</span>
+      </section>
+
+      <section class="jo-card jo-device" aria-label="已加入的打印机">
+        <div class="jo-device__art">
+          <img src="../../dayinji/自研款打印机打印页面原型/assets/分享打印机-打印机.png" alt="白色封闭式桌面 3D 打印机">
+        </div>
+        <div class="jo-device__info">
+          <strong data-jo="device-name">My Printer</strong>
+          <div class="jo-device__meta">
+            <span class="jo-status" data-status="online" data-jo="device-status"><i aria-hidden="true"></i><span data-jo="device-status-text">已连接</span></span>
+            <span class="jo-device__sn" data-jo="device-sn">SN ****1234</span>
+          </div>
+        </div>
+      </section>
+
+      <button id="join-done-view" class="jo-primary" type="button">查看我的打印机</button>
+    </div>
+  </section>
+
+  </main>
+
+  <!-- 演示台入口：原型附属控件，不属于产品 UI -->
+  <button id="demo-chip" class="demo-chip" type="button" data-account="parent" data-placement="float" aria-label="打开演示台" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3h4v5.2l3.4 7.6A3 3 0 0 1 14.7 20H9.3a3 3 0 0 1-2.7-4.2L10 8.2Z"></path><path d="M9 3h6"></path></svg>
+    <span>演示台</span>
+    <span id="demo-chip-extra" class="demo-chip__extra"><span class="demo-chip__sep">·</span><span id="demo-chip-mode" class="demo-chip__mode">家长</span></span>
+  </button>
+
+  <dialog id="location-dialog" class="app-dialog" aria-labelledby="location-title">
+    <div class="dialog-icon dialog-icon--location" aria-hidden="true">⌖</div>
+    <h2 id="location-title">温馨提示</h2>
+    <p>连接打印机前需要开启APP位置权限</p>
+    <div class="dialog-actions"><button id="location-cancel" type="button">取消</button><button id="location-settings" type="button">设置</button></div>
+  </dialog>
+
+  <dialog id="notice-dialog" class="app-dialog" aria-labelledby="notice-title" aria-describedby="notice-message">
+    <div class="dialog-icon dialog-icon--notice" aria-hidden="true">!</div>
+    <h2 id="notice-title">提示</h2>
+    <p id="notice-message"></p>
+    <div class="dialog-actions is-single"><button id="notice-confirm" type="button">确定</button></div>
+  </dialog>
+
+  <!-- 【连接等待】页：网络配置页点「连接」后自下而上弹出。
+       页面中心为蓝色填充圆圈（圆心为文案【正在连接打印机中...】），
+       蓝色圆圈做「动态点击」脉冲，四周为浅蓝色水波纹形式圆圈虚线。 -->
+  <dialog id="connecting-dialog" class="sheet connecting-sheet" aria-labelledby="connecting-title">
+    <div class="sheet-grabber" aria-hidden="true"></div>
+    <div class="connecting-stage">
+      <div class="connecting-visual" aria-hidden="true">
+        <span class="ripple ripple--1"></span>
+        <span class="ripple ripple--2"></span>
+        <span class="ripple ripple--3"></span>
+        <span class="connecting-core"><span id="connecting-core-text" class="connecting-core__text">正在连接打印机中...</span></span>
+      </div>
+      <h2 id="connecting-title" class="sr-only">正在连接打印机中...</h2>
+      <p class="connecting-tip">请保持手机靠近打印机，不要退出应用</p>
+      <p class="connecting-timer">已等待 <b id="connecting-seconds">0</b> 秒<span id="connecting-limit-note">，连接超过 60s 将提示失败</span></p>
+    </div>
+    <!-- 演示控件：不真正等60s，当场复现正常 / 异常两条分支 -->
+    <div class="connecting-demo">
+      <span class="jo-demo-badge">演示控件 · 代替真实网络请求</span>
+      <div class="connecting-demo__row">
+        <button id="connecting-done" class="connecting-demo__btn" type="button">模拟连接成功</button>
+        <button id="connecting-timeout" class="connecting-demo__btn" type="button">模拟 60s 超时</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- 「帮助」→ 连接配网常见问题解决方案弹窗：自下而上弹出，底部给出官方 FAQ 外链 -->
+  <dialog id="faq-dialog" class="sheet faq-sheet" aria-labelledby="faq-title" aria-describedby="faq-more">
+    <div class="sheet-grabber" aria-hidden="true"></div>
+    <div class="sheet-head">
+      <h2 id="faq-title">连接配网常见问题</h2>
+      <button id="faq-close" class="sheet-close" type="button" aria-label="关闭常见问题">×</button>
+    </div>
+    <div class="sheet-body">
+      <ul class="faq-list">
+        <li class="faq-item">
+          <p class="faq-q">搜索不到打印机怎么办？</p>
+          <p class="faq-a">确认打印机已通电且未休眠；确认APP 已获得位置权限；保持手机与打印机在 5 米内且无遮挡。</p>
+        </li>
+        <li class="faq-item">
+          <p class="faq-q">手机连不上打印机 WiFi 热点？</p>
+          <p class="faq-a">热点名称应为「Ugee Funbox-AP」开头。连上热点后手机会提示「无互联网连接」，属正常现象，保持连接即可。</p>
+        </li>
+        <li class="faq-item">
+          <p class="faq-q">配置家庭 WiFi 一直失败？</p>
+          <p class="faq-a">打印机仅支持 2.4 GHz WiFi，请选择名称带「2.4G」的路由器；并确认点击「连接」前手机仍连在打印机热点上。</p>
+        </li>
+        <li class="faq-item">
+          <p class="faq-q">配网成功但打印机显示离线？</p>
+          <p class="faq-a">打印机与路由器距离过远或隔墙较多时容易掉线，建议将打印机移到路由器 3 米内、开阔无遮挡处再重新配网。</p>
+        </li>
+        <li class="faq-item">
+          <p class="faq-q">长按红色按钮没反应、指示灯不亮？</p>
+          <p class="faq-a">长按需持续 3 秒以上，听到「嘀」声后等待黄色指示灯常亮；若中途松手需重新长按。</p>
+        </li>
+      </ul>
+    </div>
+    <div class="sheet-foot">
+      <p id="faq-more" class="faq-more">【详情查看<a id="faq-link" class="faq-more__link" role="link" tabindex="0">连接配网常见问题</a>】</p>
+    </div>
+  </dialog>
+
+  <div id="connection-success" class="connection-success" role="status" aria-live="polite" hidden>
+    <img src="../../src/lianjiepeiwnag/连接成功.jpg" alt=""><span>连接成功</span>
+  </div>
+  <!-- ==================== 加入共享：相机权限与异常弹窗 ==================== -->
+  <dialog id="camera-permission-dialog" class="app-dialog" aria-labelledby="camera-permission-title">
+    <div class="dialog-icon dialog-icon--notice" aria-hidden="true">◉</div>
+    <h2 id="camera-permission-title">“趣打印”想要访问相机</h2>
+    <p>扫描家人的邀请二维码需要使用相机。画面只用于识别二维码，不会被保存或上传。</p>
+    <div class="dialog-actions"><button id="camera-permission-deny" type="button">不允许</button><button id="camera-permission-allow" type="button">允许</button></div>
+  </dialog>
+
+  <dialog id="camera-denied-dialog" class="app-dialog" aria-labelledby="camera-denied-title">
+    <div class="dialog-icon dialog-icon--notice" aria-hidden="true">!</div>
+    <h2 id="camera-denied-title">未获得相机权限</h2>
+    <div class="jo-dialog__hint">打开手机「设置 → 趣打印 → 相机」，选择「允许」，再回到这一页就能扫码了。</div>
+    <div class="dialog-actions"><button id="camera-denied-later" type="button">稍后再说</button><button id="camera-denied-settings" type="button">去开启</button></div>
+  </dialog>
+
+  <dialog id="already-joined-dialog" class="app-dialog" aria-labelledby="already-joined-title">
+    <div class="dialog-icon dialog-icon--notice" aria-hidden="true">✓</div>
+    <h2 id="already-joined-title">你已经加入这台打印机</h2>
+    <p>这台共享打印机已经在你的设备列表里，不需要重复加入。</p>
+    <div class="dialog-actions"><button id="already-joined-dismiss" type="button">知道了</button><button id="already-joined-view" type="button">查看打印机</button></div>
+  </dialog>
+
+  <dialog id="family-conflict-dialog" class="app-dialog" aria-labelledby="family-conflict-title">
+    <div class="dialog-icon dialog-icon--notice" aria-hidden="true">!</div>
+    <h2 id="family-conflict-title">你已加入其他家庭</h2>
+    <p>当前账号已加入「小明的家庭」，一台设备一次只能加入一个家庭。为避免误操作，我们不会直接替换原来的家庭。</p>
+    <div class="jo-dialog__hint">如需加入新家庭，请先在「我的 - 家庭与权限」中退出当前家庭，再重新扫描家人的邀请。</div>
+    <div class="dialog-actions"><button id="family-conflict-view" type="button">查看当前家庭</button><button id="family-conflict-dismiss" type="button">知道了</button></div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="prototype.js"></script>
+</body>
+</html>

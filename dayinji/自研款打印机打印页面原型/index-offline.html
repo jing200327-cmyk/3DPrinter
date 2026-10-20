@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f5fa">
+  <title>打印机离线状态 · 自研款打印机打印页面原型</title>
+  <!-- 复用在线工作台的设备框 / 头部 / 摄像头裁切 / 底部导航 / Toast / 复用整图页样式（只引用，不修改）；
+       离线态专属规则全部收在 styles-offline.css 的专属类名作用域内 -->
+  <link rel="stylesheet" href="styles.css?v=r012">
+  <link rel="stylesheet" href="styles-offline.css?v=r001">
+</head>
+<body>
+  <main id="device-page" class="phone-shell" aria-label="自研款 3D 打印机设备页 · 打印机离线状态">
+    <header class="printer-header" aria-label="打印机连接状态">
+      <div class="source-crop source-crop--header" aria-hidden="true">
+        <img src="../../ugee/Ugee打印机页面原型/assets/ugee-page-1.jpg" alt="">
+      </div>
+
+      <!-- 1 · 连接状态置灰：离线小图（灰色● + 「离线」文字）覆盖底图烘焙的「● 忙碌」 -->
+      <div id="printer-connection-state" class="printer-connection-state" data-connection-status="offline" role="status" aria-live="polite">
+        <img id="printer-connection-state-image" src="../../src/lianjiezhuangtai/离线.png" alt="离线状态">
+        <span id="printer-connection-state-label" class="sr-only">离线</span>
+      </div>
+
+      <!-- 1b · 「离线」右侧的蓝色刷新按钮：点击走重新连接分支 -->
+      <button id="connection-refresh" class="connection-refresh" type="button" aria-label="重新连接打印机">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21 12a9 9 0 1 1-2.64-6.36L21 8"></path>
+          <path d="M21 3v5h-5"></path>
+        </svg>
+      </button>
+
+      <!-- 1c · 恢复原打印页顶部右侧两个入口（位置与在线工作台一致）：
+             添加打印机 → 添加打印机页；设备设置 → 设备设置页 -->
+      <button id="printer-switch" class="hotspot hotspot--switch" type="button" aria-label="添加打印机"></button>
+      <button id="printer-settings" class="hotspot hotspot--settings" type="button" aria-label="打开设备设置"></button>
+    </header>
+
+    <div class="page-content">
+      <!-- 2 · 摄像头处于关闭状态：复用「关闭摄像头状态.jpg」，离线时不提供任何摄像头交互 -->
+      <section id="camera-offline" class="source-crop source-crop--timelapse" data-camera-state="off" aria-label="摄像头已关闭">
+        <img id="camera-monitor-image" src="../../src/shexiangtou/关闭摄像头状态.jpg" alt="摄像头已关闭">
+      </section>
+
+      <!-- 3+4 · 移除原任务控制面板与耗材面板，改为离线态说明卡片 -->
+      <section class="offline-notice" aria-label="打印机离线提示">
+        <span class="offline-notice-art" aria-hidden="true">
+          <!-- 3D 打印机插画（产品渲染 + 斜杠）：assets/离线说明-3D打印机.png，
+               由 assets/_tools_make_offline_notice_asset.py 生成 -->
+          <img src="assets/离线说明-3D打印机.png" alt="">
+        </span>
+        <p class="offline-notice-copy">当前打印机处于离线状态，请重新连接打印机。</p>
+        <button id="reconnect-button" class="offline-reconnect" type="button">重新连接</button>
+      </section>
+    </div>
+
+    <nav class="bottom-nav" aria-label="主导航">
+      <div class="source-crop source-crop--nav" aria-hidden="true"><img src="../../ugee/Ugee打印机页面原型/assets/ugee-page-2.jpg" alt=""></div>
+    </nav>
+  </main>
+
+  <!-- 添加打印机页（复用 添加打印机.png）：由顶部「添加打印机」入口打开。
+       样式与热区坐标全部复用在线工作台的 .reuse-screen / .reuse-hotspot--*（styles.css），
+       页面行为按离线态裁剪：底部「配置新的打印机」前往配网流程第一步骤页；
+       在线版的「分享打印机」入口属于分享模块，本分支页不带。 -->
+  <section id="add-printer-screen" class="reuse-screen" hidden tabindex="-1" aria-label="添加打印机">
+    <div class="reuse-screen-frame">
+      <div class="reuse-stage" style="--reuse-ratio: 846 / 1720">
+        <img src="../../原型修改复用图片资源/添加打印机.png" alt="添加打印机页，包含我的打印机列表与配置新的打印机按钮">
+        <button id="configure-new-printer" class="reuse-hotspot reuse-hotspot--configure-printer" type="button" aria-label="配置新的打印机，前往首次配网连接流程"></button>
+      </div>
+    </div>
+    <button id="add-printer-back" class="reuse-screen-back" type="button" aria-label="返回离线工作台"></button>
+  </section>
+
+  <!-- 设备设置页（复用 设备设置页.png）：由顶部「设备设置」入口打开。
+       页内四行（固件版本 / 打印选项 / 延时摄影 / 移除打印机）都需要与打印机通信，
+       离线态暂不可用，点击给出 Toast 说明；左上角热区返回离线工作台。 -->
+  <section id="device-settings-screen" class="reuse-screen" hidden tabindex="-1" aria-label="设备设置">
+    <div class="reuse-screen-frame">
+      <div class="reuse-stage" style="--reuse-ratio: 376 / 809">
+        <img src="../../原型修改复用图片资源/设备设置页.png" alt="设备设置页，包含设备名称、固件版本、打印选项与延时摄影">
+        <button id="open-firmware-version" class="reuse-hotspot reuse-hotspot--firmware-version" type="button" aria-label="固件版本"></button>
+        <button id="open-print-options" class="reuse-hotspot reuse-hotspot--print-options" type="button" aria-label="打印选项"></button>
+        <button id="open-timelapse-settings" class="reuse-hotspot reuse-hotspot--timelapse-setting" type="button" aria-label="延时摄影"></button>
+        <button id="open-remove-printer" class="reuse-hotspot reuse-hotspot--remove-printer" type="button" aria-label="移除打印机"></button>
+      </div>
+    </div>
+    <button id="device-settings-back" class="reuse-screen-back" type="button" aria-label="返回离线工作台"></button>
+  </section>
+
+  <!-- 重新连接的分支演示（底部弹层）：演示控件，不属于产品 UI。
+       刷新按钮触发连接状态检测（向云端及局域网连接服务查询设备状态，检测中 Loading、禁止重复点击），
+       检测后按「打印机是否完成配网 + APP 能否获取云端设备联网状态」自动执行：
+       分支一：打印机已完成配网 → 直接重新建立连接，跳转打印页原型（在线态）
+       分支二：打印机未完成配网 → 跳转配网流程第一步骤页「选择要设置的打印机」 -->
+  <div id="reconnect-sheet-layer" class="reconnect-sheet-layer" hidden>
+    <div class="reconnect-sheet" role="dialog" aria-modal="true" aria-labelledby="reconnect-sheet-title" tabindex="-1">
+      <span class="reconnect-sheet-grabber" aria-hidden="true"></span>
+      <span class="reconnect-demo-badge">演示 · 分支选择</span>
+      <h2 id="reconnect-sheet-title" class="reconnect-sheet-title">重新连接打印机</h2>
+      <p class="reconnect-sheet-copy">点击「重新连接」后，App 将触发连接状态检测——向云端及局域网连接服务查询设备状态，检测中按钮进入 Loading 状态、禁止重复点击，随后按「打印机是否完成配网」自动执行。请选择要演示的分支：</p>
+      <button id="reconnect-branch-paired" class="reconnect-branch" type="button">
+        <span class="reconnect-branch-main">
+          <strong>打印机已完成配网</strong>
+          <span>直接重新建立连接，跳转至打印页原型（在线态）</span>
+        </span>
+        <span class="reconnect-branch-chevron" aria-hidden="true"></span>
+      </button>
+      <button id="reconnect-branch-unpaired" class="reconnect-branch" type="button">
+        <span class="reconnect-branch-main">
+          <strong>打印机未完成配网</strong>
+          <span>跳转至配网流程第一步骤页「选择要设置的打印机」</span>
+        </span>
+        <span class="reconnect-branch-chevron" aria-hidden="true"></span>
+      </button>
+      <button id="reconnect-sheet-cancel" class="reconnect-sheet-cancel" type="button">取消</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    /* ---------- 打印机离线工作台 ---------- */
+    /* 打印机首次配网连接流程原型（配网流程第一步骤页「选择要设置的打印机」） */
+    const PAIRING_FLOW_PATH = '../../lianjiepeiwnag/打印机首次配网连接流程原型/index.html';
+
+    const toast = document.querySelector('#toast');
+    const sheetLayer = document.querySelector('#reconnect-sheet-layer');
+    const sheet = sheetLayer.querySelector('.reconnect-sheet');
+    const reconnectButton = document.querySelector('#reconnect-button');
+    const connectionRefresh = document.querySelector('#connection-refresh');
+    const devicePage = document.querySelector('#device-page');
+    const offlineReuseScreens = [...document.querySelectorAll('.reuse-screen')];
+    let toastTimer = null;
+    let sheetReturnFocus = null;
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('is-visible');
+      window.clearTimeout(toastTimer);
+      toastTimer = window.setTimeout(() => toast.classList.remove('is-visible'), 2400);
+    }
+
+    function openReconnectSheet(trigger) {
+      sheetReturnFocus = trigger || null;
+      sheetLayer.hidden = false;
+      sheet.focus({ preventScroll: true });
+    }
+
+    function closeReconnectSheet() {
+      sheetLayer.hidden = true;
+      if (sheetReturnFocus && document.contains(sheetReturnFocus)) {
+        sheetReturnFocus.focus({ preventScroll: true });
+      }
+      sheetReturnFocus = null;
+    }
+
+    /* 卡片主按钮直接打开分支弹层 */
+    reconnectButton.addEventListener('click', () => openReconnectSheet(reconnectButton));
+    /* 头部刷新按钮：触发连接状态检测（Loading、禁止重复点击）后再打开分支弹层 */
+    connectionRefresh.addEventListener('click', () => {
+      if (connectionRefresh.disabled) return;
+      connectionRefresh.classList.add('is-loading');
+      connectionRefresh.disabled = true;
+      showToast('正在检测打印机连接状态…');
+      window.setTimeout(() => {
+        connectionRefresh.classList.remove('is-loading');
+        connectionRefresh.disabled = false;
+        openReconnectSheet(connectionRefresh);
+      }, 900);
+    });
+    document.querySelector('#reconnect-sheet-cancel').addEventListener('click', closeReconnectSheet);
+    /* 点遮罩关闭 */
+    sheetLayer.addEventListener('click', (event) => {
+      if (event.target === sheetLayer) closeReconnectSheet();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      if (!sheetLayer.hidden) closeReconnectSheet();
+      else if (offlineReuseScreens.some((screen) => !screen.hidden)) closeOfflineReuseScreens();
+    });
+
+    /* 分支一：打印机已完成配网 → 直接重新建立连接，回到打印页原型（在线态） */
+    document.querySelector('#reconnect-branch-paired').addEventListener('click', () => {
+      closeReconnectSheet();
+      showToast('连接已重新建立，正在返回打印页…');
+      window.setTimeout(() => { window.location.href = 'index.html'; }, 700);
+    });
+
+    /* 分支二：打印机未完成配网 → 跳转配网流程第一步骤页「选择要设置的打印机」 */
+    document.querySelector('#reconnect-branch-unpaired').addEventListener('click', () => {
+      closeReconnectSheet();
+      showToast('打印机未完成配网，前往重新配网…');
+      window.setTimeout(() => {
+        window.location.href = `${PAIRING_FLOW_PATH}?screen=printer-select`;
+      }, 700);
+    });
+
+    /* ---------- 顶部两个入口打开的复用整图页（添加打印机 / 设备设置） ---------- */
+    function openOfflineReuseScreen(screen) {
+      offlineReuseScreens.forEach((item) => { item.hidden = item !== screen; });
+      devicePage.inert = true;
+      document.body.classList.add('operation-open');
+      screen.focus({ preventScroll: true });
+    }
+
+    function closeOfflineReuseScreens() {
+      offlineReuseScreens.forEach((item) => { item.hidden = true; });
+      devicePage.inert = false;
+      document.body.classList.remove('operation-open');
+    }
+
+    /* 添加打印机 → 添加打印机页；设备设置 → 设备设置页（与在线工作台同位置同行为） */
+    document.querySelector('#printer-switch').addEventListener('click', () => {
+      openOfflineReuseScreen(document.querySelector('#add-printer-screen'));
+    });
+    document.querySelector('#printer-settings').addEventListener('click', () => {
+      openOfflineReuseScreen(document.querySelector('#device-settings-screen'));
+    });
+    document.querySelector('#add-printer-back').addEventListener('click', closeOfflineReuseScreens);
+    document.querySelector('#device-settings-back').addEventListener('click', closeOfflineReuseScreens);
+
+    /* 添加打印机页：配置新的打印机 → 配网流程第一步骤页「选择要设置的打印机」 */
+    document.querySelector('#configure-new-printer').addEventListener('click', () => {
+      showToast('前往配置新的打印机…');
+      window.setTimeout(() => {
+        window.location.href = `${PAIRING_FLOW_PATH}?screen=printer-select`;
+      }, 700);
+    });
+
+    /* 设备设置页四行：都需要与打印机通信，离线态暂不可用 */
+    ['#open-firmware-version', '#open-print-options', '#open-timelapse-settings', '#open-remove-printer'].forEach((selector) => {
+      document.querySelector(selector).addEventListener('click', () => {
+        showToast('打印机离线，该功能暂不可用');
+      });
+    });
+  </script>
+</body>
+</html>

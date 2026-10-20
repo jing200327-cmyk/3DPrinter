@@ -1,0 +1,571 @@
+:root {
+  color-scheme: light;
+  --page: #f4f5fa;
+  --surface: #fff;
+  --ink: #2f343d;
+  --muted: #91959c;
+  --line: #eceef3;
+  --orange: #ff9d1c;
+  --purple: #7768f7;
+  --blue: #469bdf;
+  --mint: #2fc399;
+  --warning: #d99816;
+  --danger: #ef4655;
+  /* ---- iPhone 13 mini 设备框（375 × 812 逻辑像素） ---- */
+  --device-width: 375px;
+  --device-height: 812px;
+  /* 设备框在视口里的高度与垂直偏移：窗口比 812 高时居中成一个手机壳，比 812 矮时铺满 */
+  --frame-height: min(100vh, var(--device-height));
+  --frame-top: max(0px, calc((100vh - var(--frame-height)) / 2));
+  /* 设备框右边缘距窗口右边缘的距离，用于把滚动指示条贴在设备框内侧 */
+  --frame-right: max(0px, calc((100vw - min(100vw, var(--device-width))) / 2));
+  /* 旧版原型按 390 宽设计，所有写死的 px 偏移统一乘这个系数换算到 375 */
+  --u: calc(var(--device-width) / 390);
+  font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { overflow: hidden; background: #e6e8ef; }
+body { overflow: hidden; margin: 0; min-width: 320px; height: 100vh; color: var(--ink); background: #e6e8ef; }
+button { color: inherit; font: inherit; -webkit-tap-highlight-color: transparent; }
+button:focus-visible { outline: 3px solid rgb(70 155 223 / 42%); outline-offset: 3px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+.phone-shell { position: relative; width: min(100vw, var(--device-width)); height: var(--frame-height); margin: var(--frame-top) auto 0; padding-bottom: 96px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; background: var(--page); box-shadow: 0 0 32px rgb(43 48 65 / 12%); }
+.phone-shell::-webkit-scrollbar { width: 0; height: 0; }
+.source-crop { position: relative; overflow: hidden; }
+.source-crop img { position: absolute; display: block; width: var(--device-width); max-width: none; }
+.printer-header, .source-crop--header { position: relative; width: 100%; height: calc(139.2 * var(--u)); }
+.source-crop--header img { inset: 0 auto auto 0; }
+.printer-connection-state { position: absolute; z-index: 1; inset: 0; pointer-events: none; }
+.printer-connection-state img { position: absolute; top: calc(100 * var(--u)); left: calc(64 * var(--u)); display: block; height: auto; }
+.printer-connection-state[data-connection-status="idle"] img { width: calc(97 * var(--u)); }
+.printer-connection-state[data-connection-status="offline"] img { width: calc(74 * var(--u)); }
+.printer-connection-state[data-connection-status="busy"] img { display: none; }
+.hotspot { position: absolute; z-index: 2; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.hotspot--switch { top: calc(77 * var(--u)); left: calc(226 * var(--u)); width: calc(70 * var(--u)); height: calc(54 * var(--u)); border-radius: 50%; }
+.hotspot--settings { top: calc(69 * var(--u)); right: calc(15 * var(--u)); width: calc(68 * var(--u)); height: calc(68 * var(--u)); border-radius: 18px; }
+.page-content { display: grid; gap: 16px; padding: 16px; }
+.source-crop--timelapse { width: 100%; aspect-ratio: 1112 / 669; border-radius: 17px; background: #dceaf3; }
+.source-crop--timelapse img { top: calc(-155.5 * var(--u)); left: calc(-16.7 * var(--u)); }
+.source-crop--timelapse[data-camera-state="on"] #camera-monitor-image,
+.source-crop--timelapse[data-camera-state="off"] #camera-monitor-image,
+.source-crop--timelapse[data-camera-state="limit"] #camera-monitor-image { inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.timelapse-action { position: absolute; z-index: 3; top: 12px; right: 12px; display: inline-flex; min-height: 40px; align-items: center; gap: 7px; padding: 0 12px 0 10px; border: 0; border-radius: 10px; color: #fff; background: rgb(71 74 82 / 62%); box-shadow: 0 2px 8px rgb(0 0 0 / 18%); font-size: 15px; font-weight: 700; cursor: pointer; }
+.timelapse-action svg { width: 22px; height: 22px; fill: currentcolor; }
+.timelapse-chevron { width: 9px; height: 9px; border-top: 2px solid currentcolor; border-right: 2px solid currentcolor; transform: rotate(45deg); }
+/* 达到观看时长后：延时摄影标签已烘焙在大图里，这里只留一个对齐的同位透明热区 */
+.source-crop--timelapse[data-camera-state="limit"] .timelapse-action { top: 5.42%; right: 3.36%; width: 35.27%; height: 18.3%; min-height: 0; padding: 0; background: transparent; box-shadow: none; }
+.source-crop--timelapse[data-camera-state="limit"] .timelapse-action > * { visibility: hidden; }
+.camera-toggle { position: absolute; z-index: 3; bottom: calc(10 * var(--u)); left: calc(10 * var(--u)); width: calc(78 * var(--u)); height: calc(54 * var(--u)); padding: 0; border: 0; border-radius: 999px; background: transparent; cursor: pointer; }
+/* 摄像头实时监控区域左上角的透明交互按钮：点击 7 秒后切换到“达到观看时长”画面 */
+.camera-view-limit { position: absolute; z-index: 3; top: 0; left: 0; width: calc(84 * var(--u)); height: calc(84 * var(--u)); padding: 0; border: 0; border-radius: 0 0 22px 0; background: transparent; cursor: pointer; }
+.camera-view-limit:active { background: rgb(255 255 255 / 10%); }
+
+.task-panel { overflow: hidden; border-radius: 20px; background: var(--surface); box-shadow: 0 2px 10px rgb(50 55 72 / 3%); }
+.task-status { display: flex; align-items: center; justify-content: center; gap: 8px; width: 72%; min-height: 42px; margin: 0 auto; color: var(--blue); font-size: 16px; font-weight: 700; background: #e9f3ff; border-radius: 0 0 28px 28px; transition: color 180ms ease, background 180ms ease; }
+.status-icon { display: flex; width: 24px; height: 24px; align-items: center; justify-content: center; gap: 2px; color: white; background: linear-gradient(145deg, #9b5ef8, #4d9cff); border-radius: 50%; }
+.status-icon span { width: 3px; height: 3px; background: currentcolor; border-radius: 50%; }
+.task-panel[data-status="ready"] .task-status { color: #239d75; background: #e2f7ea; }
+.task-panel[data-status="ready"] .status-icon { background: var(--mint); }
+.task-panel[data-status="ready"] .status-icon span { display: none; }
+.task-panel[data-status="ready"] .status-icon::after { width: 0; height: 0; margin-left: 2px; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 8px solid white; content: ""; }
+.task-panel[data-status="preparing"] .task-status { color: var(--purple); background: #f0edff; }
+.task-panel[data-status="preparing"] .status-icon { background: #a99dfb; }
+.task-panel[data-status="paused"] .task-status { color: #9c6a08; background: #fff5d9; }
+.task-panel[data-status="paused"] .status-icon { background: var(--warning); }
+.task-panel[data-status="paused"] .status-icon span { width: 3px; height: 10px; border-radius: 1px; }
+.task-panel[data-status="paused"] .status-icon span:nth-child(3) { display: none; }
+.task-panel:is([data-status="cancelled"], [data-status="cancelled-all"]) .task-status { color: #c62839; background: #ffeaed; }
+.task-panel:is([data-status="cancelled"], [data-status="cancelled-all"]) .status-icon { position: relative; background: var(--danger); }
+.task-panel:is([data-status="cancelled"], [data-status="cancelled-all"]) .status-icon span { position: absolute; width: 12px; height: 2px; transform: rotate(45deg); }
+.task-panel:is([data-status="cancelled"], [data-status="cancelled-all"]) .status-icon span:nth-child(2) { transform: rotate(-45deg); }
+.task-panel:is([data-status="cancelled"], [data-status="cancelled-all"]) .status-icon span:nth-child(3) { display: none; }
+.task-panel[data-status="completed"] .task-status { color: #168f6b; background: #e3f8f1; }
+.task-panel[data-status="completed"] .status-icon { background: var(--mint); }
+.task-panel[data-status="completed"] .status-icon::after { content: "✓"; font-weight: 800; }
+.task-panel[data-status="completed"] .status-icon span { display: none; }
+
+.model-navigation { position: relative; width: 100%; aspect-ratio: 800 / 331; overflow: hidden; background: white; }
+.model-navigation[hidden], .task-summary[hidden] { display: none; }
+.model-navigation > img { position: absolute; top: 0; left: 0; display: block; width: 100%; height: auto; max-width: none; transform: translateY(-16.2025%); }
+.model-navigation-actions { position: absolute; inset: 0; }
+.model-navigation-hotspot { position: absolute; top: 60.7%; width: 39%; height: 29%; min-width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 999px; background: transparent; cursor: pointer; }
+.model-navigation-hotspot--explore { left: 8.5%; }
+.model-navigation-hotspot--mine { left: 52.6%; }
+.task-summary { display: grid; gap: 12px; padding: 18px 20px 14px; }
+.model-crop { position: relative; width: 100%; aspect-ratio: 684 / 294; overflow: hidden; border-radius: 12px; background: #f6f7fb; }
+.model-crop img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.owner-task-card { position: relative; border: 3px solid transparent; box-shadow: inset 0 0 0 1px rgb(255 255 255 / 58%); }
+.owner-task-card--boy { border-color: #4d9cff; }
+.owner-task-card--girl { border-color: #36b77e; }
+.task-owner-avatar { position: absolute; z-index: 2; top: 8px; left: 8px; display: block; width: 34px; height: 34px; border: 2px solid white; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 7px rgb(25 39 60 / 24%); pointer-events: none; }
+.model-crop .task-owner-avatar { width: 34px; height: 34px; }
+.task-copy { min-width: 0; flex: 1; }
+.task-copy h1 { overflow: hidden; margin: 2px 0 6px; font-size: 16px; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
+.task-meta { overflow: hidden; margin: 0 0 10px; color: var(--muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.progress-head, .time-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.progress-head { color: var(--muted); font-size: 11px; }
+.progress-head strong { color: #656a72; font-size: 16px; font-variant-numeric: tabular-nums; }
+.task-panel[data-status="preparing"] #progress-state { color: #77708d; font-weight: 700; }
+.task-panel[data-status="paused"] #progress-state, .task-panel[data-status="paused"] #task-percent { color: var(--warning); font-weight: 700; }
+.task-panel:is([data-status="cancelled"], [data-status="cancelled-all"]) #progress-state, .task-panel:is([data-status="cancelled"], [data-status="cancelled-all"]) #task-percent { color: var(--danger); font-weight: 700; }
+.task-panel[data-status="completed"] #progress-state, .task-panel[data-status="completed"] #task-percent { color: var(--mint); font-weight: 700; }
+.time-line strong { font-size: 16px; font-variant-numeric: tabular-nums; }
+.finish-now { min-width: 44px; min-height: 26px; padding: 0 8px; border: 1px solid #d9dce4; border-radius: 999px; color: #666b75; background: white; font-size: 11px; cursor: pointer; }
+.finish-now[hidden] { display: none; }
+.finish-now:disabled { display: none; }
+.preparation-progress { display: flex; min-height: 48px; align-items: center; justify-content: center; gap: 12px; padding: 2px 0 0; color: #5f5970; }
+.preparation-progress[hidden] { display: none; }
+.preparation-spinner { width: 36px; height: 36px; flex: 0 0 36px; border: 4px solid #dedde4; border-top-color: #a99dfb; border-radius: 50%; animation: preparation-spin 850ms linear infinite; }
+.preparation-copy { display: grid; min-width: 104px; min-height: 36px; align-content: center; gap: 1px; font-size: 14px; font-weight: 700; line-height: 1.2; }
+.preparation-copy strong { color: var(--purple); font-size: 12px; font-variant-numeric: tabular-nums; }
+.preparation-copy strong[hidden] { display: none; }
+@keyframes preparation-spin { to { transform: rotate(360deg); } }
+.progress-track { height: 8px; margin-top: 6px; overflow: hidden; background: #f0f1f6; border-radius: 999px; }
+.progress-track[hidden] { display: none; }
+.progress-track span { display: block; width: 3%; height: 100%; min-width: 9px; background: linear-gradient(90deg, #a75cf4, #54a0ff); border-radius: inherit; transition: width 300ms ease; }
+.task-panel[data-status="paused"] .progress-track span { background: var(--warning); }
+.task-panel[data-status="cancelled"] .progress-track span, .task-panel[data-status="cancelled-all"] .progress-track span { background: var(--danger); }
+.task-panel[data-status="completed"] .progress-track span { background: var(--mint); }
+
+.task-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 20px 18px; }
+.task-actions[hidden] { display: none; }
+.task-panel[data-status="preparing"] .task-actions { grid-template-columns: minmax(150px, 52%); justify-content: center; }
+.outline-action { display: flex; min-height: 48px; align-items: center; justify-content: center; gap: 8px; border: 2px solid; border-radius: 999px; background: white; font-size: 17px; font-weight: 700; cursor: pointer; }
+.outline-action[hidden] { display: none; }
+.outline-action--pause { color: var(--mint); border-color: var(--mint); }
+.outline-action--cancel { color: var(--danger); border-color: var(--danger); }
+.outline-action:disabled { cursor: not-allowed; opacity: .42; }
+.action-icon { display: inline-grid; width: 27px; height: 27px; place-items: center; border: 2px solid currentcolor; border-radius: 50%; }
+.action-icon--pause { position: relative; color: var(--purple); }
+.action-icon--pause::before, .action-icon--pause::after { position: absolute; width: 3px; height: 12px; content: ""; background: currentcolor; border-radius: 2px; }
+.action-icon--pause::before { transform: translateX(-4px); }
+.action-icon--pause::after { transform: translateX(4px); }
+.outline-action[data-paused="true"] .action-icon--pause::after { display: none; }
+.outline-action[data-paused="true"] .action-icon--pause::before { width: 0; height: 0; border-top: 7px solid transparent; border-bottom: 7px solid transparent; border-left: 10px solid currentcolor; background: transparent; transform: translateX(2px); }
+.action-icon--cancel { color: var(--danger); font-size: 25px; font-weight: 500; line-height: 1; }
+
+.completion-actions { display: grid; grid-template-columns: 1fr 1fr; min-height: 58px; margin: 0 20px 16px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+.completion-actions[hidden] { display: none; }
+.completion-actions button { display: flex; align-items: center; justify-content: center; gap: 8px; border: 0; background: transparent; font-size: 16px; font-weight: 700; cursor: pointer; }
+.completion-actions button[hidden] { display: none; }
+.completion-actions.is-single { grid-template-columns: 1fr; }
+.completion-actions button + button { border-left: 1px solid var(--line); }
+.repeat-icon, .next-icon { color: var(--mint); font-size: 25px; font-weight: 700; }
+.next-icon { display: grid; width: 28px; height: 28px; place-items: center; border: 2px solid var(--mint); border-radius: 50%; font-size: 10px; }
+.completion-actions .local-file-action { overflow: hidden; padding: 0; }
+.local-file-action img { display: block; width: 100%; height: 56px; object-fit: cover; }
+
+.queue-toggle { display: flex; width: calc(100% - 40px); min-height: 62px; align-items: center; justify-content: space-between; margin: 0 20px; padding: 0; border: 0; border-top: 1px solid var(--line); background: white; text-align: left; cursor: pointer; }
+.queue-toggle[hidden] { display: none; }
+.queue-toggle > span:first-child { display: flex; align-items: baseline; gap: 8px; }
+.queue-toggle strong { font-size: 15px; }
+.queue-toggle small { color: var(--muted); font-size: 12px; }
+.chevron { width: 10px; height: 10px; border-right: 2px solid #9da1a8; border-bottom: 2px solid #9da1a8; transform: rotate(45deg) translateY(-3px); transition: transform 180ms ease; }
+.queue-toggle[aria-expanded="true"] .chevron { transform: rotate(225deg) translate(-2px, -1px); }
+.print-queue { padding: 0 20px 20px; }
+.print-queue[hidden] { display: none; }
+.queue-list { display: grid; gap: 10px; animation: queue-in 180ms ease-out; }
+.queue-item { display: block; width: 100%; overflow: hidden; padding: 0; border: 0; border-radius: 13px; background: transparent; cursor: pointer; }
+.queue-item.owner-task-card { border-width: 3px; border-style: solid; }
+.queue-item.owner-task-card--boy { border-color: #4d9cff; }
+.queue-item.owner-task-card--girl { border-color: #36b77e; }
+.queue-item[hidden] { display: none; }
+.queue-item .queue-task-artwork { display: block; width: 100%; height: auto; }
+.queue-item .task-owner-avatar { top: 7px; left: 7px; width: 31px; height: 31px; }
+@keyframes queue-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+.filament-panel { overflow: visible; background: transparent; }
+.filament-panel-frame { position: relative; width: 100%; border-radius: 16px; overflow: hidden; background: #fff; box-shadow: 0 2px 10px rgb(50 55 72 / 4%); }
+/* 配网流程「打印前准备」页「去进料」跳转过来时的短暂高光，引导用户操作进料 */
+@keyframes filament-guide-glow {
+  0%, 100% { box-shadow: 0 2px 10px rgb(50 55 72 / 4%); }
+  50% { box-shadow: 0 0 0 4px rgb(103 91 230 / 34%), 0 10px 26px rgb(103 91 230 / 30%); }
+}
+.filament-panel.is-guide-flash .filament-panel-frame { animation: filament-guide-glow 1.5s ease-in-out 4; border-radius: 16px; }
+/* 耗材面板上方无缝衔接的蓝紫渐变“风扇滤芯更换”标签 */
+.fan-filter-banner { display: flex; width: 100%; min-height: 22px; align-items: center; justify-content: center; gap: 5px; padding: 0 10px; border: 0; color: #fff; background: linear-gradient(90deg, #7456ee 0%, #3981f1 100%); font-size: 11.5px; font-weight: 600; letter-spacing: .2px; cursor: pointer; }
+.fan-filter-chevron { width: 7px; height: 7px; flex: 0 0 7px; border-top: 1.6px solid currentcolor; border-right: 1.6px solid currentcolor; transform: rotate(45deg); }
+.filament-panel-canvas { position: relative; width: 100%; aspect-ratio: 352 / 248; border-radius: 12px 12px 0 0; overflow: hidden; }
+.filament-panel-canvas > img { display: block; width: 100%; height: 100%; object-fit: fill; }
+/* 耗材面板顶部状态：进料中 / 进料完成（绿色字体） */
+.filament-status { position: absolute; z-index: 5; top: 3%; right: 2.6%; color: #17a95f; font-size: 15px; font-weight: 800; letter-spacing: .5px; }
+.filament-status[hidden] { display: none; }
+.filament-status::before { display: inline-block; width: 7px; height: 7px; margin-right: 5px; background: currentcolor; border-radius: 50%; content: ""; vertical-align: 2px; }
+/* 耗材料盘选中态：绿色边框（坐标按 352×248 原图量取） */
+.filament-selection-ring { position: absolute; z-index: 3; left: 37.93%; top: 18.95%; width: 23.3%; height: 33.06%; border: 3px solid #22c55e; border-radius: 50%; box-shadow: 0 0 0 4px rgb(34 197 94 / 18%); pointer-events: none; animation: filament-ring-in 220ms ease-out; }
+.filament-selection-ring[hidden] { display: none; }
+@keyframes filament-ring-in { from { opacity: 0; transform: scale(.88); } to { opacity: 1; transform: scale(1); } }
+.filament-spool-hotspot { position: absolute; z-index: 4; left: 39.3%; top: 20.9%; width: 20.5%; height: 29.5%; min-width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
+/* 料盘下方的“修改”小图标：打开耗材设置（坐标按 352×248 原图量取） */
+.filament-edit-hotspot { position: absolute; z-index: 6; left: 43%; top: 51%; width: 14%; height: 12%; min-width: 44px; min-height: 40px; padding: 0; border: 0; border-radius: 10px; background: transparent; cursor: pointer; }
+.filament-edit-hotspot:active { background: rgb(17 24 39 / 8%); }
+/* 进料 / 退料：未激活时完全透明，露出原图里的半透明按钮；激活后覆盖为不透明胶囊按钮 */
+.filament-action-button { position: absolute; z-index: 4; top: 71.2%; width: 40.4%; height: 20.2%; min-height: 40px; padding: 0; border: 0; border-radius: 999px; color: transparent; background: transparent; font-size: 17px; font-weight: 800; letter-spacing: 2px; cursor: default; transition: background 180ms ease, box-shadow 180ms ease, transform 120ms ease; }
+.filament-action-button--load { left: 2.8%; }
+.filament-action-button--unload { left: 52.5%; }
+.filament-action-button.is-active, .filament-action-button.is-busy { color: #fff; background: linear-gradient(100deg, #8b76f2 0%, #5a95f3 100%); box-shadow: 0 6px 16px rgb(112 116 242 / 26%); }
+.filament-action-button.is-active { cursor: pointer; }
+.filament-action-button.is-active:active { transform: translateY(1px); }
+
+.bottom-nav { position: fixed; z-index: 8; bottom: var(--frame-top); left: 50%; width: min(100vw, var(--device-width)); height: calc(78 * var(--u)); overflow: hidden; transform: translateX(-50%); background: white; box-shadow: 0 -4px 12px rgb(44 48 61 / 6%); }
+.source-crop--nav { height: calc(78 * var(--u)); }.source-crop--nav img { top: calc(-769 * var(--u)); left: 0; }
+.toast { position: fixed; z-index: 40; bottom: calc(var(--frame-top) + 98px); left: 50%; max-width: calc(min(100vw, var(--device-width)) - 48px); padding: 10px 16px; border-radius: 999px; color: white; background: rgb(38 41 48 / 92%); font-size: 13px; opacity: 0; pointer-events: none; transform: translate(-50%, 8px); transition: opacity 160ms ease, transform 160ms ease; }
+.toast.is-visible { opacity: 1; transform: translate(-50%); }
+/* 设备框内的细滚动指示条：不占布局宽度，只在滚动时浮现（iOS 风格） */
+.scroll-indicator { position: fixed; z-index: 60; top: var(--frame-top); right: calc(var(--frame-right) + 4px); width: 4px; height: var(--frame-height); overflow: hidden; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity 240ms ease; }
+.scroll-indicator[hidden] { display: none; }
+.scroll-indicator.is-visible { opacity: 1; }
+.scroll-indicator > span { position: absolute; left: 0; width: 100%; border-radius: 999px; background: rgb(58 64 79 / 38%); }
+
+.reference-screen { position: fixed; z-index: 30; top: var(--frame-top); left: 50%; width: min(100vw, var(--device-width)); height: var(--frame-height); margin: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; transform: translateX(-50%); background: #f4f4f4; scrollbar-width: none; }
+.reference-screen::-webkit-scrollbar { width: 0; height: 0; }
+.reference-screen[hidden] { display: none; }
+.reference-toolbar { position: sticky; z-index: 2; top: 0; display: grid; height: 58px; grid-template-columns: 56px 1fr 56px; align-items: center; background: rgb(255 255 255 / 96%); box-shadow: 0 1px 0 #e5e5e5; text-align: center; }
+.reference-toolbar button { height: 100%; border: 0; background: transparent; font-size: 38px; cursor: pointer; }
+.reference-toolbar strong { font-size: 18px; }
+.reference-content { position: relative; width: 100%; }
+.reference-content > img { display: block; width: 100%; height: auto; }
+body.operation-open { overflow: hidden; }
+
+/* 设备框内铺满的复用大图：按 cover 方式等比放大到填满设备框，超出部分可滑动。
+   宽高都写成 max(设备框, 另一方向按原图比例换算)，因此盒子比例恒等于原图比例，不会被拉伸。 */
+.fullscreen-art {
+  display: block;
+  width: max(min(100vw, var(--device-width)), calc(var(--frame-height) * var(--artwork-ratio)));
+  height: max(var(--frame-height), calc(min(100vw, var(--device-width)) / var(--artwork-ratio)));
+  max-width: none;
+  max-height: none;
+  object-fit: fill;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+/* ---- 复用整张大图的页面：设备设置 / 打印选项 / 延时摄影 / 风扇滤芯 ---- */
+.reuse-screen { position: fixed; z-index: 38; top: var(--frame-top); left: 50%; width: min(100vw, var(--device-width)); height: var(--frame-height); margin: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; transform: translateX(-50%); background: #fff; scrollbar-width: none; }
+.reuse-screen::-webkit-scrollbar { width: 0; height: 0; }
+.reuse-screen:focus { outline: 0; }
+/* 风扇提醒弹窗 2919×1652 */
+#fan-alert-screen { --artwork-ratio: 1.76695; }
+.reuse-screen-frame { position: relative; width: 100%; min-height: 100%; }
+.reuse-stage { position: relative; width: 100%; aspect-ratio: var(--reuse-ratio); }
+.reuse-stage > img { display: block; width: 100%; height: 100%; object-fit: fill; -webkit-user-drag: none; user-select: none; }
+/* 铺满型画布：盒子恒等于“按 cover 放大后的原图”，因此里面的百分比热区仍按原图比例计算 */
+.reuse-stage--screen {
+  width: max(min(100vw, var(--device-width)), calc(var(--frame-height) * var(--artwork-ratio)));
+  height: max(var(--frame-height), calc(min(100vw, var(--device-width)) / var(--artwork-ratio)));
+  aspect-ratio: auto;
+}
+/* 多屏拼接图：整幅铺满展示（不裁切、不拆分），可滑动或拖动 */
+.reuse-screen-frame.is-pannable { height: 100%; min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: none; touch-action: pan-x pan-y; cursor: grab; }
+.reuse-screen-frame.is-pannable::-webkit-scrollbar { width: 0; height: 0; }
+/* 这三页用 .reuse-stage--screen / .fullscreen-art 在设备框内按 cover 铺满，改为横向 / 纵向平移查看，不再整页滚动 */
+.reuse-screen--fullscreen { overflow: hidden; }
+.reuse-hotspot { position: absolute; z-index: 2; min-width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 10px; background: transparent; cursor: pointer; }
+.reuse-hotspot:active { background: rgb(17 24 39 / 7%); }
+/* 设备设置页：打印选项 / 延时摄影两行（坐标按 376×809 原图量取） */
+.reuse-hotspot--print-options { left: 3.99%; top: 25.83%; width: 90.16%; height: 7.05%; border-radius: 12px; }
+.reuse-hotspot--timelapse-setting { left: 3.99%; top: 36.71%; width: 90.16%; height: 7.05%; border-radius: 12px; }
+/* 设备设置页底部：移除打印机（坐标按 376×809 原图量取） */
+.reuse-hotspot--remove-printer { left: 2.93%; top: 92.5%; width: 94.4%; height: 7%; border-radius: 12px; }
+/* 延时摄影页：右上角删除图标（按 2800×1711 原图量取，热区中心正好压在图标中心上） */
+/* 准备打印页：底部“开始打印”（按 311×675 原图量取） */
+.reuse-hotspot--start-print { left: 1.61%; top: 92.59%; width: 97.75%; height: 6.82%; border-radius: 999px; }
+/* 暂停中 / 继续打印中 / 取消中 过渡弹窗：全屏遮罩（弱化底层打印页）+ 白色圆角卡片 */
+.transition-overlay { position: fixed; z-index: 60; inset: 0; display: grid; place-items: center; background: rgb(28 32 44 / 38%); backdrop-filter: blur(2px); }
+.transition-overlay[hidden] { display: none; }
+.transition-card { position: relative; display: grid; justify-items: center; gap: 10px; width: 218px; padding: 34px 20px 24px; border-radius: 24px; background: #fff; box-shadow: 0 18px 48px rgb(28 32 44 / 22%); }
+.transition-mascot { width: 104px; height: auto; -webkit-user-drag: none; user-select: none; }
+.transition-label { margin: 0; color: #1c1c1e; font-size: 17px; font-weight: 600; letter-spacing: 0; }
+.transition-close { position: absolute; top: 10px; right: 10px; display: grid; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%; color: #6b7280; background: transparent; font-size: 22px; line-height: 1; cursor: pointer; place-items: center; }
+.transition-close:hover { background: #f1f2f4; }
+
+/* 准备打印页：延时摄影右侧的勾选框（按 311×675 原图量取，命中盒 44px 居中在原勾选框上，
+   勾选态完全透明让原图烘焙的绿色勾选框透出来，取消勾选时才盖上自绘的白框）。 */
+.timelapse-check { position: absolute; z-index: 4; left: 89.07%; top: 89.11%; display: grid; width: 44px; height: 44px; padding: 0; border: 0; background: transparent; cursor: pointer; place-items: center; transform: translate(-50%, -50%); }
+.timelapse-check-box { display: block; width: 22px; height: 21px; border: 0; border-radius: 4px; background: transparent; box-sizing: border-box; transition: background 120ms ease, border-color 120ms ease; }
+.timelapse-check[aria-checked="false"] .timelapse-check-box { border: 1.5px solid #c7c8cc; background: #fff; }
+.timelapse-check:active .timelapse-check-box { border: 1.5px solid #9aa0a8; }
+.timelapse-check:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; border-radius: 8px; }
+
+/* ---- 延时摄影模型列表页（真实 DOM，替代原先整图铺满的三联图）----
+   坐标按 原型修改复用图片资源/延时摄影页.png（2800×1711 三联图）量取后换算到 375 宽：
+   屏幕 748×1543（比例 2.064）；左右留白各约 48/748 ≈ 6.4%；
+   顶栏高约 112（返回箭头 x≈122、标题居中 x 349~503、右侧删除图标 x 704~735）；
+   卡片 x 96~743（左右各留 48）、卡片底 #f5f6fa、圆角约 24；
+   按钮白底 + 绿色描边 #3ec0a1，按钮高约 75、卡片与按钮间距约 34。
+   下方尺寸直接用 --device-width 换算，窄屏（<360px）自动等比缩放。 */
+.timelapse-page { display: flex; min-height: 100%; flex-direction: column; padding-bottom: 24px; background: #f5f5f5; }
+/* 顶栏：返回 / 标题 / 删除 */
+/* 注意：两个图标按钮是**命中盒**，不参与 --u 等比缩放（--u = 375/390，44 x --u ≈ 42.3px
+   会低于 44px 最小点按区域），所以命中盒写死 44px；只有视觉元素（图标、标题）随 --u 缩放。 */
+.timelapse-bar { display: flex; min-height: calc(64 * var(--u)); flex: none; align-items: center; justify-content: space-between; padding: 0 8px; background: #fff; }
+.timelapse-bar__btn { display: grid; width: 44px; height: 44px; padding: 0; place-items: center; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
+.timelapse-bar__btn:active { background: #f0f1f5; }
+.timelapse-bar__btn svg { width: calc(24 * var(--u)); height: calc(24 * var(--u)); fill: none; stroke: #1c1c1e; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+/* 删除按钮进入多选态时点亮成品牌蓝 */
+.timelapse-bar__btn[aria-pressed="true"] svg { stroke: #4388f5; }
+.timelapse-bar__title { margin: 0; font-size: calc(18 * var(--u)); font-weight: 600; letter-spacing: 0; }
+/* 模型列表 */
+.timelapse-list { display: grid; gap: calc(18 * var(--u)); margin: 0; padding: calc(18 * var(--u)) calc(24 * var(--u)); list-style: none; }
+/* 单个模型项 = 缩略图卡 + 其下方的下载/播放按钮 */
+.timelapse-item { display: grid; gap: calc(16 * var(--u)); }
+.timelapse-item[hidden] { display: none; }
+.timelapse-card { display: flex; align-items: center; gap: calc(16 * var(--u)); padding: calc(18 * var(--u)) calc(20 * var(--u)); border: 2px solid transparent; border-radius: calc(16 * var(--u)); background: #f5f6fa; transition: border-color 140ms ease, background 140ms ease; }
+.timelapse-thumb { position: relative; display: grid; flex: none; width: calc(104 * var(--u)); height: calc(80 * var(--u)); place-items: center; }
+.timelapse-thumb img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; -webkit-user-drag: none; user-select: none; }
+/* 可播放时缩略图中央盖一枚播放三角（对应原图第三屏：深色实心 ▶，无圆形底盘） */
+.timelapse-play-badge { position: absolute; top: 50%; left: 50%; display: grid; width: calc(34 * var(--u)); height: calc(34 * var(--u)); place-items: center; transform: translate(-50%, -50%); }
+.timelapse-play-badge svg { width: calc(30 * var(--u)); height: calc(30 * var(--u)); fill: #1c1c1e; }
+.timelapse-meta { display: grid; min-width: 0; gap: calc(6 * var(--u)); }
+.timelapse-name { margin: 0; overflow: hidden; color: #1c1c1e; font-size: calc(15 * var(--u)); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.timelapse-sub { display: flex; flex-wrap: wrap; gap: calc(6 * var(--u)) calc(16 * var(--u)); margin: 0; padding: 0; color: #91959c; font-size: calc(13 * var(--u)); list-style: none; }
+.timelapse-sub li { display: inline-flex; align-items: center; gap: calc(5 * var(--u)); }
+.timelapse-sub svg { width: calc(15 * var(--u)); height: calc(15 * var(--u)); fill: none; stroke: currentcolor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+/* 下载 / 下载中 / 播放：白底绿描边胶囊 */
+/* hidden 属性必须显式兜住：下面这些元素都带 display: grid，
+   而 [hidden] 的 UA 样式是 display: none，同优先级下会被 display 覆盖掉（与 .state-stamp 同理） */
+.timelapse-ring[hidden], .timelapse-play-badge[hidden], .timelapse-checkmark[hidden] { display: none; }
+.timelapse-cta { position: relative; display: flex; min-height: 46px; align-items: center; justify-content: center; overflow: hidden; padding: 0 calc(16 * var(--u)); border: 1.5px solid #3ec0a1; border-radius: calc(14 * var(--u)); color: #3ec0a1; background: #fff; font-size: calc(15 * var(--u)); font-weight: 600; cursor: pointer; }
+.timelapse-cta:disabled { cursor: default; }
+/* 下载中：底部一条绿色进度条从左往右推进，按钮文字叠在上面 */
+.timelapse-progress { position: absolute; bottom: 0; left: 0; width: 0; height: 100%; background: rgb(62 192 161 / 16%); transition: width 120ms linear; }
+.timelapse-cta-label { position: relative; z-index: 1; }
+/* 缩略图上的下载进度环（对应原图第二屏卡片里的 64% 圆环） */
+.timelapse-ring { position: absolute; top: 50%; left: 50%; display: grid; width: calc(64 * var(--u)); height: calc(64 * var(--u)); place-items: center; border-radius: 50%; background: conic-gradient(#3ec0a1 calc(var(--tl-progress) * 1%), rgb(62 192 161 / 18%) 0); transform: translate(-50%, -50%); }
+.timelapse-ring::before { content: ""; position: absolute; inset: calc(4 * var(--u)); border-radius: 50%; background: #f5f6fa; }
+.timelapse-ring-text { position: relative; z-index: 1; display: grid; justify-items: center; color: #3ec0a1; font-size: calc(13 * var(--u)); font-weight: 700; line-height: 1.2; }
+.timelapse-ring-text small { font-size: calc(9 * var(--u)); font-weight: 500; }
+/* 多选删除态：卡片描边高亮，并显示左上角选中标记 */
+.timelapse-item.is-picking .timelapse-card { border-color: #4388f5; background: #fff; }
+.timelapse-item.is-picked .timelapse-card { border-color: #ef4655; }
+.timelapse-checkmark { position: absolute; top: calc(-8 * var(--u)); left: calc(-8 * var(--u)); display: none; width: calc(22 * var(--u)); height: calc(22 * var(--u)); place-items: center; border-radius: 50%; background: #ef4655; }
+/* 勾选标记只在「已勾选」时出现：多选态下未勾选的卡片只保留蓝色描边，不显示红勾 */
+.timelapse-item.is-picked .timelapse-checkmark { display: grid; }
+.timelapse-checkmark svg { width: calc(13 * var(--u)); height: calc(13 * var(--u)); fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.timelapse-empty { margin: auto; padding: 0 24px; color: #91959c; font-size: calc(14 * var(--u)); text-align: center; }
+/* 底部删除操作条（对应原图删除演示里的红色「删除（2）」） */
+.timelapse-delete-bar { position: sticky; bottom: 0; display: flex; gap: calc(10 * var(--u)); margin-top: auto; padding: calc(12 * var(--u)) calc(24 * var(--u)) calc(16 * var(--u)); background: #fff; box-shadow: 0 -2px 10px rgb(50 55 72 / 6%); }
+.timelapse-delete-bar[hidden] { display: none; }
+.timelapse-delete-bar__cancel { min-height: 46px; flex: none; padding: 0 calc(22 * var(--u)); border: 0; border-radius: calc(14 * var(--u)); color: #5b6474; background: #f4f6fa; font-size: calc(15 * var(--u)); font-weight: 600; cursor: pointer; }
+.timelapse-delete-bar__confirm { min-height: 46px; flex: 1; border: 0; border-radius: calc(14 * var(--u)); color: #fff; background: #ef4655; font-size: calc(15 * var(--u)); font-weight: 600; cursor: pointer; }
+.timelapse-delete-bar__confirm:disabled { color: #91959c; background: #eceef3; cursor: default; }
+
+/* 风扇滤芯更换页：我已更换 + 右上角提醒弹窗入口（坐标按 398×848 原图量取） */
+.reuse-hotspot--fan-replaced { left: 1.76%; top: 91.2%; width: 95.98%; height: 7.5%; border-radius: 999px; }
+.reuse-hotspot--fan-alert { right: 2%; top: 3.5%; width: 22%; height: 7%; border-radius: 12px; }
+/* 复用页面左上角的透明回退按钮（对齐原图里烘焙的返回箭头） */
+.reuse-screen-back { position: absolute; z-index: 40; top: 0; left: 0; width: 96px; height: 96px; min-width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 0 0 32px 0; background: transparent; cursor: pointer; }
+.reuse-screen-back:active { background: rgb(17 24 39 / 7%); }
+/* 整屏铺满型大图页：图被放大到铺满视口，回退热区也随之等比放大 */
+.reuse-screen-back--fullscreen { width: clamp(96px, 13vh, 260px); height: clamp(96px, 13vh, 260px); }
+/* 覆盖整屏的透明按钮：用于“点击页面任意位置返回”的页面 */
+.reuse-anywhere { position: absolute; z-index: 45; inset: 0; min-width: 44px; min-height: 44px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.reuse-anywhere:active { background: rgb(17 24 39 / 6%); }
+/* 探索玩具页：左上角透明回退（坐标按 941×1672 原图量取）。
+   该页原图左上角没有烘焙返回箭头，那一行是状态栏空白带，所以把回退热区压在这条带上：
+   既能点得到，又不会盖住下面的“筛选”胶囊（胶囊从 top 3.59% 开始），也不和“点击任意位置”那层抢命中。 */
+.reuse-hotspot--explore-back { z-index: 50; top: 0; left: 0; width: 50%; height: 3.4%; min-height: 0; border-radius: 0 0 16px 0; }
+/* 模型详情页：右下角“立即打印”（坐标按 941×1672 原图量取） */
+.reuse-hotspot--model-print { left: 50.37%; top: 91.45%; width: 46.34%; height: 6.1%; border-radius: 999px; }
+/* 准备打印页：可点选、可上下拖动排序的盘列表。
+   三行是原图切片（assets/准备打印页-盘N.png），按槽位绝对定位，所以拖动后能真正换位。 */
+.plate-list { position: absolute; z-index: 3; inset: 0; pointer-events: none; }
+.plate-row { position: absolute; left: 0; width: 100%; height: 16%; pointer-events: auto; transition: top 180ms ease; }
+.plate-row[data-slot="0"] { top: 28.148%; }
+.plate-row[data-slot="1"] { top: 45.926%; }
+.plate-row[data-slot="2"] { top: 63.852%; }
+.plate-row.is-dragging { z-index: 6; transition: none; }
+.plate-row-art { display: block; width: 100%; height: 100%; pointer-events: none; -webkit-user-drag: none; user-select: none; }
+/* 选中态：整行四周绿色高光 */
+.plate-row-ring { position: absolute; z-index: 1; inset: 5% 12% 5% 5.5%; border: 2px solid transparent; border-radius: 14px; pointer-events: none; transition: border-color 140ms ease, background 140ms ease, box-shadow 140ms ease; }
+.plate-row[aria-selected="true"] .plate-row-ring { border-color: #22c55e; background: rgb(34 197 94 / 7%); box-shadow: 0 0 0 3px rgb(34 197 94 / 16%), 0 4px 14px rgb(34 197 94 / 20%); }
+.plate-row-hit { position: absolute; z-index: 2; inset: 0; min-width: 44px; min-height: 44px; padding: 0; border: 0; background: transparent; cursor: grab; touch-action: none; }
+.plate-row-hit:active { cursor: grabbing; }
+/* 拖动手柄提示（右侧竖排小点，hover / 拖动时显现） */
+.plate-row-grip { position: absolute; z-index: 2; top: 50%; right: 1.6%; width: 10px; height: 26px; background-image: radial-gradient(circle, #c8ccd4 1.4px, transparent 1.6px); background-size: 5px 6px; opacity: 0; pointer-events: none; transform: translateY(-50%); transition: opacity 140ms ease; }
+.plate-row:hover .plate-row-grip, .plate-row.is-dragging .plate-row-grip { opacity: 1; }
+/* 每行“耗材-料架”下的色卡（盖在整行选中热区之上）：
+   非红框内容 → 选择耗材页；带红框内容（盘 3 的绿色料）→ 耗材不匹配提示页。
+   坐标按 311×108 的行切片量取：左卡 x 139~200、右卡 x 207~266，卡身 y 35~79。 */
+.plate-material-hit { position: absolute; z-index: 4; min-width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 10px; background: transparent; cursor: pointer; }
+.plate-material-hit[data-chip="left"] { left: 44.6%; top: 32.41%; width: 20.5%; height: 40.74%; }
+.plate-material-hit[data-chip="right"] { left: 66%; top: 32.41%; width: 20.5%; height: 40.74%; }
+/* 准备打印页 · “耗材颜色更换后”原图（源图 375×812，裁掉右上角设备黑边后补白成 375×812）。
+   新画布和默认原图（311×675）尺寸不同，盘列表槽位与色卡坐标按新原图重新量取：
+   三行切片取 y 222 / 366 / 511，行高 130；色卡卡身 y 558~610（相对切片 47~100），
+   左卡 x 165~238、右卡 x 245~318。其余热区（切换 / 延时摄影 / 开始打印 / 返回）百分比通用。 */
+#prepare-stage[data-artwork="colorChanged"] .plate-row { height: 16.0099%; }
+#prepare-stage[data-artwork="colorChanged"] .plate-row[data-slot="0"] { top: 27.3399%; }
+#prepare-stage[data-artwork="colorChanged"] .plate-row[data-slot="1"] { top: 45.0739%; }
+#prepare-stage[data-artwork="colorChanged"] .plate-row[data-slot="2"] { top: 62.931%; }
+#prepare-stage[data-artwork="colorChanged"] .plate-material-hit[data-chip="left"] { left: 43.9%; top: 36%; width: 19.9%; height: 41%; }
+#prepare-stage[data-artwork="colorChanged"] .plate-material-hit[data-chip="right"] { left: 65.3%; top: 36%; width: 19.9%; height: 41%; }
+/* 准备打印页：打印机卡片右侧的“切换”（按 311×675 原图量取，切换胶囊本体 x 239~288、y 95~122） */
+.reuse-hotspot--prepare-switch { z-index: 5; left: 73.57%; top: 11%; width: 22%; height: 10%; border-radius: 12px; }
+/* 选择耗材页：底部“确定”整条胶囊（按 314×685 原图量取） */
+.reuse-hotspot--material-confirm { left: 1.59%; top: 92.41%; width: 96.82%; height: 6.71%; border-radius: 999px; }
+/* 两张耗材弹层右上角的“×”关闭：两个原图画布宽度不同（314 / 308），分别量各自的百分比 */
+#prepare-material-screen .reuse-hotspot--sheet-close { left: 84.68%; top: 45.82%; width: 12.8%; height: 5.87%; border-radius: 14px; }
+#prepare-empty-screen .reuse-hotspot--sheet-close { left: 86.3%; top: 46.22%; width: 12.8%; height: 5.87%; border-radius: 14px; }
+/* 无耗材页：弹层中央的料架（按 308×680 原图量取，料架本体 x 111~200、y 463~551） */
+.reuse-hotspot--empty-spool { left: 31%; top: 65.5%; width: 38%; height: 19.5%; border-radius: 16px; }
+
+/* 任务状态版准备打印页：与空闲版同一套切片几何（311×675 底图，行高 16%），
+   行内容 = 模型缩略图 + 预计时间 + 耗材克重 + 色卡（assets/准备打印页-盘N.png），
+   状态戳由 JS 按当前任务盘定位，任意盘都可被队列任务复用 */
+.state-row { position: absolute; left: 0; width: 100%; }
+.state-row[data-row="1"] { top: 28.148%; height: 16%; }
+.state-row[data-row="2"] { top: 45.926%; height: 16%; }
+.state-row[data-row="3"] { top: 63.852%; height: 16%; }
+.state-row .plate-row-art { display: block; width: 100%; height: 100%; pointer-events: none; -webkit-user-drag: none; user-select: none; }
+/* 被状态戳盖住的盘：整行不可点（与原设计一致，戳下的色卡不可改） */
+.state-row.is-stamped { pointer-events: none; }
+.state-row-ring { position: absolute; z-index: 1; inset: 5% 12% 5% 5.5%; border: 2px solid transparent; border-radius: 14px; pointer-events: none; transition: border-color 140ms ease, background 140ms ease, box-shadow 140ms ease; }
+.state-row[aria-selected="true"] .state-row-ring { border-color: #22c55e; background: rgb(34 197 94 / 7%); box-shadow: 0 0 0 3px rgb(34 197 94 / 16%), 0 4px 14px rgb(34 197 94 / 20%); }
+.state-row-hit { position: absolute; z-index: 2; inset: 0; min-width: 44px; min-height: 44px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.state-row-hit[hidden], .state-material-hit[hidden] { display: none; }
+/* 色卡热区：按 311×108 盘行切片量取（色卡本体 x 138~306、y 10~96） */
+.state-material-hit { position: absolute; z-index: 4; left: 44%; top: 8%; width: 55%; height: 82%; min-width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 10px; background: transparent; cursor: pointer; }
+/* 状态戳（正在打印 / 已取消 / 已打印）：盖在处于当前任务状态的盘行上，JS 按盘定位 left/top。
+   注意必须覆盖 .reuse-stage > img 的 100% 宽高规则，所以用子选择器提高优先级 */
+.reuse-stage > img.state-stamp { position: absolute; z-index: 5; width: 28%; height: auto; aspect-ratio: 1 / 1; object-fit: contain; transform: translate(-50%, -50%); pointer-events: none; -webkit-user-drag: none; user-select: none; }
+.state-stamp[hidden] { display: none; }
+/* 打印中 / 暂停中：打印机卡片“空闲”改成“忙碌”（按 311×675 底图量取，绿点 x 88~93、y 115~120） */
+.printer-busy-patch { position: absolute; z-index: 4; left: 26.5%; top: 15.9%; display: flex; align-items: center; gap: 5px; width: 25%; height: 2.9%; min-height: 16px; padding-left: 9px; background: #fff; color: #3a3f45; font-size: 11px; font-weight: 500; letter-spacing: 0; white-space: nowrap; }
+.printer-busy-patch[hidden] { display: none; }
+.printer-busy-dot { width: 7px; height: 7px; flex: none; border-radius: 50%; background: #ef4444; }
+/* 正在打印 / 暂停中：开始打印不可用，盖一层半透明白让原按钮看上去变淡 */
+.start-print-dim { position: absolute; z-index: 5; left: 1.2%; top: 92.4%; width: 97.5%; height: 7.2%; border-radius: 999px; background: rgb(255 255 255 / 62%); pointer-events: none; }
+.start-print-dim[hidden] { display: none; }
+.reuse-hotspot--start-print:disabled { cursor: default; }
+
+/* 设备设置页：固件版本整行（坐标按 376×809 原图量取，行区间 y 150~207，正好夹在两条分隔线之间） */
+.reuse-hotspot--firmware-version { left: 2.93%; top: 18.55%; width: 94.4%; height: 7.05%; border-radius: 12px; }
+/* 设备设置页 · 固件版本行右侧的状态文案：原图烘焙的是蓝色“固件已是最新版本”，
+   带固件更新上下文进来时用白底盖住它、改画橙色“新的固件版本可用”。
+   覆盖区按原图量取：蓝字本体 x 244~322、y 192~200；两侧留白，避开上方版本号与右侧箭头。 */
+.firmware-status-badge { position: absolute; z-index: 4; left: 63.03%; top: 23.24%; display: grid; width: 24.47%; height: 1.98%; min-height: 14px; place-items: center; color: #f16326; background: #fff; font-size: 10px; font-weight: 500; letter-spacing: 0; white-space: nowrap; }
+.firmware-status-badge[hidden] { display: none; }
+/* 打印页首页 · 任务控制面板下方的固件升级提醒条（原生样式，白底黑字 + 橙色下划线入口） */
+.firmware-banner { display: flex; width: 100%; min-height: 44px; align-items: center; justify-content: center; padding: 12px 14px; border: 0; border-radius: 16px; color: #1c1c1e; background: #fff; box-shadow: 0 2px 10px rgb(50 55 72 / 4%); font-family: inherit; font-size: 13.5px; cursor: pointer; }
+.firmware-banner[hidden] { display: none; }
+.firmware-banner-cta { margin-left: 4px; color: #f16326; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.firmware-banner:active { background: #fafafa; }
+/* 固件升级页：底部“立即升级”胶囊（按 375×812 原图量取，胶囊本体 x 97~259、y 357~411） */
+.reuse-hotspot--firmware-upgrade { left: 25.6%; top: 43.7%; width: 44%; height: 7.2%; border-radius: 999px; }
+/* 更新完成页：弹窗里的“我知道了”（按 375×812 原图量取，按钮本体 x 105~268、y 452~494） */
+.reuse-hotspot--firmware-done { left: 27.5%; top: 55.3%; width: 44.8%; height: 5.9%; border-radius: 999px; }
+/* 固件升级打印页：原图烘焙了一个蓝底 50% 的圆，这里用同色圆片盖住那三个字，
+   再在上面跑真实的 0→100% 白字进度（圆心 50.4% / 67.98%，圆片直径 199px）。 */
+.firmware-progress-disc { position: absolute; z-index: 2; left: 34.4%; top: 65.27%; width: 32%; height: 5.42%; border-radius: 8px; background: #0079e0; }
+.firmware-progress-percent { position: absolute; z-index: 3; left: 50.4%; top: 67.98%; color: #fff; font-size: 36px; font-weight: 300; letter-spacing: .5px; transform: translate(-50%, -50%); }
+/* 确认升级弹窗：左侧“取消”是白底黑边框，右侧“确认升级”沿用升级按钮的蓝紫渐变 */
+.app-dialog--firmware h2 { font-size: 17px; }
+.dialog-actions button[data-tone="outline"] { border: 1.5px solid #1c1c1e; color: #1c1c1e; background: #fff; }
+.dialog-actions button[data-tone="upgrade"] { color: #fff; background: linear-gradient(100deg, #7456ee 0%, #3981f1 100%); }
+/* 添加打印机页：底部“配置新的打印机”（坐标按 846×1720 原图量取） */
+.add-printer-catalog {
+  --printer-unit: calc(min(100vw, var(--device-width)) / 846);
+  position: absolute;
+  top: 15.5%;
+  right: 0;
+  bottom: 18%;
+  left: 0;
+  padding: 0 9.34%;
+  background: #fff;
+}
+.add-printer-catalog section + section { margin-top: calc(32 * var(--printer-unit)); }
+.add-printer-catalog h2 { margin: 0 0 calc(16 * var(--printer-unit)); font-size: calc(34 * var(--printer-unit)); font-weight: 600; line-height: calc(42 * var(--printer-unit)); color: #18191d; }
+.printer-list { display: grid; gap: calc(25 * var(--printer-unit)); }
+.printer-card { position: relative; display: flex; align-items: center; gap: calc(24 * var(--printer-unit)); width: 100%; height: calc(190 * var(--printer-unit)); padding: calc(24 * var(--printer-unit)); border: 1px solid #e4e7ed; border-radius: calc(20 * var(--printer-unit)); background: #f6f7fb; text-align: left; cursor: pointer; }
+.printer-card[aria-pressed="true"] { border-color: #a28cff; box-shadow: inset 0 0 0 .5px #a28cff; }
+.printer-card:active { background-color: #eef0fa; }
+/* 直接复用底图中原有的打印机插图，保持两组列表图标一致。 */
+.printer-card-icon { flex: 0 0 calc(128 * var(--printer-unit)); height: calc(142 * var(--printer-unit)); background: url("../../原型修改复用图片资源/添加打印机.png") calc(-107 * var(--printer-unit)) calc(-352 * var(--printer-unit)) / calc(846 * var(--printer-unit)) calc(1720 * var(--printer-unit)) no-repeat; }
+.printer-card-copy { display: grid; gap: calc(18 * var(--printer-unit)); min-width: 0; }
+.printer-name { color: #17181d; font-size: calc(38 * var(--printer-unit)); font-weight: 600; white-space: nowrap; }
+.printer-status { display: flex; align-items: center; gap: calc(10 * var(--printer-unit)); color: #828793; font-size: calc(28 * var(--printer-unit)); line-height: 1.3; }
+.printer-status::before { width: calc(12 * var(--printer-unit)); height: calc(12 * var(--printer-unit)); border-radius: 50%; background: #42cda4; content: ""; }
+.printer-status--busy::before { background: #ecad29; }
+.printer-selected { position: absolute; top: calc(12 * var(--printer-unit)); right: calc(20 * var(--printer-unit)); display: none; color: #9c80fb; font-size: calc(30 * var(--printer-unit)); }
+.printer-card[aria-pressed="true"] .printer-selected { display: block; }
+#printer-bound-dialog .dialog-actions { grid-template-columns: 1fr; }
+.reuse-hotspot--configure-printer { left: 13%; top: 86.4%; width: 74.23%; height: 7.67%; border-radius: 999px; }
+/* 移除打印机弹窗：取消 / 确认（坐标按 411×879 原图量取） */
+.reuse-hotspot--remove-cancel { left: 23%; top: 49.5%; width: 20%; height: 9%; border-radius: 999px; }
+.reuse-hotspot--remove-confirm { left: 56.5%; top: 49.5%; width: 20%; height: 9%; border-radius: 999px; }
+/* 移除打印机弹窗页：左上角可见回退按钮。
+   原图（411×879）里烘焙的返回箭头在 x 28~46 / y 50~64，圆心 ≈(37, 57)。这页是弹窗，
+   遮罩把原图箭头压成灰黑、几乎看不见，所以在箭头原位盖一个自绘的圆形返回按钮：
+   白色不透明底盘正好遮住被压暗的原箭头，不会出现两个箭头。
+   坐标不用百分比：.reuse-screen 的 top 百分比是按框高解析的，而本图舞台按 411:879
+   随宽度等比缩放，所以统一用 --device-width 换算（375 宽下命中盒 60×60px，
+   圆心落在 (33.75, 52.5)，与原图箭头圆心对齐；远大于 44px 最小热区）。 */
+.remove-dialog-back { top: calc(var(--device-width) * 0.06); left: calc(var(--device-width) * 0.01); display: grid; width: calc(var(--device-width) * 0.16); height: calc(var(--device-width) * 0.16); min-width: 44px; min-height: 44px; border-radius: 0; place-items: center; }
+/* 盖掉通用 .reuse-screen-back:active 的整块半透明底，按压反馈交给内圈圆 */
+.remove-dialog-back:active { background: transparent; }
+.remove-dialog-back__icon { position: relative; display: block; width: calc(var(--device-width) * 0.096); height: calc(var(--device-width) * 0.096); border-radius: 50%; background: #fff; box-shadow: 0 2px 8px rgb(0 0 0 / 22%); transition: transform 120ms ease, background 120ms ease; }
+/* 箭头：两段 2px 描边拼成左向折角，居中在圆内 */
+.remove-dialog-back__icon::before { content: ""; position: absolute; top: 50%; left: 53%; width: 40%; height: 40%; border-bottom: 2px solid #1c1c1e; border-left: 2px solid #1c1c1e; border-radius: 1px; transform: translate(-50%, -50%) rotate(45deg); }
+.remove-dialog-back:hover .remove-dialog-back__icon { background: #f2f3f5; }
+.remove-dialog-back:active .remove-dialog-back__icon { background: #e8e9ed; transform: scale(0.92); }
+.remove-dialog-back:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; border-radius: 12px; }
+/* 耗材设置页：名称 / 类型 / 颜色三行（坐标按 307×647 原图量取） */
+.reuse-hotspot--material-name { left: 3.91%; top: 12.06%; width: 89.58%; height: 7.11%; border-radius: 12px; }
+.reuse-hotspot--material-type { left: 3.91%; top: 19.17%; width: 89.58%; height: 7.11%; border-radius: 12px; }
+.reuse-hotspot--material-color { left: 3.91%; top: 26.28%; width: 89.58%; height: 7.11%; border-radius: 12px; }
+/* 名称修改页：取消 / 确定 + 下方整条透明返回热区（坐标按 352×766 原图量取） */
+.reuse-hotspot--material-name-cancel { left: 6.82%; top: 77.55%; width: 42.6%; height: 5.87%; border-radius: 10px; }
+.reuse-hotspot--material-name-confirm { left: 50.57%; top: 77.55%; width: 43.18%; height: 5.87%; border-radius: 10px; }
+.reuse-hotspot--material-name-return { left: 3%; top: 84%; width: 94%; height: 15%; border-radius: 12px; }
+
+/* ---- 移除打印机跳转逻辑页 ----
+   与原型其余部分同构的浅色设计语言（对照 styles-offline.css 的分享打印机 / 离线页模块）：
+   页面底 #f4f5fa、卡片白底 16px 圆角 + 轻阴影、主色蓝 #4388F5。原先这里是刻意的
+   深色霓虹演示风格（深底 + 青紫渐变），与其余页面割裂，现已统一为浅色。 */
+.reuse-screen--logic { background: #f4f5fa; }
+.logic-demo { display: grid; align-content: center; overflow-y: auto; padding: 24px 20px; background: #f4f5fa; }
+.logic-demo-card { width: 100%; max-width: 340px; margin: auto; padding: 20px 18px 18px; border-radius: 16px; color: var(--ink); background: #fff; box-shadow: 0 2px 10px rgb(50 55 72 / 4%); }
+.logic-demo-title { margin: 0 0 8px; color: var(--ink); font-size: 19px; font-weight: 600; line-height: 1.4; }
+.logic-demo-copy { margin: 0 0 14px; color: #5b6474; font-size: 13px; line-height: 1.65; }
+.logic-demo-rule { display: grid; gap: 8px; margin-bottom: 16px; }
+.logic-demo-rule p { display: grid; grid-template-columns: 46px 1fr; gap: 3px 8px; margin: 0; padding: 10px 12px; border-radius: 12px; background: #f7f9fc; box-shadow: inset 0 0 0 1px #eceef3; }
+.logic-demo-rule b { grid-row: span 2; align-self: center; color: #4388f5; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; font-weight: 700; letter-spacing: .5px; }
+.logic-demo-rule span { color: var(--ink); font-size: 14px; font-weight: 600; }
+.logic-demo-rule em { color: #91959c; font-size: 12px; font-style: normal; line-height: 1.55; }
+/* 两个分支：白底描边行，右侧一枚灰色箭头，与离线页 reconnect-branch 同构。
+   用 grid-template-areas 让 strong / span 仍作为按钮的直接子元素（原有 DOM 结构不变），
+   文字块占左侧一列、箭头占右侧一列并跨两行。 */
+.logic-demo-actions { display: grid; gap: 8px; }
+.logic-demo-actions button { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "main chev" "sub chev"; align-items: center; column-gap: 10px; padding: 12px 14px; border: 1.5px solid #e8ecf4; border-radius: 14px; color: var(--ink); background: #fff; text-align: left; cursor: pointer; }
+.logic-demo-actions button:active { background: #f7fafd; }
+.logic-demo-actions strong { grid-area: main; font-size: 14px; font-weight: 600; }
+.logic-demo-actions span { grid-area: sub; color: #98a2b3; font-size: 11.5px; line-height: 1.5; }
+.logic-demo-actions button::after { content: ""; grid-area: chev; width: 8px; height: 8px; border-top: 2px solid #b6bec9; border-right: 2px solid #b6bec9; transform: rotate(45deg); }
+.logic-demo-back { width: 100%; min-height: 46px; margin-top: 10px; padding: 0; border: 0; border-radius: 14px; color: #5b6474; background: #f4f6fa; font-size: 14px; font-weight: 600; cursor: pointer; }
+.logic-demo-back:active { background: #eaeef5; }
+
+.app-dialog { position: relative; width: min(326px, calc(100vw - 40px)); padding: 0; border: 0; border-radius: 20px; box-shadow: 0 20px 60px rgb(28 31 40 / 25%); }
+.app-dialog::backdrop { background: rgb(31 34 42 / 42%); backdrop-filter: blur(2px); }
+.app-dialog form { position: relative; padding: 24px; }
+.app-dialog h2 { margin: 0 0 10px; padding-right: 30px; font-size: 19px; line-height: 1.4; }
+.app-dialog p { margin: 0 0 22px; color: #6c7179; font-size: 14px; line-height: 1.6; }
+.app-dialog p:empty { margin: 0; }
+.app-dialog-close { position: absolute; top: 12px; right: 12px; display: grid; width: 32px; height: 32px; place-items: center; padding: 0; border: 0; border-radius: 50%; color: #8d939c; background: transparent; font-size: 24px; font-weight: 500; line-height: 1; cursor: pointer; }
+.app-dialog-close:hover, .app-dialog-close:active { color: #555b66; background: #f0f1f5; }
+.dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dialog-actions button { min-height: 44px; padding: 0 8px; border: 0; border-radius: 999px; background: #f0f1f5; font-size: 15px; font-weight: 600; cursor: pointer; }
+.dialog-actions button[data-tone="primary"] { color: white; background: var(--blue); }
+.dialog-actions button[data-tone="danger"] { color: white; background: var(--danger); }
+.dialog-actions button[data-tone="danger-ghost"] { color: var(--danger); background: #ffeaed; }
+
+/* 比 iPhone 13 mini 还窄的视口：设备框跟着视口收缩，让内容按视口宽度等比缩放 */
+@media (max-width: 359px) {
+  :root { --device-width: 100vw; }
+  .page-content { padding-inline: 12px; }
+  .task-summary, .task-actions { padding-inline: 14px; }
+}
+/* 视口比 812 矮时 --frame-height 会等于 100vh，--frame-top 自动归零、不留上下留白 */
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
