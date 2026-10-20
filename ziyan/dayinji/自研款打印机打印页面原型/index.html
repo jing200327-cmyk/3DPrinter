@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="styles-share-printer.css?v=r008">
   <link rel="stylesheet" href="styles-filament-operation.css?v=r008">
   <link rel="stylesheet" href="styles-3d-preview.css?v=r008">
-  <link rel="stylesheet" href="styles-prepare-print.css?v=r001">
+  <link rel="stylesheet" href="styles-prepare-print.css?v=r002">
 </head>
 <body>
   <main id="device-page" class="phone-shell" aria-label="自研款 3D 打印机设备页">
@@ -715,7 +715,7 @@
       <div id="prepare-state-stage" class="reuse-stage prepare-page" style="--reuse-ratio: 311 / 675">
         <div class="prepare-statusbar" aria-hidden="true"><strong>9:41</strong><span class="prepare-island"></span><span class="prepare-status-icons">▂▄▆ <svg viewBox="0 0 20 16"><path d="M2 5Q10-2 18 5M5 8Q10 3 15 8M8 11Q10 9 12 11"/><circle cx="10" cy="14" r="1"/></svg><span class="prepare-battery"></span></span></div>
         <header class="prepare-header"><button id="prepare-state-back" class="prepare-back" type="button" aria-label="返回打印页面">←</button><h1>准备打印</h1></header>
-        <div class="prepare-printer"><img src="assets/准备打印-打印机.png" alt="Ugee Funbox 打印机"><div><strong>Ugee Funbox</strong><span class="prepare-idle"><i aria-hidden="true"></i>空闲</span><span id="printer-busy-patch" class="printer-busy-patch" hidden><span class="printer-busy-dot" aria-hidden="true"></span>忙碌</span></div></div>
+        <div class="prepare-printer"><img src="assets/准备打印-打印机.png" alt="Ugee Funbox 打印机"><div><strong>Ugee Funbox</strong><span class="prepare-idle"><i aria-hidden="true"></i>空闲</span><span id="printer-busy-patch" class="printer-busy-patch" hidden><span class="printer-busy-dot" aria-hidden="true"></span>忙碌</span></div><button id="prepare-state-switch-printer" class="prepare-switch" type="button" aria-label="切换或添加打印机">切换</button></div>
         <h2 class="prepare-section-title">选择要打印的盘</h2>
         <div  class="state-plate-list" role="listbox" aria-label="选择要打印的盘">
           <div class="state-row prepare-plate" data-row="1" role="option" aria-selected="false">
@@ -1031,6 +1031,6 @@
       </div>
     </form>
   </dialog>
-  <script src="prototype.js?v=r013"></script>
+  <script src="prototype.js?v=r014"></script>
 </body>
 </html>

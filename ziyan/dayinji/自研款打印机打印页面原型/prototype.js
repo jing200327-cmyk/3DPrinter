@@ -536,17 +536,14 @@ function openReference(fileName, title, returnTarget = queueToggle) {
 }
 
 /* ---------- 任务状态版的准备打印页 ---------- */
-/* 与空闲版复用同一套底图 + 盘行切片（模型缩略图 + 预计时间 + 耗材克重 + 色卡），
-   正在打印 / 已取消 / 已打印的状态戳按“当前任务盘”定位，不再烘焙死在盘 1：
+/* 与新版准备打印页复用同一套 HTML 结构与模型、耗材素材，
+   正在打印 / 已取消 / 已完成的状态戳放入“当前任务盘”的真实行容器：
    无论哪一盘在打印，队列里其它盘（含盘 1）点进来都能正确复用。 */
 const PREPARE_STATE_STAMPS = {
   printing: { src: 'assets/状态戳-正在打印.png', alt: '正在打印' },
-  cancelled: { src: 'assets/状态戳-已取消.png', alt: '已取消' },
-  completed: { src: 'assets/状态戳-已打印.png', alt: '已打印' }
+  cancelled: { src: 'assets/状态戳-已取消.svg', alt: '已取消' },
+  completed: { src: 'assets/状态戳-已完成.svg', alt: '已完成' }
 };
-/* 状态戳位置：按 407×869 原图量取（圆心 x 200/407、y 盘行中心），宽 114/407 ≈ 28% */
-const STATE_STAMP_LEFT = 49.15;
-const STATE_ROW_CENTERS = { 1: 36.148, 2: 53.926, 3: 71.852 };
 let selectedStateRow = '2';
 let stampedPlate = null;
 
@@ -584,8 +581,7 @@ function openPrepareStateScreen(preferredPlate) {
   if (stampedPlate) {
     stateStampImage.src = stamp.src;
     stateStampImage.alt = `${plateCatalog[stampedPlate].title}，${stamp.alt}`;
-    stateStampImage.style.left = `${STATE_STAMP_LEFT}%`;
-    stateStampImage.style.top = `${STATE_ROW_CENTERS[stampedPlate]}%`;
+    stateRows.find((row) => row.dataset.row === stampedPlate).append(stateStampImage);
     stateStampImage.hidden = false;
   } else {
     stateStampImage.hidden = true;
@@ -1215,6 +1211,7 @@ renderPlateSelection();
 setFirmwareUpdateAvailable(true);
 /* 准备打印页打印机卡片右侧的“切换” → 添加打印机页 */
 document.querySelector('#prepare-switch-printer').addEventListener('click', () => openReuseScreen('addPrinter'));
+document.querySelector('#prepare-state-switch-printer').addEventListener('click', () => openReuseScreen('addPrinter'));
 document.querySelector('#model-detail-back').addEventListener('click', goBackInReuseScreens);
 document.querySelector('#prepare-print-back').addEventListener('click', goBackInReuseScreens);
 
