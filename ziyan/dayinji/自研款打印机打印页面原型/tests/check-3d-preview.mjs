@@ -8,7 +8,7 @@
      2. 每颗图标都贴在所属行「模型缩略图」的左上角（按切片原图像素反算的容差内）
      3. 图标是它中心点的最顶层元素（不会被盘行热区 / 色卡热区盖住）
      4. 点击后进入 3D 预览页，画布有尺寸、Three.js 真的建出了模型网格
-     5. 换耗材后的准备打印页（底图重排过）图标仍然对齐
+     5. 耗材单元为静态 HTML 信息，不再打开选择耗材或不匹配弹层
      6. 3D 预览页里已按需求删掉的控件确实不存在（更多 / 缩放 / 复制 / 删除 / 去打印）
      7. 左上角回退按钮回到准备打印页
      8. 任务状态版进 3D 预览后回退也能回到任务状态版
@@ -112,22 +112,19 @@ async function shot(cdp, file) {
   fs.writeFileSync(file, Buffer.from(image.data, 'base64'));
 }
 
-/* 图标相对所属行的位置（0~1），以及该行缩略图卡片的实际位置。
-   卡片 rect 由切片原图像素反算：常规 311×108 → x[24,125] y[8,77]；
-   换耗材后 375×130 → x[27,148] y[15,98]。
-   注意：只能量当前可见的那一屏，隐藏屏里的元素没有布局（rect 全 0）。 */
-function badgeGeometry(rowSelector, card) {
+/* 直接测量真实 HTML 模型缩略图，3D 图标应内缩 2px 且位于最上层。 */
+function badgeGeometry(rowSelector) {
   return `(() => {
-    const card = ${JSON.stringify(card)};
     return [...document.querySelectorAll(${JSON.stringify(rowSelector)})].map((row) => {
       const badge = row.querySelector('.plate-3d-btn');
       const r = row.getBoundingClientRect();
       const b = badge.getBoundingClientRect();
       const style = getComputedStyle(badge);
-      const cardLeft = card[0] / card[2] * r.width;
-      const cardTop = card[1] / card[3] * r.height;
-      const cardRight = card[4] / card[2] * r.width;
-      const cardBottom = card[5] / card[3] * r.height;
+      const thumb = row.querySelector('.prepare-model').getBoundingClientRect();
+      const cardLeft = thumb.left - r.left;
+      const cardTop = thumb.top - r.top;
+      const cardRight = thumb.right - r.left;
+      const cardBottom = thumb.bottom - r.top;
       const topmost = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
       return {
         plate: row.dataset.plate || row.dataset.row,
@@ -151,9 +148,7 @@ function badgeGeometry(rowSelector, card) {
   })()`;
 }
 
-const CARD_NORMAL = [24, 8, 311, 108, 125, 77];      // 常规切片上的缩略图卡片
-const CARD_CHANGED = [27, 15, 375, 130, 148, 98];    // 换耗材后切片上的缩略图卡片
-const BADGE_GEOMETRY = badgeGeometry('.plate-row', CARD_NORMAL);
+const BADGE_GEOMETRY = badgeGeometry('.plate-row');
 
 function assertBadges(items, label) {
   items.forEach((item) => {
@@ -200,21 +195,14 @@ async function main() {
   const first = normal[0];
   console.log(`✓ 3 颗 3D 图标就位（示例：盘 ${first.plate} ${first.width}×${first.height}px，距卡片左上角 ${first.dxFromCard}/${first.dyFromCard}px）`);
 
-  /* ---------- 2. 换耗材后的底图图标仍然对齐 ---------- */
-  /* 走真实链路：盘 3 红框色卡 → 无耗材提示 → 中央料架 → 选择耗材 → 确定，
-     整张准备打印页才会换成「耗材颜色更换后」的底图（375×130 切片）。 */
-  await evaluate(cdp, `document.querySelector('.plate-row[data-plate="3"] [data-chip="right"]').click()`);
-  await waitFor(cdp, `!document.querySelector('#prepare-empty-screen').hidden`, '无耗材提示页没有打开');
-  await evaluate(cdp, `document.querySelector('#prepare-empty-spool').click()`);
-  await waitFor(cdp, `!document.querySelector('#prepare-material-screen').hidden`, '选择耗材页没有打开');
-  await evaluate(cdp, `document.querySelector('#prepare-material-confirm').click()`);
-  await waitFor(cdp, `!document.querySelector('#prepare-print-screen').hidden`, '确定后没有回到准备打印页');
-  await delay(500);
-  const stageArt = await evaluate(cdp, `document.querySelector('#prepare-stage').dataset.artwork || 'default'`);
-  check(stageArt === 'colorChanged', `换耗材后底图未切换到 colorChanged，实际 ${stageArt}`);
-  const changed = await evaluate(cdp, badgeGeometry('.plate-row', CARD_CHANGED));
-  assertBadges(changed, '换耗材后 ');
-  console.log('✓ 换耗材后的底图（375×130 切片）图标仍贴卡片左上角');
+  /* ---------- 2. 耗材信息为静态展示 ---------- */
+  const staticMaterial = await evaluate(cdp, `(() => {
+    const rows = [...document.querySelectorAll('.plate-row')];
+    return rows.every(row => row.querySelectorAll('.prepare-material').length === 1)
+      && !document.querySelector('#prepare-stage .plate-material-hit')
+      && !!document.querySelector('#prepare-stage .prepare-mismatch');
+  })()`);
+  check(staticMaterial, '每盘应仅保留一个静态耗材单元，第三盘带不匹配感叹号');
   await shot(cdp, badgeShot);
 
   /* ---------- 3. 点图标进 3D 预览页 ---------- */
@@ -301,7 +289,7 @@ async function main() {
   await waitFor(cdp, `!document.querySelector('#prepare-state-screen').hidden`, '任务状态版准备打印页没有打开');
   await delay(400);
 
-  const stateBadges = await evaluate(cdp, badgeGeometry('.state-row', CARD_NORMAL));
+  const stateBadges = await evaluate(cdp, badgeGeometry('.state-row'));
   check(stateBadges.length === 3, `任务状态版准备打印页应有 3 颗 3D 图标，实际 ${stateBadges.length}`);
   assertBadges(stateBadges, '任务状态版 ');
   console.log('✓ 任务状态版准备打印页的 3 颗 3D 图标同样贴在缩略图左上角');

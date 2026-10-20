@@ -66,7 +66,6 @@ const firmwareDialog = document.querySelector('#firmware-dialog');
 const firmwareDialogTitle = document.querySelector('#firmware-dialog-title');
 const firmwareProgressPercent = document.querySelector('#firmware-progress-percent');
 const prepareStage = document.querySelector('#prepare-stage');
-const prepareArtworkImage = document.querySelector('#prepare-artwork');
 const plateList = document.querySelector('#prepare-plate-list');
 const prepareStateScreen = document.querySelector('#prepare-state-screen');
 const prepareStateStage = document.querySelector('#prepare-state-stage');
@@ -548,16 +547,8 @@ const PREPARE_STATE_STAMPS = {
 /* 状态戳位置：按 407×869 原图量取（圆心 x 200/407、y 盘行中心），宽 114/407 ≈ 28% */
 const STATE_STAMP_LEFT = 49.15;
 const STATE_ROW_CENTERS = { 1: 36.148, 2: 53.926, 3: 71.852 };
-/* 每盘两版行切片：[默认（绿色耗材带红框不匹配）, 更换后（全部匹配蓝色料架）] */
-const STATE_ROW_ART = {
-  1: ['assets/准备打印页-盘1.png', 'assets/准备打印页-更换后-盘1.png'],
-  2: ['assets/准备打印页-盘2.png', 'assets/准备打印页-更换后-盘2.png'],
-  3: ['assets/准备打印页-盘3.png', 'assets/准备打印页-更换后-盘3.png']
-};
 let selectedStateRow = '2';
 let stampedPlate = null;
-/* 任务状态版里换过耗材颜色的盘（该盘行切片换成“更换后”版本） */
-let stateColorChangedRows = new Set();
 
 function resolvePrepareStateKey() {
   if (currentStatus === 'completed') return 'completed';
@@ -573,16 +564,14 @@ function selectStateRow(plate) {
   });
 }
 
-/* 按“盖戳盘 + 换色记录”渲染三行：被戳的盘隐藏点选与色卡热区 */
+/* 被状态戳覆盖的盘不可再选，其余盘与 3D 预览保持可用。 */
 function renderStateRows() {
   stateRows.forEach((row) => {
     const plate = row.dataset.row;
-    row.querySelector('.plate-row-art').src = STATE_ROW_ART[plate][stateColorChangedRows.has(plate) ? 1 : 0];
     const stamped = plate === stampedPlate;
     row.classList.toggle('is-stamped', stamped);
     row.setAttribute('aria-disabled', String(stamped));
     row.querySelector('.state-row-hit').hidden = stamped;
-    row.querySelector('.state-material-hit').hidden = stamped;
   });
 }
 
@@ -1113,79 +1102,15 @@ document.querySelector('#material-color-anywhere').addEventListener('click', goB
 document.querySelector('#explore-toys-anywhere').addEventListener('click', () => openReuseScreen('modelDetail'));
 document.querySelector('#explore-toys-back').addEventListener('click', closeReuseScreens);
 document.querySelector('#open-prepare-print').addEventListener('click', () => {
-  /* 从模型详情重新进准备打印 = 重新走一遍流程，耗材颜色回到原图状态 */
-  resetPrepareArtwork();
   openReuseScreen('preparePrint');
 });
-/* 准备打印页：盘列表点选 + 上下拖动排序（三行是原图切片，换 slot 就等于真换位）。
-   默认原图 311×675；耗材颜色更换后整页换成 375×812 的原图，
-   两套画布尺寸不同，所以槽位百分比和色卡热区各量一套，切图时一起换掉。 */
-const PREPARE_ARTWORKS = {
-  default: {
-    ratio: '311 / 675',
-    base: 'assets/准备打印页-底图.png',
-    baseAlt: '准备打印页，包含打印机信息、打印选项、延时摄影开关与开始打印按钮',
-    plateArt: {
-      1: ['assets/准备打印页-盘1.png', '盘 1：史蒂夫_01_012214，2 h 16 min，72 g'],
-      2: ['assets/准备打印页-盘2.png', '盘 2：史蒂夫_02_012209，1 h 42 min，54 g'],
-      3: ['assets/准备打印页-盘3.png', '盘 3：史蒂夫_03_012207，3 h 08 min，96 g']
-    },
-    slotTops: [0.28148, 0.45926, 0.63852],
-    rowHeight: 0.16
-  },
-  colorChanged: {
-    ratio: '375 / 812',
-    base: 'assets/准备打印页-更换后-底图.png',
-    baseAlt: '准备打印页，盘 3 的绿色耗材已换成与料架匹配的蓝色，红框不匹配提示消失',
-    plateArt: {
-      1: ['assets/准备打印页-更换后-盘1.png', '盘 1：史蒂夫_01_012214，2 h 16 min，72 g'],
-      2: ['assets/准备打印页-更换后-盘2.png', '盘 2：史蒂夫_02_012209，1 h 42 min，54 g'],
-      3: ['assets/准备打印页-更换后-盘3.png', '盘 3：史蒂夫_03_012207，3 h 08 min，96 g，耗材颜色已更换']
-    },
-    slotTops: [0.273399, 0.450739, 0.62931],
-    rowHeight: 0.160099
-  }
-};
-let prepareArtworkKey = 'default';
-let plateSlotCenters = [];
+/* HTML 盘行保留原来的槽位几何，拖动直接更新整张 DOM 卡片的位置。 */
+const plateSlotCenters = [0.28148, 0.45926, 0.63852].map(top => top + 0.08);
 const plateRows = [...plateList.querySelectorAll('.plate-row')];
 let plateOrder = plateRows.map((row) => row.dataset.plate);
 let selectedPlate = '1';
 let plateDrag = null;
 let suppressPlateClick = false;
-/* 耗材颜色是否已经改过：改过之后整页换原图，红框不匹配清零（色卡不再分流到无耗材页） */
-let prepareColorChanged = false;
-/* 从“无耗材”页进选择耗材页 = 打算换耗材颜色，按“确定”才真正落地 */
-let pendingFilamentColorChange = false;
-/* 选择耗材弹层从哪个准备打印页打开：确定/关闭要回到原页面，
-   任务状态版只改该盘耗材颜色，绝不掉回模型详情进来的空闲准备打印页 */
-let materialSheetFrom = { screen: 'preparePrint', plate: null };
-
-function renderPrepareArtwork(key) {
-  const preset = PREPARE_ARTWORKS[key] ? PREPARE_ARTWORKS[key] : PREPARE_ARTWORKS.default;
-  prepareArtworkKey = preset === PREPARE_ARTWORKS.colorChanged ? 'colorChanged' : 'default';
-  prepareStage.dataset.artwork = prepareArtworkKey;
-  prepareStage.style.setProperty('--reuse-ratio', preset.ratio);
-  prepareArtworkImage.src = preset.base;
-  prepareArtworkImage.alt = preset.baseAlt;
-  plateRows.forEach((row) => {
-    const art = row.querySelector('.plate-row-art');
-    const entry = preset.plateArt[row.dataset.plate];
-    if (art && entry) {
-      art.src = entry[0];
-      art.alt = entry[1];
-    }
-  });
-  plateSlotCenters = preset.slotTops.map((top) => top + preset.rowHeight / 2);
-}
-
-/* 回到“未换色”的初始原图（不改变盘顺序、选中态这些交互状态） */
-function resetPrepareArtwork() {
-  prepareColorChanged = false;
-  pendingFilamentColorChange = false;
-  renderPrepareArtwork('default');
-}
-
 function renderPlateSelection() {
   plateRows.forEach((row) => row.setAttribute('aria-selected', String(row.dataset.plate === selectedPlate)));
 }
@@ -1261,28 +1186,14 @@ plateRows.forEach((row) => {
     if (suppressPlateClick) { suppressPlateClick = false; return; }
     selectPlate(row.dataset.plate);
   });
-  /* 色卡分流：不带红框的色卡 → 选择耗材页；带红框的色卡 → 耗材不匹配提示页。
-     耗材颜色已经换过之后红框已经消失，所有色卡都走选择耗材页。 */
-  row.querySelectorAll('.plate-material-hit').forEach((chip) => {
-    chip.addEventListener('click', () => {
-      materialSheetFrom = { screen: 'preparePrint', plate: null };
-      const mismatch = chip.dataset.target === 'prepareEmpty' && !prepareColorChanged;
-      openReuseScreen(mismatch ? 'prepareEmpty' : 'prepareMaterial');
-    });
-  });
 });
 window.addEventListener('pointermove', updatePlateDrag);
 window.addEventListener('pointerup', endPlateDrag);
 window.addEventListener('pointercancel', endPlateDrag);
 
-/* 任务状态版：未盖戳的盘可点选；点任一盘的色卡进入选择耗材页，
-   确定/关闭后回到本状态页且只改该盘耗材颜色（状态戳与其它盘不受影响） */
+/* 任务状态版保留未盖戳盘的选择，耗材为静态信息。 */
 stateRows.forEach((row) => {
   row.querySelector('.state-row-hit').addEventListener('click', () => selectStateRow(row.dataset.row));
-  row.querySelector('.state-material-hit').addEventListener('click', () => {
-    materialSheetFrom = { screen: 'prepareState', plate: row.dataset.row };
-    openReuseScreen('prepareMaterial');
-  });
 });
 document.querySelector('#prepare-state-back').addEventListener('click', closeReuseScreens);
 document.querySelector('#prepare-state-start').addEventListener('click', () => {
@@ -1300,47 +1211,10 @@ function goToPrinterState(plate, status) {
 }
 
 renderPlateSelection();
-renderPrepareArtwork('default');
 /* 首屏固件是有新版本的：提醒条与设备设置页的橙色文案都按 firmwareUpdateAvailable 显示 */
 setFirmwareUpdateAvailable(true);
 /* 准备打印页打印机卡片右侧的“切换” → 添加打印机页 */
 document.querySelector('#prepare-switch-printer').addEventListener('click', () => openReuseScreen('addPrinter'));
-/* 选择耗材页：底部“确定”回到打开它的准备打印页。
-   任务状态版进来的：只把该盘行切片换成“更换后”版本（耗材颜色已变更、红框消失），状态戳不动；
-   空闲版进来的：如果是从“无耗材”页进来换颜色的，落地时整页换成“耗材颜色更换后”的原图。 */
-document.querySelector('#prepare-material-confirm').addEventListener('click', () => {
-  const from = materialSheetFrom;
-  materialSheetFrom = { screen: 'preparePrint', plate: null };
-  if (from.screen === 'prepareState') {
-    stateColorChangedRows.add(from.plate);
-    renderStateRows();
-    returnToReuseScreen('prepareState');
-    return;
-  }
-  if (pendingFilamentColorChange) {
-    pendingFilamentColorChange = false;
-    prepareColorChanged = true;
-    renderPrepareArtwork('colorChanged');
-  }
-  returnToReuseScreen('preparePrint');
-});
-document.querySelector('#prepare-material-close').addEventListener('click', () => {
-  const from = materialSheetFrom;
-  materialSheetFrom = { screen: 'preparePrint', plate: null };
-  pendingFilamentColorChange = false;
-  returnToReuseScreen(from.screen === 'prepareState' ? 'prepareState' : 'preparePrint');
-});
-/* 无耗材页：点弹层中央的料架 → 带着“要换耗材颜色”的意图进选择耗材页；右上角“×” → 回准备打印页 */
-document.querySelector('#prepare-empty-spool').addEventListener('click', () => {
-  materialSheetFrom = { screen: 'preparePrint', plate: null };
-  pendingFilamentColorChange = true;
-  openReuseScreen('prepareMaterial');
-});
-document.querySelector('#prepare-empty-close').addEventListener('click', () => {
-  materialSheetFrom = { screen: 'preparePrint', plate: null };
-  pendingFilamentColorChange = false;
-  returnToReuseScreen('preparePrint');
-});
 document.querySelector('#model-detail-back').addEventListener('click', goBackInReuseScreens);
 document.querySelector('#prepare-print-back').addEventListener('click', goBackInReuseScreens);
 
@@ -1364,7 +1238,7 @@ document.querySelectorAll('.plate-3d-btn').forEach((button) => {
 document.querySelector('#preview-3d-back').addEventListener('click', goBackInReuseScreens);
 
 /* ---------- 准备打印页：延时摄影勾选 + 开始打印 ---------- */
-/* 勾选框只切 aria-checked：勾选态完全透明，让原图烘焙的绿色勾选框透出来；取消勾选时由 CSS 盖上自绘的白框 */
+/* 勾选状态由 aria-checked 驱动真实 HTML 勾选框。 */
 function bindTimelapseToggle(button) {
   button.addEventListener('click', () => {
     const nextChecked = button.getAttribute('aria-checked') !== 'true';

@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="styles-share-printer.css?v=r008">
   <link rel="stylesheet" href="styles-filament-operation.css?v=r008">
   <link rel="stylesheet" href="styles-3d-preview.css?v=r008">
+  <link rel="stylesheet" href="styles-prepare-print.css?v=r001">
 </head>
 <body>
   <main id="device-page" class="phone-shell" aria-label="自研款 3D 打印机设备页">
@@ -652,92 +653,116 @@
     </div>
   </section>
 
-  <!-- 准备打印（复用 准备打印页.png）：盘列表可点选 + 上下拖动排序；色卡按红框 / 非红框分流 -->
-  <section id="prepare-print-screen" class="reuse-screen" hidden tabindex="-1" aria-label="准备打印">
+  <!-- 准备打印：真实 HTML 布局，仅复用模型、打印机与蓝色料盘局部图片。 -->
+  <section id="prepare-print-screen" class="reuse-screen prepare-screen" hidden tabindex="-1" aria-label="准备打印">
     <div class="reuse-screen-frame">
-      <div id="prepare-stage" class="reuse-stage" style="--reuse-ratio: 311 / 675">
-        <!-- 底图：盘列表那一段已刷成页面白底，真正的三行由下面的切片补上。
-             耗材颜色更换后整页换成 assets/准备打印页-更换后-底图.png（由 JS 按状态切换 src） -->
-        <img id="prepare-artwork" src="assets/准备打印页-底图.png" alt="准备打印页，包含打印机信息、打印选项、延时摄影开关与开始打印按钮">
-        <!-- 打印机卡片右侧的“切换”：跳添加打印机页 -->
-        <button id="prepare-switch-printer" class="reuse-hotspot reuse-hotspot--prepare-switch" type="button" aria-label="切换或添加打印机"></button>
+      <div id="prepare-stage" class="reuse-stage prepare-page" style="--reuse-ratio: 311 / 675">
+        <div class="prepare-statusbar" aria-hidden="true"><strong>9:41</strong><span class="prepare-island"></span><span class="prepare-status-icons">▂▄▆ <svg viewBox="0 0 20 16"><path d="M2 5Q10-2 18 5M5 8Q10 3 15 8M8 11Q10 9 12 11"/><circle cx="10" cy="14" r="1"/></svg><span class="prepare-battery"></span></span></div>
+        <header class="prepare-header"><button id="prepare-print-back" class="prepare-back" type="button" aria-label="返回模型详情">←</button><h1>准备打印</h1></header>
+        <div class="prepare-printer"><img src="assets/准备打印-打印机.png" alt="Ugee Funbox 打印机"><div><strong>Ugee Funbox</strong><span class="prepare-idle"><i aria-hidden="true"></i>空闲</span></div><button id="prepare-switch-printer" class="prepare-switch" type="button" aria-label="切换或添加打印机">切换</button></div>
+        <h2 class="prepare-section-title">选择要打印的盘</h2>
         <div id="prepare-plate-list" class="plate-list" role="listbox" aria-label="选择要打印的盘">
-          <div class="plate-row" data-plate="1" data-slot="0" role="option" aria-selected="true">
-            <img class="plate-row-art" src="assets/准备打印页-盘1.png" alt="盘 1：史蒂夫_01_012214，2 h 16 min，72 g">
+          <div class="plate-row prepare-plate" data-plate="1" data-slot="0" role="option" aria-selected="true">
             <span class="plate-row-ring" aria-hidden="true"></span>
+            <div class="prepare-model"><img src="assets/准备打印-模型1.png" alt="史蒂夫_01_012214 模型缩略图" draggable="false"></div>
+            <div class="prepare-plate-info"><strong>盘 1</strong><span class="prepare-model-name">史蒂夫_01_012214</span></div>
+            <div class="prepare-material" aria-label="盘 1，模型颜色蓝色，料架颜色蓝色">
+              <div class="prepare-material-color">蓝色</div>
+              <div class="prepare-material-body"><img class="prepare-spool" src="assets/准备打印-蓝色料盘.png" alt="蓝色耗材料盘" draggable="false"><span class="prepare-loaded-color">蓝色</span></div>
+            </div>
+            <div class="prepare-plate-stats"><span><i class="prepare-clock" aria-hidden="true"></i>2 h 16 min</span><span><i class="prepare-weight" aria-hidden="true"></i>72 g</span></div>
             <button class="plate-row-hit" type="button" aria-label="选择盘 1 史蒂夫_01_012214"></button>
-            <button class="plate-material-hit" type="button" data-chip="left" data-target="prepareMaterial" aria-label="盘 1 料架上的耗材颜色，选择打印耗材"></button>
-            <!-- 缩略图左上角：3D 图标 → 3D 预览页 -->
             <button class="plate-3d-btn" type="button" data-preview-plate="盘 1" data-preview-name="史蒂夫_01_012214" data-preview-duration="2 h 16 min" data-preview-grams="72" aria-label="3D 预览：盘 1 史蒂夫_01_012214"><span class="plate-3d-btn__text" aria-hidden="true">3D</span></button>
             <span class="plate-row-grip" aria-hidden="true"></span>
           </div>
-          <div class="plate-row" data-plate="2" data-slot="1" role="option" aria-selected="false">
-            <img class="plate-row-art" src="assets/准备打印页-盘2.png" alt="盘 2：史蒂夫_02_012209，1 h 42 min，54 g">
+          <div class="plate-row prepare-plate" data-plate="2" data-slot="1" role="option" aria-selected="false">
             <span class="plate-row-ring" aria-hidden="true"></span>
+            <div class="prepare-model"><img src="assets/准备打印-模型2.png" alt="史蒂夫_02_012209 模型缩略图" draggable="false"></div>
+            <div class="prepare-plate-info"><strong>盘 2</strong><span class="prepare-model-name">史蒂夫_02_012209</span></div>
+            <div class="prepare-material" aria-label="盘 2，模型颜色蓝色，料架颜色蓝色">
+              <div class="prepare-material-color">蓝色</div>
+              <div class="prepare-material-body"><img class="prepare-spool" src="assets/准备打印-蓝色料盘.png" alt="蓝色耗材料盘" draggable="false"><span class="prepare-loaded-color">蓝色</span></div>
+            </div>
+            <div class="prepare-plate-stats"><span><i class="prepare-clock" aria-hidden="true"></i>1 h 42 min</span><span><i class="prepare-weight" aria-hidden="true"></i>54 g</span></div>
             <button class="plate-row-hit" type="button" aria-label="选择盘 2 史蒂夫_02_012209"></button>
-            <button class="plate-material-hit" type="button" data-chip="left" data-target="prepareMaterial" aria-label="盘 2 的蓝色耗材，选择打印耗材"></button>
-            <button class="plate-material-hit" type="button" data-chip="right" data-target="prepareMaterial" aria-label="盘 2 的绿色耗材，选择打印耗材"></button>
             <button class="plate-3d-btn" type="button" data-preview-plate="盘 2" data-preview-name="史蒂夫_02_012209" data-preview-duration="1 h 42 min" data-preview-grams="54" aria-label="3D 预览：盘 2 史蒂夫_02_012209"><span class="plate-3d-btn__text" aria-hidden="true">3D</span></button>
             <span class="plate-row-grip" aria-hidden="true"></span>
           </div>
-          <div class="plate-row" data-plate="3" data-slot="2" role="option" aria-selected="false">
-            <img class="plate-row-art" src="assets/准备打印页-盘3.png" alt="盘 3：史蒂夫_03_012207，3 h 08 min，96 g">
+          <div class="plate-row prepare-plate" data-plate="3" data-slot="2" role="option" aria-selected="false">
             <span class="plate-row-ring" aria-hidden="true"></span>
+            <div class="prepare-model"><img src="assets/准备打印-模型3.png" alt="史蒂夫_03_012207 模型缩略图" draggable="false"></div>
+            <div class="prepare-plate-info"><strong>盘 3</strong><span class="prepare-model-name">史蒂夫_03_012207</span></div>
+            <div class="prepare-material prepare-material--mismatch" aria-label="盘 3，模型颜色绿色，料架颜色蓝色，颜色不匹配">
+              <div class="prepare-material-color">绿色</div>
+              <div class="prepare-material-body"><img class="prepare-spool" src="assets/准备打印-蓝色料盘.png" alt="蓝色耗材料盘" draggable="false"><span class="prepare-mismatch" role="img" aria-label="颜色不匹配" title="模型需要绿色，料架当前为蓝色">!</span></div>
+            </div>
+            <div class="prepare-plate-stats"><span><i class="prepare-clock" aria-hidden="true"></i>3 h 08 min</span><span><i class="prepare-weight" aria-hidden="true"></i>96 g</span></div>
             <button class="plate-row-hit" type="button" aria-label="选择盘 3 史蒂夫_03_012207"></button>
-            <button class="plate-material-hit" type="button" data-chip="left" data-target="prepareMaterial" aria-label="盘 3 的蓝色耗材，选择打印耗材"></button>
-            <button class="plate-material-hit plate-material-hit--mismatch" type="button" data-chip="right" data-target="prepareEmpty" aria-label="盘 3 的绿色耗材带红框提示不匹配，查看耗材不匹配原因"></button>
             <button class="plate-3d-btn" type="button" data-preview-plate="盘 3" data-preview-name="史蒂夫_03_012207" data-preview-duration="3 h 08 min" data-preview-grams="96" aria-label="3D 预览：盘 3 史蒂夫_03_012207"><span class="plate-3d-btn__text" aria-hidden="true">3D</span></button>
             <span class="plate-row-grip" aria-hidden="true"></span>
           </div>
         </div>
-        <!-- 延时摄影勾选：勾选态直接让原图里烘焙的绿框透出来，取消勾选时盖上自绘的白框 -->
-        <button id="timelapse-toggle" class="timelapse-check" type="button" role="checkbox" aria-checked="true" aria-label="延时摄影"><span class="timelapse-check-box" aria-hidden="true"></span></button>
-        <button id="start-print" class="reuse-hotspot reuse-hotspot--start-print" type="button" aria-label="开始打印"></button>
+
+        <div class="prepare-options"><h2>打印选项</h2><div class="prepare-timelapse"><span>延时摄影</span><button id="timelapse-toggle" class="timelapse-check" type="button" role="checkbox" aria-checked="true" aria-label="延时摄影"><span class="timelapse-check-box" aria-hidden="true"></span></button></div></div>
+        <button id="start-print" class="prepare-start" type="button" aria-label="开始打印">开始打印</button>
       </div>
     </div>
-    <button id="prepare-print-back" class="reuse-screen-back" type="button" aria-label="返回模型详情"></button>
   </section>
 
-  <!-- 准备打印 · 任务状态版（复用准备打印页切片：底图 + 盘行，结构与空闲版一致），
-       正在打印 / 已取消 / 已打印的状态戳由 JS 按当前任务盘定位，任意盘都可被队列任务复用 -->
-  <section id="prepare-state-screen" class="reuse-screen" hidden tabindex="-1" aria-label="准备打印">
+  <!-- 准备打印：真实 HTML 布局，仅复用模型、打印机与蓝色料盘局部图片。 -->
+  <section id="prepare-state-screen" class="reuse-screen prepare-screen" hidden tabindex="-1" aria-label="准备打印">
     <div class="reuse-screen-frame">
-      <div id="prepare-state-stage" class="reuse-stage" style="--reuse-ratio: 311 / 675">
-        <img id="prepare-state-artwork" src="assets/准备打印页-底图.png" alt="准备打印页，包含打印机信息、打印选项、延时摄影开关与开始打印按钮">
-        <!-- 打印中 / 暂停中：打印机卡片由“空闲”改成“忙碌”（白底补丁盖住原字） -->
-        <div id="printer-busy-patch" class="printer-busy-patch" role="status" hidden><span class="printer-busy-dot" aria-hidden="true"></span>忙碌</div>
-        <!-- 状态戳：盖在处于当前任务状态的盘上（JS 按盘定位与换图） -->
-        <img id="state-stamp" class="state-stamp" src="assets/状态戳-正在打印.png" alt="正在打印" hidden>
-        <div class="state-plate-list" role="listbox" aria-label="选择要打印的盘">
-          <div class="state-row" data-row="1" role="option" aria-selected="false">
-            <img class="plate-row-art" src="assets/准备打印页-盘1.png" alt="盘 1：史蒂夫_01_012214，2 h 16 min，72 g">
+      <div id="prepare-state-stage" class="reuse-stage prepare-page" style="--reuse-ratio: 311 / 675">
+        <div class="prepare-statusbar" aria-hidden="true"><strong>9:41</strong><span class="prepare-island"></span><span class="prepare-status-icons">▂▄▆ <svg viewBox="0 0 20 16"><path d="M2 5Q10-2 18 5M5 8Q10 3 15 8M8 11Q10 9 12 11"/><circle cx="10" cy="14" r="1"/></svg><span class="prepare-battery"></span></span></div>
+        <header class="prepare-header"><button id="prepare-state-back" class="prepare-back" type="button" aria-label="返回打印页面">←</button><h1>准备打印</h1></header>
+        <div class="prepare-printer"><img src="assets/准备打印-打印机.png" alt="Ugee Funbox 打印机"><div><strong>Ugee Funbox</strong><span class="prepare-idle"><i aria-hidden="true"></i>空闲</span><span id="printer-busy-patch" class="printer-busy-patch" hidden><span class="printer-busy-dot" aria-hidden="true"></span>忙碌</span></div></div>
+        <h2 class="prepare-section-title">选择要打印的盘</h2>
+        <div  class="state-plate-list" role="listbox" aria-label="选择要打印的盘">
+          <div class="state-row prepare-plate" data-row="1" role="option" aria-selected="false">
             <span class="state-row-ring" aria-hidden="true"></span>
-            <button class="state-row-hit" type="button" aria-label="选择盘 1"></button>
-            <button class="state-material-hit" type="button" aria-label="选择盘 1 的耗材"></button>
+            <div class="prepare-model"><img src="assets/准备打印-模型1.png" alt="史蒂夫_01_012214 模型缩略图" draggable="false"></div>
+            <div class="prepare-plate-info"><strong>盘 1</strong><span class="prepare-model-name">史蒂夫_01_012214</span></div>
+            <div class="prepare-material" aria-label="盘 1，模型颜色蓝色，料架颜色蓝色">
+              <div class="prepare-material-color">蓝色</div>
+              <div class="prepare-material-body"><img class="prepare-spool" src="assets/准备打印-蓝色料盘.png" alt="蓝色耗材料盘" draggable="false"><span class="prepare-loaded-color">蓝色</span></div>
+            </div>
+            <div class="prepare-plate-stats"><span><i class="prepare-clock" aria-hidden="true"></i>2 h 16 min</span><span><i class="prepare-weight" aria-hidden="true"></i>72 g</span></div>
+            <button class="state-row-hit" type="button" aria-label="选择盘 1 史蒂夫_01_012214"></button>
             <button class="plate-3d-btn" type="button" data-preview-plate="盘 1" data-preview-name="史蒂夫_01_012214" data-preview-duration="2 h 16 min" data-preview-grams="72" aria-label="3D 预览：盘 1 史蒂夫_01_012214"><span class="plate-3d-btn__text" aria-hidden="true">3D</span></button>
+
           </div>
-          <div class="state-row" data-row="2" role="option" aria-selected="false">
-            <img class="plate-row-art" src="assets/准备打印页-盘2.png" alt="盘 2：史蒂夫_02_012209，1 h 42 min，54 g">
+          <div class="state-row prepare-plate" data-row="2" role="option" aria-selected="false">
             <span class="state-row-ring" aria-hidden="true"></span>
-            <button class="state-row-hit" type="button" aria-label="选择盘 2"></button>
-            <button class="state-material-hit" type="button" aria-label="选择盘 2 的耗材"></button>
+            <div class="prepare-model"><img src="assets/准备打印-模型2.png" alt="史蒂夫_02_012209 模型缩略图" draggable="false"></div>
+            <div class="prepare-plate-info"><strong>盘 2</strong><span class="prepare-model-name">史蒂夫_02_012209</span></div>
+            <div class="prepare-material" aria-label="盘 2，模型颜色蓝色，料架颜色蓝色">
+              <div class="prepare-material-color">蓝色</div>
+              <div class="prepare-material-body"><img class="prepare-spool" src="assets/准备打印-蓝色料盘.png" alt="蓝色耗材料盘" draggable="false"><span class="prepare-loaded-color">蓝色</span></div>
+            </div>
+            <div class="prepare-plate-stats"><span><i class="prepare-clock" aria-hidden="true"></i>1 h 42 min</span><span><i class="prepare-weight" aria-hidden="true"></i>54 g</span></div>
+            <button class="state-row-hit" type="button" aria-label="选择盘 2 史蒂夫_02_012209"></button>
             <button class="plate-3d-btn" type="button" data-preview-plate="盘 2" data-preview-name="史蒂夫_02_012209" data-preview-duration="1 h 42 min" data-preview-grams="54" aria-label="3D 预览：盘 2 史蒂夫_02_012209"><span class="plate-3d-btn__text" aria-hidden="true">3D</span></button>
+
           </div>
-          <div class="state-row" data-row="3" role="option" aria-selected="false">
-            <img class="plate-row-art" src="assets/准备打印页-盘3.png" alt="盘 3：史蒂夫_03_012207，3 h 08 min，96 g">
+          <div class="state-row prepare-plate" data-row="3" role="option" aria-selected="false">
             <span class="state-row-ring" aria-hidden="true"></span>
-            <button class="state-row-hit" type="button" aria-label="选择盘 3"></button>
-            <button class="state-material-hit" type="button" aria-label="选择盘 3 的耗材"></button>
+            <div class="prepare-model"><img src="assets/准备打印-模型3.png" alt="史蒂夫_03_012207 模型缩略图" draggable="false"></div>
+            <div class="prepare-plate-info"><strong>盘 3</strong><span class="prepare-model-name">史蒂夫_03_012207</span></div>
+            <div class="prepare-material prepare-material--mismatch" aria-label="盘 3，模型颜色绿色，料架颜色蓝色，颜色不匹配">
+              <div class="prepare-material-color">绿色</div>
+              <div class="prepare-material-body"><img class="prepare-spool" src="assets/准备打印-蓝色料盘.png" alt="蓝色耗材料盘" draggable="false"><span class="prepare-mismatch" role="img" aria-label="颜色不匹配" title="模型需要绿色，料架当前为蓝色">!</span></div>
+            </div>
+            <div class="prepare-plate-stats"><span><i class="prepare-clock" aria-hidden="true"></i>3 h 08 min</span><span><i class="prepare-weight" aria-hidden="true"></i>96 g</span></div>
+            <button class="state-row-hit" type="button" aria-label="选择盘 3 史蒂夫_03_012207"></button>
             <button class="plate-3d-btn" type="button" data-preview-plate="盘 3" data-preview-name="史蒂夫_03_012207" data-preview-duration="3 h 08 min" data-preview-grams="96" aria-label="3D 预览：盘 3 史蒂夫_03_012207"><span class="plate-3d-btn__text" aria-hidden="true">3D</span></button>
+
           </div>
         </div>
-        <button id="prepare-state-toggle" class="timelapse-check" type="button" role="checkbox" aria-checked="true" aria-label="延时摄影"><span class="timelapse-check-box" aria-hidden="true"></span></button>
-        <button id="prepare-state-start" class="reuse-hotspot reuse-hotspot--start-print" type="button" aria-label="开始打印"></button>
-        <!-- 正在打印 / 暂停中：开始打印不可用，盖一层半透明白让原按钮看上去变淡 -->
-        <span id="prepare-state-dim" class="start-print-dim" hidden aria-hidden="true"></span>
+        <img id="state-stamp" class="state-stamp" src="assets/状态戳-正在打印.png" alt="正在打印" hidden>
+        <div class="prepare-options"><h2>打印选项</h2><div class="prepare-timelapse"><span>延时摄影</span><button id="prepare-state-toggle" class="timelapse-check" type="button" role="checkbox" aria-checked="true" aria-label="延时摄影"><span class="timelapse-check-box" aria-hidden="true"></span></button></div></div>
+        <button id="prepare-state-start" class="prepare-start" type="button" aria-label="开始打印">开始打印</button><span id="prepare-state-dim" hidden></span>
       </div>
     </div>
-    <button id="prepare-state-back" class="reuse-screen-back" type="button" aria-label="返回打印页面"></button>
   </section>
 
   <!-- ============================ 3D 预览页 ============================
@@ -1006,6 +1031,6 @@
       </div>
     </form>
   </dialog>
-  <script src="prototype.js?v=r012"></script>
+  <script src="prototype.js?v=r013"></script>
 </body>
 </html>
