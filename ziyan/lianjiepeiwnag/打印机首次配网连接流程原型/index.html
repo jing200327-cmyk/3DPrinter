@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="styles-join-share.css">
   <link rel="stylesheet" href="styles-pairing-help.css">
+  <link rel="stylesheet" href="styles-hotspot-auto.css?v=1">
 </head>
 <body>
   <!-- 家庭共享插画（页面一 / 页面二共用） -->
@@ -128,15 +129,16 @@
       <div class="scroll-content hotspot-content">
         <div id="video-placeholder" class="media-placeholder" role="img" aria-label="开启打印机热点的视频演示占位符"><span class="play-icon">▶</span><strong>视频演示</strong><small>如何连接打印机 WiFi 热点</small></div>
         <section class="copy-section">
-          <h2>设置 WiFi</h2>
-          <p>点击下方按钮跳转至 WiFi 设置界面，点击连接打印机 WiFi 热点 XXX。热点名称应该为“Ugee XXX”，例如下方图片：</p>
+          <h2 id="hotspot-copy-title">连接打印机热点</h2>
+          <p id="hotspot-copy">请保持打印机开启，并确认打印机指示灯为黄色配网状态。点击下方按钮，一键连接打印机热点 ugee Funbot。</p>
         </section>
-        <figure id="wifi-example-placeholder" class="wifi-example">
+        <figure id="wifi-example-placeholder" class="wifi-example" hidden>
           <img id="wifi-example-reference" src="../../src/lianjiepeiwnag/WiFi设置示意图.jpg" alt="WiFi 设置中显示 Ugee Funbox 打印机热点的示意图">
         </figure>
-        <p class="return-hint"><span aria-hidden="true">i</span>设置好后返回，将自动进入网络配置</p>
+        <p id="hotspot-return-hint" class="return-hint"><span aria-hidden="true">i</span>连接成功后，将自动进入网络配置</p>
+        <aside class="hotspot-demo" aria-label="原型演示设置"><span>原型演示设置</span><label>连接方案<select id="hotspot-plan"><option value="auto">方案二 · 一键连接热点</option><option value="manual">方案一 · 前往设置 WLAN（原方案）</option></select></label><label id="hotspot-result-label">5 秒后结果<select id="hotspot-result"><option value="success">连接成功</option><option value="timeout">连接超时</option></select></label></aside>
       </div>
-      <div class="sticky-action"><button id="open-wlan" class="secondary-button" type="button">前往设置 WLAN</button></div>
+      <div class="sticky-action"><button id="connect-hotspot" class="primary-button hotspot-gradient" type="button">一键连接打印机热点</button><button id="open-wlan" class="secondary-button" type="button" hidden>前往设置 WLAN</button></div>
     </section>
 
     <section id="screen-home-wifi" class="app-screen flow-screen" data-screen="home-wifi" hidden aria-labelledby="home-wifi-title">
@@ -170,7 +172,7 @@
           <p>网络配置完成，可以开始打印前准备。</p>
         </section>
 
-        <h2 class="filament-guide-title">安装打印耗材，并进行进料。</h2>
+        <h2 class="filament-guide-title">开始打印前，必须先进料，进料步骤如下：</h2>
 
         <ol class="filament-steps">
           <li class="filament-step" aria-labelledby="filament-step-1-title">
@@ -673,6 +675,7 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="prototype.js"></script>
+  <dialog id="hotspot-timeout-dialog" class="hotspot-timeout-dialog" aria-labelledby="hotspot-timeout-title"><h2 id="hotspot-timeout-title">连接超时</h2><p>当前连接超时，请检查是否已开启打印机并且打印机指示灯为黄色配网状态</p><div><button id="hotspot-timeout-cancel" class="secondary-button" type="button">取消</button><button id="hotspot-timeout-settings" class="primary-button hotspot-gradient" type="button">去设置WLAN</button></div></dialog>
+  <script src="prototype.js?v=r016"></script>
 </body>
 </html>

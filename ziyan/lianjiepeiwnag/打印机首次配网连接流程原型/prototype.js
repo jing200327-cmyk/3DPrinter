@@ -36,6 +36,8 @@ let connectionTimer;
 let successTimer;
 let connectingTicker;
 let connectingSeconds = 0;
+let hotspotTimer;
+let hotspotConnecting = false;
 
 function showScreen(name) {
   screens.forEach((screen) => {
@@ -312,10 +314,21 @@ document.querySelector('#open-wlan').addEventListener('click', () => {
 });
 
 document.querySelectorAll('[data-back]').forEach((button) => {
-  button.addEventListener('click', () => showScreen(button.dataset.back));
+  button.addEventListener('click', () => {
+    if (button.closest('#screen-hotspot') && hotspotConnecting) {
+      showNotice('当前正在连接打印机热点，请不要离开', document.querySelector('#connect-hotspot'));
+      return;
+    }
+    showScreen(button.dataset.back);
+  });
 });
 /* 退出配网时复位所有流程内状态：计时器、弹层、WiFi 选择与已填写的密码 */
 function resetPairingFlowState() {
+  window.clearTimeout(hotspotTimer);
+  hotspotConnecting = false;
+  renderHotspotConnection();
+  const hotspotTimeout = document.querySelector('#hotspot-timeout-dialog');
+  if (hotspotTimeout.open) hotspotTimeout.close();
   window.clearTimeout(connectionTimer);
   window.clearTimeout(successTimer);
   window.clearInterval(connectingTicker);
@@ -443,7 +456,7 @@ document.querySelector('#print-ready-back').addEventListener('click', () => {
 });
 
 document.querySelector('#goto-filament').addEventListener('click', () => {
-  window.location.href = `${PRINTER_HOME_PATH}?highlight=filament`;
+  window.location.href = `${PRINTER_HOME_PATH}?screen=install-filament`;
 });
 
 document.querySelector('#goto-print').addEventListener('click', () => {
@@ -971,3 +984,50 @@ if (requestedScreen === 'help') {
   showScreen(startScreenName());
   window.setTimeout(openFaqDialog, 0);
 }
+
+/* Second hotspot proposal; system WLAN continues to use the original handler. */
+function renderHotspotConnection() {
+  const automatic = document.querySelector('#hotspot-plan').value === 'auto';
+  const button = document.querySelector('#connect-hotspot');
+  button.hidden = !automatic;
+  button.disabled = hotspotConnecting;
+  button.textContent = hotspotConnecting ? '连接中…' : '一键连接打印机热点';
+  button.setAttribute('aria-busy', String(hotspotConnecting));
+  document.querySelector('#open-wlan').hidden = automatic;
+  document.querySelector('#hotspot-plan').disabled = hotspotConnecting;
+  document.querySelector('#hotspot-result').disabled = hotspotConnecting;
+  document.querySelector('#hotspot-result-label').hidden = !automatic;
+  document.querySelector('#wifi-example-placeholder').hidden = automatic;
+  document.querySelector('#hotspot-copy-title').textContent = automatic ? '连接打印机热点' : '设置 WiFi';
+  document.querySelector('#hotspot-copy').textContent = automatic ? '请保持打印机开启，并确认打印机指示灯为黄色配网状态。点击下方按钮，一键连接打印机热点 ugee Funbot。' : '点击下方按钮跳转至 WiFi 设置界面，点击连接打印机 WiFi 热点。热点名称应该为“Ugee XXX”，例如下方图片：';
+  document.querySelector('#hotspot-return-hint').textContent = automatic ? '连接成功后，将自动进入网络配置' : '设置好后返回，将自动进入网络配置';
+}
+document.querySelector('#hotspot-plan').addEventListener('change', renderHotspotConnection);
+document.querySelector('#connect-hotspot').addEventListener('click', () => {
+  if (hotspotConnecting) return;
+  const outcome = document.querySelector('#hotspot-result').value;
+  hotspotConnecting = true;
+  renderHotspotConnection();
+  hotspotTimer = window.setTimeout(() => {
+    hotspotConnecting = false;
+    renderHotspotConnection();
+    if (noticeDialog.open) noticeDialog.close();
+    if (outcome === 'timeout') {
+      document.querySelector('#hotspot-timeout-dialog').showModal();
+      return;
+    }
+    printerHotspotConnected = true;
+    selectedWlan = PRINTER_WLAN;
+    renderWlanNetworks();
+    showScreen('home-wifi');
+    showToast('已连接打印机热点ugee Funbot，下一步给打印机配置家庭WiFi');
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => toast.classList.remove('is-visible'), 4000);
+  }, 5000);
+});
+document.querySelector('#hotspot-timeout-cancel').addEventListener('click', () => document.querySelector('#hotspot-timeout-dialog').close());
+document.querySelector('#hotspot-timeout-settings').addEventListener('click', () => {
+  document.querySelector('#hotspot-timeout-dialog').close();
+  openSystemSettings('wlan', 'hotspot');
+});
+renderHotspotConnection();
