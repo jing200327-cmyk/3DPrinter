@@ -9,7 +9,8 @@
   <link rel="stylesheet" href="styles-share-printer.css?v=r008">
   <link rel="stylesheet" href="styles-filament-operation.css?v=r008">
   <link rel="stylesheet" href="styles-3d-preview.css?v=r008">
-  <link rel="stylesheet" href="styles-prepare-print.css?v=r001">
+  <link rel="stylesheet" href="styles-prepare-print.css?v=r002">
+  <link rel="stylesheet" href="styles-filament-guide.css?v=1">
 </head>
 <body>
   <main id="device-page" class="phone-shell" aria-label="自研款 3D 打印机设备页">
@@ -155,6 +156,21 @@
        进料 3 步：加热喷嘴温度 → 抽回当前耗材 → 送出新耗材
        退料 2 步：加热喷嘴温度 → 退出当前耗材（步骤条第 3 点为「退料完成」态）
        ========================================================================== -->
+  <section id="filament-guide-screen" class="fg-screen" hidden tabindex="-1" aria-labelledby="filament-guide-title">
+    <div class="fo-statusbar" aria-hidden="true"><span>9:41</span><span>▮▮▮  ▰</span></div>
+    <header class="fg-nav"><button id="filament-guide-back" type="button" aria-label="返回工作台">‹</button><h1 id="filament-guide-title">安装耗材</h1></header>
+    <div class="fg-body">
+      <figure class="fg-media"><img id="filament-guide-art" src="assets/filament-install-guide.svg" alt="手动将料盘耗材推入料管的示意图"><button id="filament-guide-video" class="fg-gradient" type="button">▷ 查看视频</button></figure>
+      <div class="fg-copy"><h2 id="filament-guide-subtitle">安装耗材步骤</h2><ol id="filament-guide-steps">
+        <li>取耗材放在料架上，注意耗材摆放方向，确保耗材沿顺时针方向抽出</li>
+        <li>将耗材前端剪出斜口，轻轻捋直</li>
+        <li>向上挤压橙色把手，同时将耗材持续推入下方孔中，直到耗材到达打印头为止</li>
+        <li>点击进料</li>
+      </ol><p id="filament-remove-copy" hidden>点击开始退料后观察料管中耗材是否被送出，当耗材被送出后手动将耗材完整抽出即完成退料。</p></div>
+    </div>
+    <footer class="fg-footer"><button id="filament-guide-start" class="fg-gradient" type="button">进料</button></footer>
+  </section>
+  <dialog id="filament-video-dialog" class="fg-video-dialog" aria-labelledby="filament-video-title"><h2 id="filament-video-title">安装耗材 · 动画演示</h2><div class="fg-video-animation"><img id="filament-video-art" src="assets/filament-install-guide.svg" alt="耗材操作动画示意"><span>↑</span></div><p id="filament-video-caption">向上挤压橙色把手，持续推入耗材，直至到达打印头。</p><small>原型动画演示 · 正式教程视频待接入</small><button id="filament-video-close" class="fg-gradient" type="button">关闭</button></dialog>
   <section id="filament-operation-screen" class="fo-screen" data-operation="feed" data-step="1" data-phase="running" hidden tabindex="-1" aria-label="进料中">
     <div class="fo-statusbar" aria-hidden="true">
       <span>9:41</span>
@@ -715,7 +731,7 @@
       <div id="prepare-state-stage" class="reuse-stage prepare-page" style="--reuse-ratio: 311 / 675">
         <div class="prepare-statusbar" aria-hidden="true"><strong>9:41</strong><span class="prepare-island"></span><span class="prepare-status-icons">▂▄▆ <svg viewBox="0 0 20 16"><path d="M2 5Q10-2 18 5M5 8Q10 3 15 8M8 11Q10 9 12 11"/><circle cx="10" cy="14" r="1"/></svg><span class="prepare-battery"></span></span></div>
         <header class="prepare-header"><button id="prepare-state-back" class="prepare-back" type="button" aria-label="返回打印页面">←</button><h1>准备打印</h1></header>
-        <div class="prepare-printer"><img src="assets/准备打印-打印机.png" alt="Ugee Funbox 打印机"><div><strong>Ugee Funbox</strong><span class="prepare-idle"><i aria-hidden="true"></i>空闲</span><span id="printer-busy-patch" class="printer-busy-patch" hidden><span class="printer-busy-dot" aria-hidden="true"></span>忙碌</span></div></div>
+        <div class="prepare-printer"><img src="assets/准备打印-打印机.png" alt="Ugee Funbox 打印机"><div><strong>Ugee Funbox</strong><span class="prepare-idle"><i aria-hidden="true"></i>空闲</span><span id="printer-busy-patch" class="printer-busy-patch" hidden><span class="printer-busy-dot" aria-hidden="true"></span>忙碌</span></div><button id="prepare-state-switch-printer" class="prepare-switch" type="button" aria-label="切换或添加打印机">切换</button></div>
         <h2 class="prepare-section-title">选择要打印的盘</h2>
         <div  class="state-plate-list" role="listbox" aria-label="选择要打印的盘">
           <div class="state-row prepare-plate" data-row="1" role="option" aria-selected="false">
@@ -1031,6 +1047,6 @@
       </div>
     </form>
   </dialog>
-  <script src="prototype.js?v=r013"></script>
+  <script src="prototype.js?v=r015"></script>
 </body>
 </html>

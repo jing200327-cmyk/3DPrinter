@@ -1,0 +1,26 @@
+/* Manual filament instructions share the device frame and existing operation flow. */
+.fg-screen { position:fixed; z-index:35; top:var(--frame-top); left:50%; transform:translateX(-50%); width:min(100vw,var(--device-width)); height:var(--frame-height); background:#fff; display:flex; flex-direction:column; color:#242937; }
+.fg-screen[hidden], .fg-screen [hidden] { display:none!important; }
+.fg-screen:focus { outline:0; }
+.fg-nav { display:grid; grid-template-columns:48px 1fr 48px; align-items:center; height:48px; flex:none; padding:0 12px; }
+.fg-nav h1 { margin:0; text-align:center; font-size:18px; font-weight:600; }
+.fg-nav button { border:0; background:transparent; font-size:34px; height:44px; cursor:pointer; }
+.fg-body { flex:1; overflow:auto; min-height:0; }
+.fg-media { position:relative; margin:8px 16px 0; height:calc(var(--frame-height) * .35); overflow:hidden; border-radius:18px; background:#f0f1ff; }
+.fg-media img { width:100%; height:100%; object-fit:contain; }
+.fg-gradient { border:0; border-radius:999px; background:linear-gradient(90deg,#7654ee,#3a80f3); color:#fff; font-weight:600; cursor:pointer; }
+.fg-media button { position:absolute; right:12px; top:12px; padding:9px 13px; font-size:12px; }
+.fg-copy { padding:20px 22px 12px; }
+.fg-copy h2 { margin:0 0 17px; font-size:16px; }
+.fg-copy ol { list-style:none; counter-reset:step; margin:0; padding:0; display:grid; gap:15px; }
+.fg-copy li { position:relative; padding-left:34px; font-size:13px; line-height:1.7; color:#555e70; counter-increment:step; }
+.fg-copy li:before { content:counter(step); position:absolute; left:0; top:0; width:23px; height:23px; display:grid; place-items:center; border-radius:50%; color:#6d5de5; background:#efedff; font-weight:700; }
+.fg-copy p { font-size:15px; line-height:1.9; color:#555e70; margin:0; }
+.fg-footer { flex:none; padding:12px 24px max(20px,env(safe-area-inset-bottom)); border-top:1px solid #f0f1f5; background:#fff; }
+.fg-footer button { width:100%; min-height:50px; font-size:16px; }
+.fg-video-dialog { width:min(90vw,355px); border:0; border-radius:22px; padding:22px; color:#242937; }
+.fg-video-dialog::backdrop { background:#151b2b88; }
+.fg-video-dialog h2 { font-size:18px; margin:0 0 18px; }.fg-video-dialog p { font-size:14px; line-height:1.7; }.fg-video-dialog small { display:block; color:#818898; margin-bottom:18px; font-size:11px; }.fg-video-dialog button { min-height:44px; width:100%; }
+.fg-video-animation { position:relative; }.fg-video-animation img { width:100%; border-radius:16px; }.fg-video-animation span { position:absolute; left:63%; top:54%; font-size:40px; color:#7654ee; animation:filament-motion 1.6s infinite; }
+@keyframes filament-motion { 0%,100% { transform:translateY(8px); opacity:.35; } 50% { transform:translateY(-10px); opacity:1; } }
+@media(prefers-reduced-motion:reduce) { .fg-video-animation span { animation:none; } }

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="750" height="580" viewBox="0 0 750 580" fill="none">
+<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#F1EFFF"/><stop offset="1" stop-color="#EAF4FF"/></linearGradient><linearGradient id="spool" x2="1" y2="1"><stop stop-color="#9384F8"/><stop offset="1" stop-color="#546FE9"/></linearGradient><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10" fill="#665DE5"/></marker></defs>
+<rect width="750" height="580" rx="28" fill="url(#bg)"/><ellipse cx="363" cy="482" rx="280" ry="22" fill="#DCE2F3"/>
+<!-- Spool on a stable rack -->
+<path d="M120 462L150 359H255L281 462" stroke="#8C98B0" stroke-width="17" stroke-linejoin="round"/><rect x="104" y="460" width="193" height="17" rx="8" fill="#73819C"/>
+<ellipse cx="216" cy="321" rx="89" ry="112" fill="#5768CB"/><path d="M181 218H218C260 218 285 263 285 321S260 424 218 424H181" fill="url(#spool)"/>
+<ellipse cx="179" cy="321" rx="83" ry="111" fill="#A599FC" stroke="#786BE3" stroke-width="5"/><ellipse cx="179" cy="321" rx="61" ry="84" fill="#7B6ADE"/><ellipse cx="179" cy="321" rx="42" ry="62" stroke="#B9ADFF" stroke-width="18"/><ellipse cx="179" cy="321" rx="15" ry="24" fill="#E5E8F6"/>
+<!-- Tube, extruder, orange release lever and printhead -->
+<path d="M500 225V130Q500 89 546 89Q591 89 591 135V305" stroke="#B3BDCE" stroke-width="21"/><path d="M500 225V130Q500 89 546 89Q591 89 591 135V305" stroke="#FDFEFF" stroke-width="11"/>
+<rect x="451" y="212" width="101" height="100" rx="21" fill="#FFF" stroke="#9CA8BF" stroke-width="4"/><rect x="465" y="234" width="70" height="18" rx="8" fill="#F18A37"/><path d="M499 308V353" stroke="#A5B0C4" stroke-width="15"/><rect x="551" y="303" width="80" height="112" rx="13" fill="#D5DBE8" stroke="#A4AFC4" stroke-width="4"/><path d="M567 323H615M567 337H615M567 351H615" stroke="#95A1B7" stroke-width="5" stroke-linecap="round"/><path d="M578 415H606L598 433H587Z" fill="#E5A14F"/>
+<!-- Filament entering lower hole -->
+<path d="M239 255Q336 167 369 302Q386 371 442 362L500 351V273" stroke="#665DE5" stroke-width="6" stroke-linecap="round"/>
+<!-- Hand gripping the filament with thumb at release lever -->
+<path d="M700 416L648 391L613 359L563 344L535 333L519 315Q511 306 502 312Q494 318 501 329L516 350L475 337L443 328Q430 324 427 336Q425 345 438 350L474 364L440 355Q426 352 424 364Q424 373 438 378L470 390L449 385Q436 383 435 394Q437 404 450 408L499 425L533 445Q554 458 576 452L614 444L671 480" fill="#FFDCC6" stroke="#DBA889" stroke-width="4" stroke-linejoin="round"/>
+<path d="M518 350L546 366M474 364L501 374M470 390L493 398" stroke="#DBA889" stroke-width="3" stroke-linecap="round"/>
+<path d="M485 388Q402 433 332 396" stroke="#665DE5" stroke-width="5" marker-end="url(#arrow)"/><text x="294" y="461" font-family="Microsoft YaHei" font-size="21" fill="#665DE5">手动完整抽出</text>
+<g font-family="Microsoft YaHei, sans-serif" font-size="20" fill="#68758F"><text x="118" y="520">耗材料盘</text><text x="553" y="473">打印头</text><text x="407" y="194">橙色把手</text></g>
+</svg>

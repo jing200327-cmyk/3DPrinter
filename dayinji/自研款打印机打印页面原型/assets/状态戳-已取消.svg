@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">已取消</title>
+  <g transform="rotate(-10 64 64)" fill="#ed757b" stroke="#ed757b" opacity=".88">
+    <circle cx="64" cy="64" r="59" fill="none" stroke-width="4"/>
+    <circle cx="64" cy="64" r="52" fill="none" stroke-width="1.7"/>
+    <path d="M15 43H113M15 88H113" fill="none" stroke-width="3"/>
+    <path d="m64 18 2.4 6.8h7.2l-5.8 4.2 2.2 6.8-6-4.2-6 4.2 2.2-6.8-5.8-4.2h7.2z" stroke="none"/>
+    <text x="64" y="77" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="31" font-weight="900" stroke="none">已取消</text>
+    <text x="64" y="108" text-anchor="middle" font-family="sans-serif" font-size="16" letter-spacing="3" stroke="none">★★★</text>
+  </g>
+</svg>

@@ -536,17 +536,14 @@ function openReference(fileName, title, returnTarget = queueToggle) {
 }
 
 /* ---------- 任务状态版的准备打印页 ---------- */
-/* 与空闲版复用同一套底图 + 盘行切片（模型缩略图 + 预计时间 + 耗材克重 + 色卡），
-   正在打印 / 已取消 / 已打印的状态戳按“当前任务盘”定位，不再烘焙死在盘 1：
+/* 与新版准备打印页复用同一套 HTML 结构与模型、耗材素材，
+   正在打印 / 已取消 / 已完成的状态戳放入“当前任务盘”的真实行容器：
    无论哪一盘在打印，队列里其它盘（含盘 1）点进来都能正确复用。 */
 const PREPARE_STATE_STAMPS = {
   printing: { src: 'assets/状态戳-正在打印.png', alt: '正在打印' },
-  cancelled: { src: 'assets/状态戳-已取消.png', alt: '已取消' },
-  completed: { src: 'assets/状态戳-已打印.png', alt: '已打印' }
+  cancelled: { src: 'assets/状态戳-已取消.svg', alt: '已取消' },
+  completed: { src: 'assets/状态戳-已完成.svg', alt: '已完成' }
 };
-/* 状态戳位置：按 407×869 原图量取（圆心 x 200/407、y 盘行中心），宽 114/407 ≈ 28% */
-const STATE_STAMP_LEFT = 49.15;
-const STATE_ROW_CENTERS = { 1: 36.148, 2: 53.926, 3: 71.852 };
 let selectedStateRow = '2';
 let stampedPlate = null;
 
@@ -584,8 +581,7 @@ function openPrepareStateScreen(preferredPlate) {
   if (stampedPlate) {
     stateStampImage.src = stamp.src;
     stateStampImage.alt = `${plateCatalog[stampedPlate].title}，${stamp.alt}`;
-    stateStampImage.style.left = `${STATE_STAMP_LEFT}%`;
-    stateStampImage.style.top = `${STATE_ROW_CENTERS[stampedPlate]}%`;
+    stateRows.find((row) => row.dataset.row === stampedPlate).append(stateStampImage);
     stateStampImage.hidden = false;
   } else {
     stateStampImage.hidden = true;
@@ -1215,6 +1211,7 @@ renderPlateSelection();
 setFirmwareUpdateAvailable(true);
 /* 准备打印页打印机卡片右侧的“切换” → 添加打印机页 */
 document.querySelector('#prepare-switch-printer').addEventListener('click', () => openReuseScreen('addPrinter'));
+document.querySelector('#prepare-state-switch-printer').addEventListener('click', () => openReuseScreen('addPrinter'));
 document.querySelector('#model-detail-back').addEventListener('click', goBackInReuseScreens);
 document.querySelector('#prepare-print-back').addEventListener('click', goBackInReuseScreens);
 
@@ -1557,16 +1554,18 @@ function foFinish() {
   showToast(operation === 'feed' ? '进料完成' : '退料完成');
 }
 
-/* 点击进料：进入进料中页面（面板切到“进料中”） */
+/* 先阅读安装说明；正在进料时仍可直接查看进度。 */
 loadFilamentButton.addEventListener('click', () => {
   if (loadFilamentButton.disabled) return;
-  foEnter('feed');
+  if (foState.running) foEnter('feed');
+  else openFilamentGuide('feed');
 });
 
-/* 进料完成后点击退料：进入退料中页面（面板切到“退料中”） */
+/* 先阅读退出说明；正在退料时仍可直接查看进度。 */
 unloadFilamentButton.addEventListener('click', () => {
   if (unloadFilamentButton.disabled) return;
-  foEnter('retract');
+  if (foState.running) foEnter('retract');
+  else openFilamentGuide('retract');
 });
 
 /* 回退：不中断进程 */
@@ -2336,3 +2335,43 @@ window.__sharePrinter = {
   poolSize: shareCodePool.length,
   scenarioKeys: SHARE_DEMO_SCENARIOS.map((item) => item.key)
 };
+
+/* Manual preparation precedes the existing filament-operation state machine. */
+const filamentGuide = document.querySelector('#filament-guide-screen');
+const filamentVideo = document.querySelector('#filament-video-dialog');
+let filamentGuideOperation = 'feed';
+function openFilamentGuide(operation) {
+  filamentGuideOperation = operation;
+  const installing = operation === 'feed';
+  const title = installing ? '安装耗材' : '退出耗材';
+  const art = installing ? 'assets/filament-install-guide.svg' : 'assets/filament-remove-guide.svg';
+  document.querySelector('#filament-guide-title').textContent = title;
+  document.querySelector('#filament-guide-subtitle').textContent = installing ? '安装耗材步骤' : '退出耗材说明';
+  document.querySelector('#filament-guide-art').src = art;
+  document.querySelector('#filament-guide-art').alt = installing ? '手动将料盘耗材推入料管的示意图' : '耗材送出后用手将耗材完整抽出的示意图';
+  document.querySelector('#filament-video-art').src = art;
+  document.querySelector('.fg-video-animation span').textContent = installing ? '↑' : '←';
+  document.querySelector('#filament-video-title').textContent = title + ' · 动画演示';
+  document.querySelector('#filament-video-caption').textContent = installing ? '向上挤压橙色把手，持续推入耗材，直至到达打印头。' : '点击开始退料，等待料管中的耗材送出，再手动完整抽出。';
+  document.querySelector('#filament-guide-steps').hidden = !installing;
+  document.querySelector('#filament-remove-copy').hidden = installing;
+  document.querySelector('#filament-guide-start').textContent = installing ? '进料' : '开始退料';
+  filamentGuide.hidden = false;
+  devicePage.inert = true;
+  filamentGuide.querySelector('.fg-body').scrollTop = 0;
+  filamentGuide.focus({ preventScroll: true });
+}
+function closeFilamentGuide() {
+  filamentGuide.hidden = true;
+  devicePage.inert = false;
+}
+document.querySelector('#filament-guide-back').addEventListener('click', closeFilamentGuide);
+document.querySelector('#filament-guide-start').addEventListener('click', () => {
+  closeFilamentGuide();
+  filamentSpoolSelected = true;
+  foEnter(filamentGuideOperation);
+});
+document.querySelector('#filament-guide-video').addEventListener('click', () => filamentVideo.showModal());
+document.querySelector('#filament-video-close').addEventListener('click', () => filamentVideo.close());
+if (params.get('screen') === 'install-filament') openFilamentGuide('feed');
+if (params.get('screen') === 'remove-filament') openFilamentGuide('retract');

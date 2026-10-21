@@ -244,3 +244,11 @@ node .\tests\check-offline-page.mjs
 地址：https://jing200327-cmyk.github.io/3DPrinter/ 。发布源为同仓库 gh-pages 根目录，保留配网/打印原型相对路径；已确认 built、HTTPS，线上 UG-01/UG-02 专项通过。无 HTTP 代理测试存在成功和连接失败，不能保证国内所有网络稳定直连。详见 ../../_memory/GITHUB_PAGES.md。
 
 设置 PRINTER_PAGE_URL 为完整打印页面 URL 后，可运行 tests/add-printer-e2e.mjs 进行线上复验；默认仍验证本地 index.html。脚本显式导航并等待 load，避免测试抢在页面导航完成前执行。
+
+## 2026-10-21 耗材操作引导
+
+- 耗材面板「进料」「退料」先进入安装耗材／退出耗材页，底部按钮启动原有进退料状态机。正在运行时再次点击面板按钮继续查看进度，不重新计时。
+- 两页插画高度均为设备框高度的 35%，带手动操作示意与紫蓝渐变「查看视频」按钮；返回按钮回到工作台。
+- 视频入口展示原型动画演示，明确标注正式教程视频待接入。
+- 深链：`?screen=install-filament`、`?screen=remove-filament`。
+- 验收：`node tests/filament-hotspot-e2e.cjs`，同时验证配网跨原型跳转。
