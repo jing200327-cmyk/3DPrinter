@@ -2513,7 +2513,7 @@ try {
   const cancelView = cancelRun.result.value;
   assert(cancelView.running.primary === '取消', 'A running operation must offer 取消.');
   assert(cancelView.dialog.open && cancelView.dialog.title === '取消进料？', `取消 must ask for confirmation: ${JSON.stringify(cancelView.dialog)}`);
-  assert(cancelView.dialog.copy.indexOf('停止进料') !== -1 && cancelView.dialog.confirm === '取消进料' && cancelView.dialog.dismiss === '继续进料', `Cancel dialog copy is wrong: ${JSON.stringify(cancelView.dialog)}`);
+  assert(cancelView.dialog.copy === '取消后将停止当前进料流程。喷嘴可能仍处于高温状态，请注意安全。' && cancelView.dialog.confirm === '取消进料' && cancelView.dialog.dismiss === '继续进料', `Cancel dialog copy is wrong: ${JSON.stringify(cancelView.dialog)}`);
   assert(!cancelView.afterDismiss.open && cancelView.afterDismiss.running && cancelView.afterDismiss.visible, '继续进料 must resume the process without leaving the page.');
   assert(!cancelView.afterConfirm.open && cancelView.afterConfirm.hidden && cancelView.afterConfirm.deviceInteractive, 'Confirming 取消进料 must abort and return to the printer page.');
   assert(cancelView.afterConfirm.panelStatus === '退料完成' && !cancelView.afterConfirm.running, `Aborting a feed must restore the panel state from before that feed: ${JSON.stringify(cancelView.afterConfirm)}`);

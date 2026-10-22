@@ -1579,7 +1579,7 @@ filamentOperationPrimary.addEventListener('click', () => {
   }
   const operationName = foState.operation === 'feed' ? '进料' : '退料';
   filamentCancelTitle.textContent = `取消${operationName}？`;
-  filamentCancelCopy.textContent = `取消后将停止${operationName}，喷嘴会保持在当前温度。需要时可以重新发起一次。`;
+  filamentCancelCopy.textContent = `取消后将停止当前${operationName}流程。喷嘴可能仍处于高温状态，请注意安全。`;
   filamentCancelDialog.querySelector('#filament-cancel-dismiss').textContent = `继续${operationName}`;
   filamentCancelDialog.querySelector('#filament-cancel-confirm').textContent = `取消${operationName}`;
   filamentCancelDialog.showModal();
