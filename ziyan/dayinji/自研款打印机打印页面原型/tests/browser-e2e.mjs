@@ -2164,14 +2164,14 @@ try {
       };
     })()`
   });
-  assert(singlePlatePrinting.result.value.queueToggleHidden && singlePlatePrinting.result.value.queueCount === 0, `单盘模型不应有打印队列: ${JSON.stringify(singlePlatePrinting.result.value)}`);
-  assert(singlePlatePrinting.result.value.dialogOpen && singlePlatePrinting.result.value.title === '是否取消任务' && singlePlatePrinting.result.value.dismiss === '暂不' && singlePlatePrinting.result.value.confirm === '取消任务', `单盘取消弹窗应为「暂不 / 取消任务」: ${JSON.stringify(singlePlatePrinting.result.value)}`);
-  await cdp.send('Runtime.evaluate', { expression: `document.querySelector('#dialog-close').click()` });
+  assert(!singlePlatePrinting.result.value.queueToggleHidden && singlePlatePrinting.result.value.queueCount === 0, `单盘模型应显示空队列: ${JSON.stringify(singlePlatePrinting.result.value)}`);
+  assert(singlePlatePrinting.result.value.dialogOpen && singlePlatePrinting.result.value.title === '是否要取消任务' && singlePlatePrinting.result.value.dismiss === '暂不' && singlePlatePrinting.result.value.confirm === '取消任务', `单盘取消弹窗应为「暂不 / 取消任务」: ${JSON.stringify(singlePlatePrinting.result.value)}`);
+  await cdp.send('Runtime.evaluate', { expression: `document.querySelector('#dialog-dismiss').click()` });
   await delay(120);
   const singleCancelDismissed = await cdp.send('Runtime.evaluate', { returnByValue: true, expression: `({ status: document.querySelector('#task-panel').dataset.status, dialogOpen: document.querySelector('#action-dialog').open })` });
   assert(!singleCancelDismissed.result.value.dialogOpen && singleCancelDismissed.result.value.status === 'printing', `暂不应保持打印中: ${JSON.stringify(singleCancelDismissed.result.value)}`);
   await cdp.send('Runtime.evaluate', { expression: `document.querySelector('#cancel-print').click(); document.querySelector('#dialog-confirm').click()` });
-  await waitFor(cdp, `document.querySelector('#task-panel').dataset.status === 'cancelled'`, '单盘取消任务未落地到已取消');
+  await waitFor(cdp, `document.querySelector('#task-panel').dataset.status === 'cancelled-all'`, '单盘取消任务未落地到已取消');
 
   await cdp.send('Page.navigate', { url: `${pageUrl}?plates=single&status=completed` });
   await delay(700);

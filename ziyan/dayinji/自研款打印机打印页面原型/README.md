@@ -253,3 +253,9 @@ node .\tests\check-offline-page.mjs
 - 视频入口展示原型动画演示，明确标注正式教程视频待接入。
 - 深链：`?screen=install-filament`、`?screen=remove-filament`。
 - 验收：`node tests/filament-hotspot-e2e.cjs`，同时验证配网跨原型跳转。
+
+## 2026-10-22 模型模拟控制台
+
+- 桌面右侧提供“单盘模型模拟”和“多盘模型模拟”，切换后清空上一组演示状态，从盘 1 的打印中开始；小窗口通过“模拟控制台”展开选择。第三项“多账号下的多盘模型模拟”保留并禁用，本次不接入。
+- 单盘模式仅有一盘，队列为空。取消弹窗左“暂不”、右“取消任务”；暂不及右上关闭只关弹窗，实际打印继续。确认取消后等待原有取消中流程结束，显示“已取消打印任务”、探索玩具／我的模型和空队列，与多盘取消全部共用后续面板。
+- 验收：`node tests/simulation-console-e2e.cjs`；原多盘流程由 `node tests/task-queue-e2e.cjs` 回归。

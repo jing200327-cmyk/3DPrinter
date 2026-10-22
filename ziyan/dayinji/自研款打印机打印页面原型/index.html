@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="styles-filament-operation.css?v=r008">
   <link rel="stylesheet" href="styles-3d-preview.css?v=r008">
   <link rel="stylesheet" href="styles-prepare-print.css?v=r003">
+  <link rel="stylesheet" href="styles-simulation.css?v=r001">
   <link rel="stylesheet" href="styles-filament-guide.css?v=1">
 </head>
 <body>
@@ -990,6 +991,18 @@
     </div>
   </section>
 
+  <details id="simulation-console" class="prototype-console" open>
+    <summary>模拟控制台</summary>
+    <div class="simulation-content">
+      <p>切换选项后，从打印中状态开始演示。</p>
+      <div class="simulation-options" role="radiogroup" aria-label="打印任务模拟方式">
+        <button id="simulate-single" type="button" role="radio" aria-checked="false" data-simulation-mode="single">单盘模型模拟</button>
+        <button id="simulate-multi" type="button" role="radio" aria-checked="true" data-simulation-mode="multi">多盘模型模拟</button>
+        <button id="simulate-family" type="button" role="radio" aria-checked="false" disabled><span>多账号下的多盘模型模拟<small>暂未实现</small></span></button>
+      </div>
+    </div>
+  </details>
+
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <!-- 设备框内的细滚动指示条：不占布局宽度，只在内容超出 812 高时滚动出现 -->
@@ -1053,6 +1066,7 @@
       </div>
     </form>
   </dialog>
-  <script src="prototype.js?v=r018"></script>
+  <script src="prototype.js?v=r019"></script>
+  <script src="prototype-simulation.js?v=r001"></script>
 </body>
 </html>
