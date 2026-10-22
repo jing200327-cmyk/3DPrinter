@@ -284,6 +284,10 @@ function cancelTasksForActiveRole() {
   familyQueueTasks = familyQueueTasks.filter(task => task.submission !== submission);
 }
 
+function shouldShowEmptyQueue(status = currentStatus) {
+  return familyQueueTasks.length === 0 && (status === 'cancelled-all' || (isSinglePlateModel && !['ready', 'preparing'].includes(status)));
+}
+
 function renderPlateTaskAndQueue() {
   const activeTaskIsGirl = activeGirlTaskId !== null;
   const visibleQueueTasks = getVisibleQueueTasks();
@@ -334,7 +338,7 @@ function renderPlateTaskAndQueue() {
     }
   });
   queueToggle.querySelector('small').textContent = `${visibleQueueTasks.length} 个待打印任务`;
-  const showEmpty = currentStatus === 'cancelled-all' && visibleQueueTasks.length === 0;
+  const showEmpty = shouldShowEmptyQueue();
   queueEmpty.hidden = !showEmpty;
   queueToggle.disabled = showEmpty;
   queueToggle.hidden = visibleQueueTasks.length === 0 && !showEmpty;
@@ -455,6 +459,7 @@ function renderPrinterConnectionState(taskStatus) {
 }
 
 function setTaskStatus(status) {
+  if (isSinglePlateModel && status === 'cancelled') status = 'cancelled-all';
   if (status === 'cancelled-all') cancelTasksForActiveRole();
   if (status === 'completed') {
     taskResults.set(activeTaskId, 'completed');
@@ -501,7 +506,7 @@ function setTaskStatus(status) {
   nextPlateButton.disabled = familyQueueTasks.length === 0;
   localFileButton.hidden = status !== 'completed' || !allCompleted;
   completionActions.classList.remove('is-single');
-  const showEmpty = status === 'cancelled-all' && familyQueueTasks.length === 0;
+  const showEmpty = shouldShowEmptyQueue(status);
   queueToggle.hidden = isReady || isPreparing || (familyQueueTasks.length === 0 && !showEmpty);
   if (isCancelled && !queueToggle.hidden) {
     queueToggle.setAttribute('aria-expanded', 'true');
@@ -740,7 +745,7 @@ cameraToggleButton.addEventListener('click', toggleCamera);
 cancelButton.addEventListener('click', () => {
   /* 单盘模型：弹窗提供「暂不 / 取消任务」；多盘模型：提供「取消当前任务 / 取消全部任务」+ 右上角关闭 */
   openDialog(isSinglePlateModel
-    ? { title: '是否取消任务', dismissText: '暂不', dismissTone: 'neutral', confirmText: '取消任务', confirmTone: 'danger', action: 'cancel-print' }
+    ? { title: '是否要取消任务', dismissText: '暂不', dismissTone: 'danger-ghost', confirmText: '取消任务', confirmTone: 'danger', action: 'cancel-print' }
     : { title: '是否要取消任务', dismissText: '取消当前任务', dismissTone: 'danger-ghost', confirmText: '取消全部任务', confirmTone: 'danger', action: 'cancel-print' });
 });
 
@@ -1167,7 +1172,8 @@ document.querySelector('#open-prepare-print').addEventListener('click', () => {
 /* HTML 盘行保留原来的槽位几何，拖动直接更新整张 DOM 卡片的位置。 */
 const plateSlotCenters = [0.28148, 0.45926, 0.63852].map(top => top + 0.08);
 const plateRows = [...plateList.querySelectorAll('.plate-row')];
-let plateOrder = plateRows.map((row) => row.dataset.plate);
+let plateOrder = plateRows.filter(row => modelPlateIds.includes(row.dataset.plate)).map(row => row.dataset.plate);
+plateRows.forEach(row => { row.hidden = !modelPlateIds.includes(row.dataset.plate); });
 let selectedPlate = '1';
 let plateDrag = null;
 let suppressPlateClick = false;
@@ -1718,7 +1724,7 @@ dialog.addEventListener('close', () => {
       if (isSinglePlateModel) {
         /* 单盘模型：取消任务即整个任务结束，进入已取消打印任务状态 */
         runTransition('取消中...', swapCancelling, () => {
-          setTaskStatus('cancelled');
+          setTaskStatus('cancelled-all');
           showToast('已取消打印任务');
         });
       } else {
@@ -1728,7 +1734,7 @@ dialog.addEventListener('close', () => {
           showToast(`已取消${getActiveTaskOwner() === 'girl' ? '女孩' : '男孩'}的全部打印任务`);
         });
       }
-    } else if (dialog.returnValue === 'cancel') {
+    } else if (dialog.returnValue === 'cancel' && !isSinglePlateModel) {
       runTransition('取消中...', swapCancelling, () => {
         setTaskStatus('cancelled');
         showToast('已取消当前打印任务');
