@@ -353,7 +353,7 @@ $requiredBehaviors = @(
     "journey: 'v3'",
     'const queuePlateIds',
     'const completedPlates',
-    'const PREPARATION_DURATION_SECONDS = 30',
+    'const PREPARATION_DURATION_SECONDS = 26',
     'const PREPARATION_STAGES',
     'advancePreparation',
     "let currentStatus = 'ready'",

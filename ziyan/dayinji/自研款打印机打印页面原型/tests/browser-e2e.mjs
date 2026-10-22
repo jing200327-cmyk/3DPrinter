@@ -1505,15 +1505,13 @@ try {
       advancePreparation();
       const calibration = readStage();
       for (let index = 0; index < 4; index += 1) advancePreparation();
-      const wiping = readStage();
-      for (let index = 0; index < 4; index += 1) advancePreparation();
       const homing = readStage();
       for (let index = 0; index < 4; index += 1) advancePreparation();
       const leveling = readStage();
       for (let index = 0; index < 4; index += 1) advancePreparation();
       const heating = readStage();
       for (let index = 0; index < 4; index += 1) advancePreparation();
-      const afterThirtySeconds = {
+      const afterPreparation = {
         status: document.querySelector('#task-panel').dataset.status,
         preparingHidden: document.querySelector('#preparation-progress').hidden,
         countdownVisible: !document.querySelector('#remaining-time').hidden,
@@ -1525,11 +1523,11 @@ try {
         connectionLabel: document.querySelector('#printer-connection-state-label').textContent,
         connectionImageHidden: document.querySelector('#printer-connection-state-image').hidden
       };
-      return { initial, analysisProgress, analysisComplete, stages: [calibration, wiping, homing, leveling, heating], afterThirtySeconds };
+      return { initial, analysisProgress, analysisComplete, stages: [calibration, homing, leveling, heating], afterPreparation };
     })()`
   });
   const preparing = preparation.result.value;
-  assert(preparing.initial.duration === 30 && preparing.initial.status === 'preparing' && preparing.initial.taskState === '准备中' && preparing.initial.progressState === '准备打印', `Initial preparation state is incorrect: ${JSON.stringify(preparing.initial)}`);
+  assert(preparing.initial.duration === 26 && preparing.initial.status === 'preparing' && preparing.initial.taskState === '准备中' && preparing.initial.progressState === '准备打印', `Initial preparation state is incorrect: ${JSON.stringify(preparing.initial)}`);
   assert(preparing.initial.preparingVisible && preparing.initial.taskPercentHidden && preparing.initial.countdownHidden && preparing.initial.printProgressHidden, 'Preparation content did not replace printing progress and countdown.');
   assert(preparing.initial.finishHidden && preparing.initial.pauseHidden && preparing.initial.queueHidden && preparing.initial.cancelVisible && preparing.initial.cancelCenterDelta <= 2, 'Preparation actions or queue visibility is incorrect.');
   assert(preparing.initial.connectionStatus === 'busy' && preparing.initial.connectionLabel === '忙碌' && preparing.initial.connectionImageHidden, `Preparing state did not expose the source busy indicator: ${JSON.stringify(preparing.initial)}`);
@@ -1538,9 +1536,9 @@ try {
   assert(preparing.initial.stage.label === '正在分析模型' && !preparing.initial.stage.percentHidden && preparing.initial.stage.percent === '0%', 'Analysis stage must begin at 0%.');
   assert(preparing.analysisProgress.length === 10 && preparing.analysisProgress.every((value, index, values) => index === 0 || value > values[index - 1]), `Analysis progress must rise in distinct jumps: ${JSON.stringify(preparing.analysisProgress)}`);
   assert(preparing.analysisComplete.label === '正在分析模型' && preparing.analysisComplete.percent === '100%' && !preparing.analysisComplete.percentHidden, 'Analysis progress must jump to 100% before the next stage.');
-  assert(JSON.stringify(preparing.stages.map(stage => stage.label)) === JSON.stringify(['校准中', '擦嘴中', '归零中', '调平中', '升温中']) && preparing.stages.every(stage => stage.percentHidden), `Preparation stage order or percent visibility is incorrect: ${JSON.stringify(preparing.stages)}`);
-  assert(preparing.afterThirtySeconds.status === 'printing' && preparing.afterThirtySeconds.preparingHidden && preparing.afterThirtySeconds.countdownVisible && preparing.afterThirtySeconds.printProgressVisible && preparing.afterThirtySeconds.finishVisible && preparing.afterThirtySeconds.pauseVisible && preparing.afterThirtySeconds.queueVisible, `Preparation did not switch to printing after 30 seconds: ${JSON.stringify(preparing.afterThirtySeconds)}`);
-  assert(preparing.afterThirtySeconds.connectionStatus === 'busy' && preparing.afterThirtySeconds.connectionLabel === '忙碌' && preparing.afterThirtySeconds.connectionImageHidden, `Printing transition did not keep the source busy indicator: ${JSON.stringify(preparing.afterThirtySeconds)}`);
+  assert(JSON.stringify(preparing.stages.map(stage => stage.label)) === JSON.stringify(['校准中', '归零中', '调平中', '升温中']) && preparing.stages.every(stage => stage.percentHidden), `Preparation stage order or percent visibility is incorrect: ${JSON.stringify(preparing.stages)}`);
+  assert(preparing.afterPreparation.status === 'printing' && preparing.afterPreparation.preparingHidden && preparing.afterPreparation.countdownVisible && preparing.afterPreparation.printProgressVisible && preparing.afterPreparation.finishVisible && preparing.afterPreparation.pauseVisible && preparing.afterPreparation.queueVisible, `Preparation did not switch to printing after 26 seconds: ${JSON.stringify(preparing.afterPreparation)}`);
+  assert(preparing.afterPreparation.connectionStatus === 'busy' && preparing.afterPreparation.connectionLabel === '忙碌' && preparing.afterPreparation.connectionImageHidden, `Printing transition did not keep the source busy indicator: ${JSON.stringify(preparing.afterPreparation)}`);
 
   const evaluation = await cdp.send('Runtime.evaluate', {
     awaitPromise: true,
