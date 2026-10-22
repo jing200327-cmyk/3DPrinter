@@ -24,6 +24,8 @@ const pauseButton = document.querySelector('#pause-print');
 const cancelButton = document.querySelector('#cancel-print');
 const taskActions = document.querySelector('#task-actions');
 const completionActions = document.querySelector('#completion-actions');
+const cancelledModelActions = document.querySelector('#cancelled-model-actions');
+const queueEmpty = document.querySelector('#queue-empty');
 const restartPrintButton = document.querySelector('#restart-print');
 const nextPlateButton = document.querySelector('#next-plate');
 const localFileButton = document.querySelector('#local-file');
@@ -106,23 +108,31 @@ const modelPlateIds = isSinglePlateModel ? ['1'] : plateIds;
 const activePlate = modelPlateIds.includes(params.get('plate')) ? params.get('plate') : '1';
 const completedPlates = new Set((params.get('completed') || '').split(',').filter((plate) => plateIds.includes(plate)));
 const plateCatalog = {
-  1: { taskAsset: '选中要打印的盘1.jpg', queueAsset: '打印队列1.jpg', title: '史蒂夫_01_012214', duration: '5 h 15 min', grams: 62, seconds: 5 * 60 * 60 + 15 * 60 },
-  2: { taskAsset: '选择要打印的盘2（修改）.jpg', queueAsset: '打印队列2.jpg', title: '史蒂夫_02_012209', duration: '3 h 48 min', grams: 50, seconds: 3 * 60 * 60 + 48 * 60 },
-  3: { taskAsset: '选择要打印的盘3.jpg', queueAsset: '打印队列3.jpg', title: '史蒂夫_03_012207', duration: '1 h 35 min', grams: 20, seconds: 1 * 60 * 60 + 35 * 60 }
+  1: { taskAsset: '../../src/dayinji/选中要打印的盘1.jpg', queueAsset: '../../src/dayinji/打印队列1.jpg', title: '史蒂夫_01_012214', duration: '5 h 15 min', grams: 62, seconds: 5 * 60 * 60 + 15 * 60 },
+  2: { taskAsset: '../../src/dayinji/选择要打印的盘2（修改）.jpg', queueAsset: '../../src/dayinji/打印队列2.jpg', title: '史蒂夫_02_012209', duration: '3 h 48 min', grams: 50, seconds: 3 * 60 * 60 + 48 * 60 },
+  3: { taskAsset: '../../src/dayinji/选择要打印的盘3.jpg', queueAsset: '../../src/dayinji/打印队列3.jpg', title: '史蒂夫_03_012207', duration: '1 h 35 min', grams: 20, seconds: 1 * 60 * 60 + 35 * 60 }
 };
 const girlTaskCatalog = {
-  'girl-1': { id: 'girl-1', owner: 'girl', journey: 'v3', task: 'girl-1', taskAsset: '女孩的打印任务_1.jpg', queueAsset: '女孩的待打印任务__1.jpg', title: '女孩的打印任务 1', duration: '5 h 37 min', grams: 40, seconds: 5 * 60 * 60 + 37 * 60 },
-  'girl-2': { id: 'girl-2', owner: 'girl', journey: 'v3', task: 'girl-2', taskAsset: '女孩的打印任务_2.jpg', queueAsset: '女孩的待打印任务_2.jpg', title: '女孩的打印任务 2', duration: '48 min', grams: 5, seconds: 48 * 60 }
+  'girl-1': { id: 'girl-1', owner: 'girl', journey: 'v3', task: 'girl-1', taskAsset: '../../src/dayinjirenwukongzhi/女孩的打印任务_1.jpg', queueAsset: '../../src/dayinjirenwukongzhi/女孩的待打印任务__1.jpg', title: '女孩的打印任务 1', duration: '5 h 37 min', grams: 40, seconds: 5 * 60 * 60 + 37 * 60 },
+  'girl-2': { id: 'girl-2', owner: 'girl', journey: 'v3', task: 'girl-2', taskAsset: '../../src/dayinjirenwukongzhi/女孩的打印任务_2.jpg', queueAsset: '../../src/dayinjirenwukongzhi/女孩的待打印任务_2.jpg', title: '女孩的打印任务 2', duration: '48 min', grams: 5, seconds: 48 * 60 }
 };
 const activeGirlTaskId = Object.hasOwn(girlTaskCatalog, params.get('activeTask')) ? params.get('activeTask') : null;
 const activeTask = activeGirlTaskId ? girlTaskCatalog[activeGirlTaskId] : plateCatalog[activePlate];
 const activeTaskId = activeGirlTaskId || `plate-${activePlate}`;
-const queuePlateIds = modelPlateIds.filter((plate) => plate !== activePlate && !completedPlates.has(plate));
 const isFamilyQueue = params.get('family') === 'multi' || params.get('source') === 'journey-v3';
-let familyQueueTasks = [
-  ...queuePlateIds.map((plate) => ({ id: `plate-${plate}`, owner: 'boy', journey: 'v2', plate, ...plateCatalog[plate] })),
-  ...(isFamilyQueue && !isSinglePlateModel ? Object.values(girlTaskCatalog).filter((task) => task.id !== activeTaskId) : [])
-];
+const taskCatalog = Object.fromEntries([
+  ...modelPlateIds.map(plate => ({ id: `plate-${plate}`, owner: 'boy', submission: 'steve', journey: 'v2', plate, ...plateCatalog[plate] })),
+  ...Object.values(girlTaskCatalog).map(task => ({ ...task, submission: 'girl-model' }))
+].map(task => [task.id, task]));
+const taskResults = new Map([...completedPlates].map(plate => [`plate-${plate}`, 'completed']));
+try {
+  const savedResults = JSON.parse(params.get('results') || '{}');
+  for (const [id, result] of Object.entries(savedResults || {})) {
+    if (Object.hasOwn(taskCatalog, id) && ['completed', 'cancelled'].includes(result)) taskResults.set(id, result);
+  }
+} catch { /* 无效的演示链接按未保存状态加载。 */ }
+const initialQueueIds = params.has('queue') ? params.get('queue').split(',') : Object.keys(taskCatalog).filter(id => taskCatalog[id].owner === 'boy' || (isFamilyQueue && !isSinglePlateModel));
+let familyQueueTasks = [...new Set(initialQueueIds)].filter(id => Object.hasOwn(taskCatalog, id) && id !== activeTaskId && !taskResults.has(id)).map(id => taskCatalog[id]);
 const TOTAL_SECONDS = activeTask.seconds;
 const PREPARATION_DURATION_SECONDS = 26;
 const PREPARATION_STAGES = [
@@ -254,15 +264,30 @@ function getActiveTaskOwner() {
   return activeGirlTaskId ? 'girl' : 'boy';
 }
 
+/* URL 保存本次演示的队列快照和终态，切盘、刷新和返回均沿用同一批任务。 */
+function taskSessionUrl(status = currentStatus) {
+  const next = new URL(window.location.href);
+  next.searchParams.set('status', status);
+  next.searchParams.set('queue', familyQueueTasks.map(task => task.id).join(','));
+  next.searchParams.set('results', JSON.stringify(Object.fromEntries(taskResults)));
+  const completed = plateIds.filter(plate => taskResults.get(`plate-${plate}`) === 'completed');
+  if (completed.length) next.searchParams.set('completed', completed.join(','));
+  else next.searchParams.delete('completed');
+  return next;
+}
+
 function cancelTasksForActiveRole() {
-  const activeOwner = getActiveTaskOwner();
-  familyQueueTasks = familyQueueTasks.filter((task) => task.owner !== activeOwner);
+  const submission = taskCatalog[activeTaskId].submission;
+  for (const task of familyQueueTasks) {
+    if (task.submission === submission) taskResults.set(task.id, 'cancelled');
+  }
+  familyQueueTasks = familyQueueTasks.filter(task => task.submission !== submission);
 }
 
 function renderPlateTaskAndQueue() {
   const activeTaskIsGirl = activeGirlTaskId !== null;
   const visibleQueueTasks = getVisibleQueueTasks();
-  activeTaskImage.src = `${activeTaskIsGirl ? '../../src/dayinjirenwukongzhi' : '../../src/dayinji'}/${activeTask.taskAsset}`;
+  activeTaskImage.src = activeTask.taskAsset;
   activeTaskImage.alt = `正在打印的${activeTask.title}模型`;
   activeTaskOwnerCard.dataset.owner = activeTaskIsGirl ? 'girl' : 'boy';
   activeTaskOwnerCard.classList.toggle('owner-task-card--boy', !activeTaskIsGirl);
@@ -296,21 +321,24 @@ function renderPlateTaskAndQueue() {
       button.removeAttribute('data-plate');
       button.dataset.task = queueTask.task;
       button.setAttribute('aria-label', `女孩发起的${queueTask.title}，打开打印设置`);
-      image.src = `../../src/dayinjirenwukongzhi/${queueTask.queueAsset}`;
+      image.src = queueTask.queueAsset;
       image.alt = `${queueTask.title}，等待打印`;
       avatar.src = '../../src/dayinjirenwukongzhi/人物头像-女孩.png';
     } else {
       button.dataset.plate = queueTask.plate;
       button.removeAttribute('data-task');
       button.setAttribute('aria-label', `男孩发起的盘 ${queueTask.plate}，打开打印设置`);
-      image.src = `../../src/dayinji/${queueTask.queueAsset}`;
+      image.src = queueTask.queueAsset;
       image.alt = `盘 ${queueTask.plate}，${queueTask.title}，等待打印`;
       avatar.src = '../../src/dayinjirenwukongzhi/人物头像-男孩.png';
     }
   });
   queueToggle.querySelector('small').textContent = `${visibleQueueTasks.length} 个待打印任务`;
-  queueToggle.hidden = visibleQueueTasks.length === 0;
-  if (visibleQueueTasks.length === 0) printQueue.hidden = true;
+  const showEmpty = currentStatus === 'cancelled-all' && visibleQueueTasks.length === 0;
+  queueEmpty.hidden = !showEmpty;
+  queueToggle.disabled = showEmpty;
+  queueToggle.hidden = visibleQueueTasks.length === 0 && !showEmpty;
+  if (visibleQueueTasks.length === 0) printQueue.hidden = !showEmpty;
 }
 
 function formatTime(totalSeconds) {
@@ -427,11 +455,19 @@ function renderPrinterConnectionState(taskStatus) {
 }
 
 function setTaskStatus(status) {
-  if (status === 'completed') completedPlates.add(activePlate);
+  if (status === 'cancelled-all') cancelTasksForActiveRole();
+  if (status === 'completed') {
+    taskResults.set(activeTaskId, 'completed');
+    if (!activeGirlTaskId) completedPlates.add(activePlate);
+  } else if (status === 'cancelled' || status === 'cancelled-all') {
+    taskResults.set(activeTaskId, 'cancelled');
+  }
+  familyQueueTasks = familyQueueTasks.filter(task => task.id !== activeTaskId && !taskResults.has(task.id));
   currentStatus = status;
+  window.history.replaceState(null, '', taskSessionUrl());
   renderPlateTaskAndQueue();
   taskPanel.dataset.status = status;
-  const labels = { ready: '可打印', preparing: '准备中', printing: '打印中', paused: '已暂停', cancelled: '已取消打印任务', 'cancelled-all': '已取消全部任务', completed: '打印完成' };
+  const labels = { ready: '可打印', preparing: '准备中', printing: '打印中', paused: '已暂停', cancelled: '已取消打印任务', 'cancelled-all': '已取消打印任务', completed: '打印完成' };
   taskState.textContent = labels[status];
   renderPrinterConnectionState(status);
   progressState.textContent = status === 'preparing' ? '准备打印' : (status === 'printing' ? '剩余时间' : labels[status]);
@@ -457,13 +493,20 @@ function setTaskStatus(status) {
   cancelButton.disabled = isTerminal;
   finishButton.disabled = isTerminal;
   taskActions.hidden = isReady || status === 'completed' || isCancelled;
-  completionActions.hidden = status !== 'completed';
-  const allCompleted = completedPlates.size === modelPlateIds.length && familyQueueTasks.length === 0;
+  completionActions.hidden = status !== 'completed' && status !== 'cancelled';
+  cancelledModelActions.hidden = status !== 'cancelled-all';
+  completionActions.setAttribute('aria-label', status === 'cancelled' ? '已取消任务后续操作' : '打印完成操作');
+  const allCompleted = modelPlateIds.every(plate => taskResults.get(`plate-${plate}`) === 'completed') && familyQueueTasks.length === 0;
   nextPlateButton.hidden = status === 'completed' && allCompleted;
+  nextPlateButton.disabled = familyQueueTasks.length === 0;
   localFileButton.hidden = status !== 'completed' || !allCompleted;
   completionActions.classList.remove('is-single');
-  queueToggle.hidden = isReady || isPreparing || getVisibleQueueTasks().length === 0;
+  const showEmpty = status === 'cancelled-all' && familyQueueTasks.length === 0;
+  queueToggle.hidden = isReady || isPreparing || (familyQueueTasks.length === 0 && !showEmpty);
   if (isCancelled && !queueToggle.hidden) {
+    queueToggle.setAttribute('aria-expanded', 'true');
+    printQueue.hidden = false;
+  } else if (showEmpty) {
     queueToggle.setAttribute('aria-expanded', 'true');
     printQueue.hidden = false;
   } else if (queueToggle.hidden) {
@@ -545,6 +588,7 @@ const PREPARE_STATE_STAMPS = {
 };
 let selectedStateRow = '2';
 let stampedPlate = null;
+let prepareQueueTaskId = null;
 
 function resolvePrepareStateKey() {
   if (currentStatus === 'completed') return 'completed';
@@ -554,44 +598,61 @@ function resolvePrepareStateKey() {
 
 function selectStateRow(plate) {
   const candidate = String(plate);
-  selectedStateRow = candidate !== stampedPlate ? candidate : plateIds.find((item) => item !== stampedPlate);
+  const available = stateRows.filter(row => row.getAttribute('aria-disabled') !== 'true').map(row => row.dataset.row);
+  selectedStateRow = available.includes(candidate) ? candidate : available[0];
   prepareStateStage.querySelectorAll('.state-row[role="option"]').forEach((row) => {
     row.setAttribute('aria-selected', String(row.dataset.row === selectedStateRow));
   });
+  updatePrepareStart();
 }
 
 /* 被状态戳覆盖的盘不可再选，其余盘与 3D 预览保持可用。 */
 function renderStateRows() {
+  stateStampImage.hidden = true;
   stateRows.forEach((row) => {
     const plate = row.dataset.row;
-    const stamped = plate === stampedPlate;
+    const result = taskResults.get(`plate-${plate}`) || (plate === stampedPlate ? resolvePrepareStateKey() : null);
+    const stamped = Boolean(result);
     row.classList.toggle('is-stamped', stamped);
     row.setAttribute('aria-disabled', String(stamped));
     row.querySelector('.state-row-hit').hidden = stamped;
+    row.querySelector('.plate-3d-btn').disabled = stamped;
+    row.querySelectorAll('.state-stamp:not(#state-stamp)').forEach(image => image.remove());
+    if (result) {
+      const stamp = PREPARE_STATE_STAMPS[result];
+      const image = plate === stampedPlate ? stateStampImage : document.createElement('img');
+      image.className = 'state-stamp';
+      image.src = stamp.src;
+      image.alt = `${plateCatalog[plate].title}，${stamp.alt}`;
+      image.hidden = false;
+      row.append(image);
+    }
   });
 }
 
-function openPrepareStateScreen(preferredPlate) {
+function selectedQueuedTask() {
+  const openedTask = familyQueueTasks.find(task => task.id === prepareQueueTaskId);
+  return openedTask?.owner === 'girl' ? openedTask : familyQueueTasks.find(task => task.plate === selectedStateRow);
+}
+
+function updatePrepareStart() {
+  const task = selectedQueuedTask();
+  const busy = ['preparing', 'printing', 'paused'].includes(currentStatus);
+  const startDisabled = busy || !task || task.id !== familyQueueTasks[0]?.id;
+  prepareStateStart.disabled = startDisabled;
+  prepareStateStart.setAttribute('aria-label', busy ? '开始打印（当前任务正在打印或已暂停，暂不可用）' : (startDisabled ? '开始打印（请按打印队列顺序执行）' : '开始打印'));
+  prepareStateDim.hidden = !startDisabled;
+}
+
+function openPrepareStateScreen(preferredPlate, queueTaskId) {
+  prepareQueueTaskId = queueTaskId;
   const key = resolvePrepareStateKey();
-  const stamp = PREPARE_STATE_STAMPS[key];
   prepareStateStage.dataset.state = key;
   /* 男孩任务：当前任务盘盖戳；女孩任务：三个盘都可复用，不盖戳 */
   stampedPlate = activeGirlTaskId ? null : String(activePlate);
-  if (stampedPlate) {
-    stateStampImage.src = stamp.src;
-    stateStampImage.alt = `${plateCatalog[stampedPlate].title}，${stamp.alt}`;
-    stateRows.find((row) => row.dataset.row === stampedPlate).append(stateStampImage);
-    stateStampImage.hidden = false;
-  } else {
-    stateStampImage.hidden = true;
-  }
   /* 打印中 / 暂停中打印机忙碌，其余状态空闲（与底图一致，补丁隐藏） */
   printerBusyPatch.hidden = key !== 'printing';
   renderStateRows();
-  const startDisabled = key === 'printing';
-  prepareStateStart.disabled = startDisabled;
-  prepareStateStart.setAttribute('aria-label', startDisabled ? '开始打印（当前任务正在打印或已暂停，暂不可用）' : '开始打印');
-  prepareStateDim.hidden = !startDisabled;
   selectStateRow(preferredPlate);
   openReuseScreen('prepareState');
 }
@@ -599,17 +660,15 @@ function openPrepareStateScreen(preferredPlate) {
 /* 打印队列里的待打印任务：按当前任务状态打开对应的准备打印页，不再跳转打印旅程的配色页 */
 function openQueueTaskSettings(queueId) {
   const queueTask = getVisibleQueueTasks().find((task) => task.id === queueId);
+  if (!queueTask) return;
   const plate = queueTask && plateCatalog[queueTask.plate] ? queueTask.plate : '2';
-  openPrepareStateScreen(plate);
+  openPrepareStateScreen(plate, queueTask.id);
 }
 
 /* ---------- “下一盘”：直接把队列里下一个顺位的任务拉进“准备中” ---------- */
-/* 队列里第一个待打印任务优先；队列为空时退化为“下一块还没打印的盘”，避免按钮变成死键。 */
+/* 只推进队首，不从已结束的盘重建任务。 */
 function pickNextQueuedTask() {
-  const [queuedTask] = getVisibleQueueTasks();
-  if (queuedTask) return queuedTask;
-  const fallbackPlate = modelPlateIds.find((plate) => plate !== activePlate && !completedPlates.has(plate));
-  return fallbackPlate ? { id: `plate-${fallbackPlate}`, owner: 'boy', journey: 'v2', plate: fallbackPlate } : null;
+  return getVisibleQueueTasks()[0] || null;
 }
 
 function startNextPlate() {
@@ -618,10 +677,13 @@ function startNextPlate() {
     showToast('打印队列里已经没有待打印任务了');
     return;
   }
-  const next = new URL(window.location.href);
-  next.searchParams.set('status', 'preparing');
-  /* 已经打印完的盘跟着一起带过去，被拉起来的这一盘才不会又出现在待打印队列里 */
-  if (completedPlates.size > 0) next.searchParams.set('completed', [...completedPlates].sort().join(','));
+  startQueuedTask(nextTask, 'preparing');
+}
+
+function startQueuedTask(nextTask, status) {
+  if (!nextTask || nextTask.id !== familyQueueTasks[0]?.id || ['preparing', 'printing', 'paused'].includes(currentStatus)) return;
+  familyQueueTasks = familyQueueTasks.filter(task => task.id !== nextTask.id);
+  const next = taskSessionUrl(status);
   if (nextTask.owner === 'girl') {
     next.searchParams.set('family', 'multi');
     next.searchParams.set('activeTask', nextTask.task);
@@ -635,6 +697,7 @@ function startNextPlate() {
 
 function restartPrint() {
   completedPlates.delete(activePlate);
+  taskResults.delete(activeTaskId);
   secondsRemaining = TOTAL_SECONDS;
   preparationElapsedSeconds = 0;
   /* 文档：点击重新打印后进入准备中状态，且此时准备中只承接喷嘴升温的等待时间 */
@@ -693,6 +756,8 @@ localFileButton.addEventListener('click', () => showToast('已打开本地文件
 /* 探索玩具：改为复用整图页面（探索玩具页.png），点击任意位置进入模型详情页 */
 exploreToysButton.addEventListener('click', () => openReuseScreen('exploreToys'));
 myModelsButton.addEventListener('click', () => openReference('我的模型.jpg', '我的模型', myModelsButton));
+document.querySelector('#cancelled-explore-toys').addEventListener('click', () => openReuseScreen('exploreToys'));
+document.querySelector('#cancelled-my-models').addEventListener('click', event => openReference('我的模型.jpg', '我的模型', event.currentTarget));
 document.querySelector('#reference-back').addEventListener('click', () => {
   referenceScreen.hidden = true;
   devicePage.inert = false;
@@ -1193,12 +1258,19 @@ stateRows.forEach((row) => {
 document.querySelector('#prepare-state-back').addEventListener('click', closeReuseScreens);
 document.querySelector('#prepare-state-start').addEventListener('click', () => {
   if (prepareStateStart.disabled) return;
-  goToPrinterState(selectedStateRow, 'printing');
+  startQueuedTask(selectedQueuedTask(), 'printing');
 });
 
 /* 带参数回到打印页：切换当前任务盘并落到指定状态 */
 function goToPrinterState(plate, status) {
-  const next = new URL(window.location.href);
+  /* 模型入口提交新批次；旧执行结果不会被重建为等待任务。 */
+  for (const id of modelPlateIds.map(item => `plate-${item}`)) taskResults.delete(id);
+  completedPlates.clear();
+  familyQueueTasks = [
+    ...plateOrder.filter(item => item !== plate && modelPlateIds.includes(item)).map(item => taskCatalog[`plate-${item}`]),
+    ...familyQueueTasks.filter(task => task.owner === 'girl')
+  ];
+  const next = taskSessionUrl(status);
   next.searchParams.set('plate', plate);
   next.searchParams.set('status', status);
   next.searchParams.delete('activeTask');
@@ -1220,6 +1292,7 @@ document.querySelector('#prepare-print-back').addEventListener('click', goBackIn
 document.querySelectorAll('.plate-3d-btn').forEach((button) => {
   button.addEventListener('click', (event) => {
     event.stopPropagation();
+    if (button.disabled) return;
     const row = button.closest('.plate-row, .state-row');
     const index = row ? (row.dataset.plate || row.dataset.row) : null;
     openPreview3D({
