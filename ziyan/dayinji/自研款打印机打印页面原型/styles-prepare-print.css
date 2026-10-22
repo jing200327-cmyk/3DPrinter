@@ -63,7 +63,8 @@
 .prepare-page .printer-busy-patch { position: static; display: flex; gap: 1.8cqw; width: auto; height: auto; margin-top: 2cqw; padding: 0; background: transparent; font-size: 3.5cqw; color: #8991a5; }
 .prepare-page .printer-busy-patch[hidden] { display: none; }
 .prepare-page[data-state="printing"] .prepare-idle { display: none; }
-/* 详情沿用新版准备页；仅当前状态盘内容置灰，状态章保持清晰并随盘行定位。 */
+/* 详情沿用新版准备页；各盘按自身结果置灰，静态内容不遮挡整行选择。 */
+.prepare-page .state-row > :is(.prepare-model, .prepare-plate-info, .prepare-material, .prepare-plate-stats) { pointer-events: none; }
 .prepare-page .state-row.is-stamped > :is(.prepare-model, .prepare-plate-info, .prepare-material, .prepare-plate-stats, .plate-3d-btn) { opacity: .4; }
 .prepare-page .state-row > img.state-stamp { position: absolute; z-index: 6; left: 49.15%; top: 50%; width: 31.46%; height: auto; aspect-ratio: 1; object-fit: contain; transform: translate(-50%, -50%); pointer-events: none; user-select: none; -webkit-user-drag: none; }
 .prepare-page .state-stamp[hidden] { display: none; }

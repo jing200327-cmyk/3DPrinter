@@ -2098,7 +2098,7 @@ try {
   });
   assert(cancelAll.result.value.before.join(',') === 'plate-2,plate-3,girl-1,girl-2', `Multi-account queue is incorrect before cancelling: ${JSON.stringify(cancelAll.result.value)}`);
   assert(cancelAll.result.value.transition.overlayVisible && cancelAll.result.value.transition.label === '取消中...', `取消全部任务 must show the 取消中 transition: ${JSON.stringify(cancelAll.result.value)}`);
-  assert(cancelAll.result.value.status === 'cancelled-all' && cancelAll.result.value.label === '已取消全部任务', `取消全部任务 did not enter the printer-level cancelled state: ${JSON.stringify(cancelAll.result.value)}`);
+  assert(cancelAll.result.value.status === 'cancelled-all' && cancelAll.result.value.label === '已取消打印任务', `取消全部任务 did not enter the printer-level cancelled state: ${JSON.stringify(cancelAll.result.value)}`);
   assert(cancelAll.result.value.taskCopyHidden && cancelAll.result.value.actionsHidden, '取消全部任务 did not keep the simplified cancelled controls.');
   assert(!cancelAll.result.value.queueToggleHidden && !cancelAll.result.value.queueHidden && cancelAll.result.value.queueExpanded === 'true', `取消全部任务 did not automatically show the remaining print queue: ${JSON.stringify(cancelAll.result.value)}`);
   assert(cancelAll.result.value.queueTasks.length === 2 && cancelAll.result.value.queueTasks.every((task) => task.owner === 'girl') && cancelAll.result.value.queueTasks[0].id === 'girl-1', `取消全部任务 did not drop every queued task of the same owner: ${JSON.stringify(cancelAll.result.value)}`);
@@ -2122,7 +2122,7 @@ try {
       };
     })()`
   });
-  assert(cancelAllGirl.result.value.label === '已取消全部任务' && cancelAllGirl.result.value.queueTasks.join(',') === 'plate-2,plate-3', `取消全部任务 must only drop tasks of the cancelled owner: ${JSON.stringify(cancelAllGirl.result.value)}`);
+  assert(cancelAllGirl.result.value.label === '已取消打印任务' && cancelAllGirl.result.value.queueTasks.join(',') === 'plate-1,plate-2,plate-3', `取消全部任务 must only drop tasks of the cancelled submission: ${JSON.stringify(cancelAllGirl.result.value)}`);
 
   await cdp.send('Page.navigate', { url: `${pageUrl}?plate=3&completed=1%2C2&status=printing` });
   await delay(500);
