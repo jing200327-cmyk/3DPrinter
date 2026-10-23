@@ -1319,17 +1319,23 @@ fanFilterReplacedButton.addEventListener('click', () => {
 
 /* ---------- 耗材面板：料盘选中 → 进料 → 进料完成 → 退料 ---------- */
 function renderFilamentPanel() {
+  const hasFilament = filamentPanel.dataset.filamentPresence !== 'empty';
   const state = filamentPanel.dataset.filamentState || 'idle';
-  const statusLabel = FILAMENT_STATUS_LABELS[state] || '';
-  const loadActive = filamentSpoolSelected && (state === 'idle' || state === 'retracted');
-  const loadBusy = state === 'feeding';
-  const unloadActive = state === 'loaded';
-  const unloadBusy = state === 'retracting';
+  const statusLabel = hasFilament ? FILAMENT_STATUS_LABELS[state] || '' : '';
+  const loadActive = hasFilament && filamentSpoolSelected && (state === 'idle' || state === 'retracted');
+  const loadBusy = hasFilament && state === 'feeding';
+  const unloadActive = hasFilament && state === 'loaded';
+  const unloadBusy = hasFilament && state === 'retracting';
+
+  document.querySelector('#filament-empty-message').hidden = hasFilament;
+  filamentSpoolButton.hidden = !hasFilament;
+  document.querySelector('#open-material-settings').hidden = !hasFilament;
+  document.querySelector('#filament-panel-image').alt = hasFilament ? '耗材-料架面板，包含蓝色耗材料盘以及进料、退料按钮' : '耗材-料架面板，当前未检测到耗材';
 
   filamentStatus.hidden = !statusLabel;
   filamentStatus.textContent = statusLabel;
 
-  filamentSelectionRing.hidden = !filamentSpoolSelected;
+  filamentSelectionRing.hidden = !hasFilament || !filamentSpoolSelected;
   filamentSpoolButton.classList.toggle('is-selected', filamentSpoolSelected);
   filamentSpoolButton.setAttribute('aria-pressed', String(filamentSpoolSelected));
   filamentSpoolButton.setAttribute('aria-label', filamentSpoolSelected ? '料架上的蓝色耗材料盘，已选择' : '选择料架上的蓝色耗材料盘');

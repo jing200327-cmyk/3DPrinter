@@ -16,3 +16,21 @@ simulationConsole.querySelectorAll('[data-simulation-mode]').forEach(button => {
     window.location.href = next.href;
   });
 });
+
+/* 耗材模拟只切换面板，不重建打印任务或修改任务 URL。 */
+function simulateFilamentPresence(present) {
+  if (foState.operation) foAbort();
+  closeReuseScreens();
+  closeFilamentGuide();
+  filamentSpoolSelected = false;
+  filamentPanel.dataset.filamentState = 'idle';
+  filamentPanel.dataset.filamentPresence = present ? 'present' : 'empty';
+  renderFilamentPanel();
+  document.querySelector('#simulation-filament-status').textContent = present ? '当前：已检测到耗材' : '当前：未检测到耗材';
+  filamentPanel.scrollIntoView({ block: 'center', behavior: 'instant' });
+}
+document.querySelector('#simulate-filament-empty').addEventListener('click', () => simulateFilamentPresence(false));
+document.querySelector('#simulate-filament-detected').addEventListener('click', () => {
+  simulateFilamentPresence(true);
+  document.querySelector('#filament-detected-dialog').showModal();
+});

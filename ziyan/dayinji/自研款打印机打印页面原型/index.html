@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f4f5fa">
   <title>自研款打印机打印页面原型</title>
-  <link rel="stylesheet" href="styles.css?v=r013">
+  <link rel="stylesheet" href="styles.css?v=r014">
   <link rel="stylesheet" href="styles-share-printer.css?v=r008">
   <link rel="stylesheet" href="styles-filament-operation.css?v=r008">
   <link rel="stylesheet" href="styles-3d-preview.css?v=r008">
   <link rel="stylesheet" href="styles-prepare-print.css?v=r003">
-  <link rel="stylesheet" href="styles-simulation.css?v=r001">
+  <link rel="stylesheet" href="styles-simulation.css?v=r002">
   <link rel="stylesheet" href="styles-filament-guide.css?v=1">
   <link rel="stylesheet" href="styles-device-control.css?v=1">
 </head>
@@ -133,7 +133,7 @@
         <span>新的固件版本可用，</span><span class="firmware-banner-cta">立即升级&gt;</span>
       </button>
 
-      <section class="filament-panel" data-filament-state="idle" aria-label="耗材控制面板">
+      <section class="filament-panel" data-filament-state="idle" data-filament-presence="present" aria-label="耗材控制面板">
         <div class="filament-panel-frame">
           <button id="fan-filter-banner" class="fan-filter-banner" type="button" aria-label="当前风扇剩余100h需要更换滤芯，前往风扇滤芯更换">
             <span class="fan-filter-copy">当前风扇剩余<span id="fan-filter-hours">100h</span>需要更换滤芯</span>
@@ -141,6 +141,7 @@
           </button>
           <div class="filament-panel-canvas">
             <img id="filament-panel-image" src="../../原型修改复用图片资源/耗材面板.png" alt="耗材-料架面板，包含蓝色耗材料盘以及进料、退料按钮">
+            <p id="filament-empty-message" class="filament-empty-message" role="status" hidden>当前打印机未检测到耗材，请安装耗材，将耗材丝插入至喷头处不能动为止。</p>
             <span id="filament-selection-ring" class="filament-selection-ring" hidden aria-hidden="true"></span>
             <span id="filament-status" class="filament-status" role="status" aria-live="polite" hidden></span>
             <button id="filament-spool" class="filament-spool-hotspot" type="button" aria-label="选择料架上的蓝色耗材料盘" aria-pressed="false"></button>
@@ -1003,16 +1004,30 @@
   <details id="simulation-console" class="prototype-console" open>
     <summary>模拟控制台</summary>
     <div class="simulation-content">
-      <p>切换选项后，从打印中状态开始演示。</p>
+      <p>打印任务选项从打印中状态开始演示；耗材状态可独立切换。</p>
       <div class="simulation-options" role="radiogroup" aria-label="打印任务模拟方式">
         <button id="simulate-single" type="button" role="radio" aria-checked="false" data-simulation-mode="single">单盘模型模拟</button>
         <button id="simulate-multi" type="button" role="radio" aria-checked="true" data-simulation-mode="multi">多盘模型模拟</button>
         <button id="simulate-family" type="button" role="radio" aria-checked="false" disabled><span>多账号下的多盘模型模拟<small>暂未实现</small></span></button>
       </div>
+      <h3 class="simulation-section-title">耗材状态模拟</h3>
+      <p id="simulation-filament-status" class="simulation-filament-status" role="status">当前：已有耗材</p>
+      <div class="simulation-options simulation-actions" role="group" aria-label="耗材状态模拟">
+        <button id="simulate-filament-empty" type="button">耗材空态</button>
+        <button id="simulate-filament-detected" type="button">进料检测到</button>
+      </div>
     </div>
   </details>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <dialog id="filament-detected-dialog" class="app-dialog filament-detected-dialog" aria-labelledby="filament-detected-title" aria-describedby="filament-detected-copy">
+    <form method="dialog">
+      <h2 id="filament-detected-title">检测到耗材</h2>
+      <p id="filament-detected-copy">当前已检测到耗材，请点击耗材设置耗材信息并进料</p>
+      <div class="dialog-actions"><button id="filament-detected-ok" type="submit" value="ok" data-tone="primary" autofocus>我知道了</button></div>
+    </form>
+  </dialog>
 
   <!-- 设备框内的细滚动指示条：不占布局宽度，只在内容超出 812 高时滚动出现 -->
   <div id="scroll-indicator" class="scroll-indicator" hidden aria-hidden="true"><span></span></div>
@@ -1075,8 +1090,8 @@
       </div>
     </form>
   </dialog>
-  <script src="prototype.js?v=r020"></script>
+  <script src="prototype.js?v=r021"></script>
   <script src="prototype-device-control.js?v=1"></script>
-  <script src="prototype-simulation.js?v=r001"></script>
+  <script src="prototype-simulation.js?v=r002"></script>
 </body>
 </html>
