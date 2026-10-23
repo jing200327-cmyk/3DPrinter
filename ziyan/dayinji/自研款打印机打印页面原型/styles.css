@@ -200,6 +200,7 @@ button:focus-visible { outline: 3px solid rgb(70 155 223 / 42%); outline-offset:
 .filament-panel-canvas > img { display: block; width: 100%; height: 100%; object-fit: fill; }
 .filament-empty-message { position: absolute; z-index: 4; inset: 12% 0 33%; display: flex; align-items: center; justify-content: center; margin: 0; padding: 12px 24px; color: #7e8590; background: #fff; font-size: 14px; line-height: 1.75; text-align: center; }
 .filament-empty-message[hidden] { display: none; }
+.filament-empty-title { position: absolute; z-index: 5; top: 0; left: 0; width: 100px; height: 32px; padding: 8px 9px; color: #111; background: #fff; font-size: 12px; line-height: 16px; }
 .filament-detected-dialog .dialog-actions { grid-template-columns: 1fr; }
 .filament-detected-dialog h2 { padding-right: 0; font-size: 18px; }
 /* 耗材面板顶部状态：进料中 / 进料完成（绿色字体） */

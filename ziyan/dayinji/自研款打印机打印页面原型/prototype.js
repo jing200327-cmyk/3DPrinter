@@ -1328,9 +1328,10 @@ function renderFilamentPanel() {
   const unloadBusy = hasFilament && state === 'retracting';
 
   document.querySelector('#filament-empty-message').hidden = hasFilament;
+  document.querySelector('#filament-empty-title').hidden = hasFilament;
   filamentSpoolButton.hidden = !hasFilament;
   document.querySelector('#open-material-settings').hidden = !hasFilament;
-  document.querySelector('#filament-panel-image').alt = hasFilament ? '耗材-料架面板，包含蓝色耗材料盘以及进料、退料按钮' : '耗材-料架面板，当前未检测到耗材';
+  document.querySelector('#filament-panel-image').alt = hasFilament ? '耗材-料架面板，包含蓝色耗材料盘以及进料、退料按钮' : '耗材-无，当前未检测到耗材';
 
   filamentStatus.hidden = !statusLabel;
   filamentStatus.textContent = statusLabel;
