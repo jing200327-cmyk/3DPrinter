@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f4f5fa">
   <title>自研款打印机打印页面原型</title>
-  <link rel="stylesheet" href="styles.css?v=r014">
+  <link rel="stylesheet" href="styles.css?v=r015">
   <link rel="stylesheet" href="styles-share-printer.css?v=r008">
   <link rel="stylesheet" href="styles-filament-operation.css?v=r008">
   <link rel="stylesheet" href="styles-3d-preview.css?v=r008">
@@ -141,6 +141,7 @@
           </button>
           <div class="filament-panel-canvas">
             <img id="filament-panel-image" src="../../原型修改复用图片资源/耗材面板.png" alt="耗材-料架面板，包含蓝色耗材料盘以及进料、退料按钮">
+            <span id="filament-empty-title" class="filament-empty-title" hidden>耗材-无</span>
             <p id="filament-empty-message" class="filament-empty-message" role="status" hidden>当前打印机未检测到耗材，请安装耗材，将耗材丝插入至喷头处不能动为止。</p>
             <span id="filament-selection-ring" class="filament-selection-ring" hidden aria-hidden="true"></span>
             <span id="filament-status" class="filament-status" role="status" aria-live="polite" hidden></span>
@@ -1090,7 +1091,7 @@
       </div>
     </form>
   </dialog>
-  <script src="prototype.js?v=r021"></script>
+  <script src="prototype.js?v=r022"></script>
   <script src="prototype-device-control.js?v=1"></script>
   <script src="prototype-simulation.js?v=r002"></script>
 </body>
