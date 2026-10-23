@@ -786,36 +786,16 @@ document.querySelector('#printer-settings').addEventListener('click', () => {
    ② firmwareSettingsHasUpdate —— **本次进入设备设置页是否带「有更新」上下文**（展示上下文）。
       只由入口决定：点提醒条进来为 true，点顶栏齿轮进来为 false。
       控制设备设置页的橙色文案 #firmware-status-badge 与「固件版本」行的落点（升级页 / 已是最新版页）。
-   ③ firmwareBannerHandled —— **这条提醒是否已被处理过**（用户侧状态，需持久化）。
-      一旦点过提醒条就置 true 并写进 localStorage，此后首页提醒条不再出现（刷新/重进也在），
-      但设备事实 ① 不变：仍可从齿轮进设备设置页看到「固件版本 → 立即升级」的升级入口。
+   ③ firmwareBannerHandled —— **本次页面是否已点过这条提醒**（仅内存状态）。
+      点过提醒条就置 true，返回首页时隐藏；刷新或重新打开原型后恢复显示。
+      不读取旧版 localStorage 的已处理记录，避免演示入口被历史操作永久隐藏。
       只有“更新完成页 → 我知道了”会把 ① 也置 false（设备真的升到最新）。 */
 const FIRMWARE_LATEST_VERSION = '2.02';
 /* 原图烘焙了 50% 那三个字，这里用同色圆片盖住，进度完全由前端模拟 */
 const FIRMWARE_PROGRESS_STEP_MS = 60;
 const FIRMWARE_PROGRESS_STEP = 2;
-/* 提醒条已处理的持久化键。file:// 下 localStorage 可能被浏览器禁用，包一层 try/catch 降级为「本次会话有效」 */
-const FIRMWARE_BANNER_HANDLED_KEY = 'ziyan.firmware.bannerHandled';
-
-function readPersistedFlag(key) {
-  try {
-    return window.localStorage.getItem(key) === '1';
-  } catch {
-    /* 隐私模式 / file:// 禁用存储：降级为不持久，功能仍可用 */
-    return false;
-  }
-}
-
-function writePersistedFlag(key, value) {
-  try {
-    window.localStorage.setItem(key, value ? '1' : '0');
-  } catch {
-    /* 存不了就只影响本次会话，不阻断交互 */
-  }
-}
-
 let firmwareUpdateAvailable = true;
-let firmwareBannerHandled = readPersistedFlag(FIRMWARE_BANNER_HANDLED_KEY);
+let firmwareBannerHandled = false;
 let firmwareSettingsHasUpdate = true;
 let firmwareProgress = 0;
 let firmwareProgressTimer = null;
@@ -834,10 +814,9 @@ function setFirmwareUpdateAvailable(available) {
   renderFirmwareState();
 }
 
-/* 提醒条已处理：点过就不再提醒（持久化）。不影响设备事实，也不影响设备设置页的升级入口 */
+/* 提醒条已处理：仅本次页面隐藏，刷新或重新打开后复位。不影响设备事实与升级入口 */
 function setFirmwareBannerHandled(handled) {
   firmwareBannerHandled = Boolean(handled);
-  writePersistedFlag(FIRMWARE_BANNER_HANDLED_KEY, firmwareBannerHandled);
   renderFirmwareState();
 }
 
@@ -876,8 +855,8 @@ function startFirmwareProgress() {
 }
 
 /* 首页任务控制面板下方的提醒条 → 带固件更新上下文进设备设置页。
-   点过即视为「这条提醒已处理」：返回打印页后不再显示，且刷新/重进也不会再出现；
-   但设备事实不变，仍能从齿轮进设备设置页走升级流程。 */
+   点过即视为「本次提醒已处理」：返回打印页后隐藏，刷新/重进时恢复。
+   设备事实与设置页展示上下文保持独立。 */
 firmwareBanner.addEventListener('click', () => {
   setFirmwareBannerHandled(true);
   setFirmwareSettingsHasUpdate(true);

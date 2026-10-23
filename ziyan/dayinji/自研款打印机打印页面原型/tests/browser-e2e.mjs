@@ -887,15 +887,14 @@ try {
   assert(firmware.afterVersionBack.length === 1 && firmware.afterVersionBack[0] === 'device-settings-screen', `The 固件版本 back control did not return to 设备设置: ${JSON.stringify(firmware.afterVersionBack)}`);
   assert(firmware.afterSettingsBack.length === 0, `The 设备设置 back control did not return to the printer page: ${JSON.stringify(firmware.afterSettingsBack)}`);
 
-  /* 提醒条「一经点击即消失且持久化」：
-     上面那条链路点过提醒条、又点完了升级，持久化标记已经是「已处理」，
-     所以此处先清掉该标记再重载，单独验「只点提醒条、不升级」这条路径。 */
+  /* 提醒条「点击后本次隐藏，刷新 / 重进恢复」：
+     保留旧版已处理记录，验证历史 localStorage 不会再吞掉入口。 */
   await cdp.send('Page.navigate', { url: pageUrl });
   await waitFor(cdp, `!!document.querySelector('#firmware-banner')`, 'The firmware banner is missing on a fresh printer page.');
-  await cdp.send('Runtime.evaluate', { expression: `localStorage.removeItem('ziyan.firmware.bannerHandled')` });
+  await cdp.send('Runtime.evaluate', { expression: `localStorage.setItem('ziyan.firmware.bannerHandled', '1')` });
   await cdp.send('Page.navigate', { url: pageUrl });
   /* 等 JS API 就绪再点，光等 DOM 元素会在导航后立刻命中「元素在但监听器还没绑」的窗口 */
-  await waitFor(cdp, `typeof openReuseScreen === 'function' && !!document.querySelector('#firmware-banner') && !document.querySelector('#firmware-banner').hidden`, 'The firmware banner did not come back (or its JS was not ready) after clearing the handled flag.');
+  await waitFor(cdp, `typeof openReuseScreen === 'function' && !!document.querySelector('#firmware-banner') && !document.querySelector('#firmware-banner').hidden`, 'The firmware banner must be visible even with the legacy handled flag.');
   const bannerHandled = await cdp.send('Runtime.evaluate', {
     awaitPromise: true,
     returnByValue: true,
@@ -921,12 +920,12 @@ try {
       out.backHome = !open('#device-settings-screen');
       /* 返回打印页：提醒条不再显示 */
       out.bannerHiddenAfterBack = banner.hidden;
-      /* 刷新后也不再出现（真的持久化，而不是内存变量） */
+      /* 刷新后恢复显示，不沿用本次点击或历史存储状态 */
       location.reload();
       return out;
     })()`
   });
-  /* 刷新后要等 JS 把持久化标记读回来并重绘，否则会在 init 之前就断言（此时提醒条还没被隐藏） */
+  /* 等 JS 初始化后再检查，避免仅检查 HTML 默认显隐 */
   await waitFor(cdp, `typeof openReuseScreen === 'function' && localStorage.getItem('ziyan.firmware.bannerHandled') === '1'`, 'The printer page did not come back (or its JS was not ready) after reload.');
   const afterReload = await cdp.send('Runtime.evaluate', {
     returnByValue: true,
@@ -934,10 +933,10 @@ try {
   });
   assert(bannerHandled.result.value.beforeClick, 'The firmware banner should be visible on a fresh page.');
   assert(bannerHandled.result.value.settingsOpen, 'Clicking the banner did not open 设备设置.');
-  assert(bannerHandled.result.value.storedAfter === '1', `Clicking the banner did not persist the handled state: ${JSON.stringify(bannerHandled.result.value)}`);
+  assert(bannerHandled.result.value.storedBefore === '1' && bannerHandled.result.value.storedAfter === '1', 'The legacy handled flag must be ignored and left untouched.');
   assert(bannerHandled.result.value.upgradeStillReachable, 'After handling the banner the 固件升级 entry must still be reachable from 设备设置.');
   assert(bannerHandled.result.value.backHome && bannerHandled.result.value.bannerHiddenAfterBack, `The banner came back after returning to the printer page: ${JSON.stringify(bannerHandled.result.value)}`);
-  assert(afterReload.result.value.hidden && afterReload.result.value.stored === '1', `The banner reappeared after a reload: ${JSON.stringify(afterReload.result.value)}`);
+  assert(!afterReload.result.value.hidden && afterReload.result.value.stored === '1', `The banner must reappear after a reload despite the legacy handled flag: ${JSON.stringify(afterReload.result.value)}`);
   /* 复位提醒状态，后面的版式断言（要量提醒条的位置）仍需看到它 */
   await cdp.send('Runtime.evaluate', { expression: `setFirmwareBannerHandled(false); setFirmwareUpdateAvailable(true)` });
   await waitFor(cdp, `!document.querySelector('#firmware-banner').hidden`, 'Could not restore the firmware banner for the remaining layout assertions.');
