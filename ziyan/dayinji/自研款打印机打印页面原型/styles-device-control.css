@@ -1,0 +1,96 @@
+/* 新入口延续原设备设置图的白卡、分隔线和灰底，原有固件行坐标不变。 */
+.settings-control-extension { position: absolute; z-index: 3; top: 32.85%; left: 0; width: 100%; height: 23%; background: #ededed; font-family: Arial, "Microsoft YaHei", sans-serif; }
+.settings-control-extension::before { position: absolute; top: -12px; left: 3.9%; width: 90.8%; height: 13px; background: #fff; content: ""; }
+.settings-control-entry, .settings-timelapse-entry { position: absolute; left: 3.9%; display: flex; align-items: center; justify-content: space-between; width: 90.8%; height: 31.2%; padding: 0 5.9% 0 6.9%; border: 0; color: #494949; background: #fff; text-align: left; font-size: calc(16 * var(--device-width) / 375); cursor: pointer; }
+.settings-control-entry { top: 0; border-radius: 0 0 10px 10px; box-shadow: 0 2px 2px #b5b5b5; }
+.settings-control-entry::before { position: absolute; top: 0; right: 10px; left: 26px; height: 1px; background: #e7e7e7; content: ""; }
+.settings-timelapse-entry { top: 47.8%; border-radius: 5px; box-shadow: 0 2px 2px #b5b5b5; }
+.settings-control-extension span { font-family: Arial, sans-serif; font-size: 28px; line-height: 1; color: #242424; }
+.dc-screen [hidden] { display: none !important; }
+.dc-page { --dc-gradient: linear-gradient(105deg, #a46bfa, #508dfb); --dc-orange: #f59a23; --dc-scale: calc(var(--device-width) / 375); position: relative; width: 100%; aspect-ratio: 375 / 812; color: #29313a; background: #fff; }
+.dc-page button { cursor: pointer; }
+.dc-status { position: absolute; inset: 0 0 auto; display: flex; height: 5.4%; align-items: center; justify-content: space-between; padding: 0 7.1%; color: #111; font-size: calc(15 * var(--dc-scale)); font-weight: 650; }
+.dc-status-icons { display: flex; align-items: center; gap: 5px; }
+.dc-status-icons svg { width: 20px; height: 17px; fill: currentColor; }
+.dc-battery { padding: 0 5px; border-radius: 4px; color: #fff; background: #111; font-size: 11px; }
+.dc-nav { position: absolute; top: 5.4%; left: 0; display: flex; width: 100%; height: 6.5%; align-items: center; justify-content: center; }
+.dc-nav h2 { margin: 0; color: #17212a; font-size: calc(16 * var(--dc-scale)); font-weight: 700; }
+.dc-back { position: absolute; left: 2%; display: grid; width: 44px; height: 44px; place-items: center; padding: 0; border: 0; background: transparent; }
+.dc-back svg { width: 19px; height: 25px; fill: none; stroke: #29343c; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.dc-home-indicator { position: absolute; bottom: 1.05%; left: 33%; width: 34%; height: 4px; border-radius: 99px; background: #b9b9b9; }
+.dc-gradient-button { border: 0; border-radius: 99px; color: #fff; background: var(--dc-gradient); font-size: calc(15 * var(--dc-scale)); font-weight: 650; }
+.dc-menu-page { background: #ededed; }
+.dc-menu-page .dc-status { background: #fff url('../../原型修改复用图片资源/设备设置页.png') top center / 100% auto no-repeat; }
+.dc-menu-page .dc-status > * { visibility: hidden; }
+.dc-menu-page .dc-nav { height: 4.8%; background: #fff; }
+.dc-menu-page .dc-nav h2 { color: #111; font-size: calc(14 * var(--dc-scale)); font-weight: 400; }
+.dc-menu-list { position: absolute; top: 11.8%; left: 2.1%; display: grid; width: 95.8%; gap: calc(19 * var(--dc-scale)); }
+.dc-menu-row { position: relative; display: flex; min-height: calc(94 * var(--dc-scale)); align-items: center; justify-content: space-between; gap: 6px; width: 100%; padding: calc(18 * var(--dc-scale)) calc(20 * var(--dc-scale)); border: 0; border-radius: 10px; background: #fff; box-shadow: 0 3px 2px #b9b9b9; text-align: left; }
+.dc-menu-row strong { display: block; color: #161616; font-size: calc(15 * var(--dc-scale)); font-weight: 400; }
+.dc-menu-row small { display: block; margin-top: 12px; color: #999; font-size: calc(13 * var(--dc-scale)); line-height: 1.5; }
+.dc-menu-chevron { color: #444; font-family: Arial, sans-serif; font-size: 27px; }
+.dc-switch { flex: none; width: 50px; height: 30px; padding: 3px; border: 0; border-radius: 99px; background: #aaa; transition: background .18s; }
+.dc-switch::after { display: block; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px #0002; content: ""; transition: transform .18s; }
+.dc-switch[aria-checked="true"] { background: #2acb54; }
+.dc-switch[aria-checked="true"]::after { transform: translateX(20px); }
+.dc-menu-row .dc-switch { align-self: flex-start; }
+.dc-distance { position: absolute; top: 16.2%; left: 4.3%; width: 91.4%; margin: 0; padding: 0; border: 0; }
+.dc-distance legend { margin-bottom: calc(10 * var(--dc-scale)); padding: 0; color: #999; font-size: calc(11 * var(--dc-scale)); }
+.dc-distance-options { display: flex; height: calc(44 * var(--dc-scale)); border-radius: 99px; background: #ececec; }
+.dc-distance-options button { flex: 1; padding: 0; border: 0; border-radius: 99px; color: #999; background: transparent; font-size: calc(16 * var(--dc-scale)); font-weight: 600; }
+.dc-distance-options button[aria-checked="true"] { color: #fff; background: var(--dc-gradient); }
+.dc-axis-row { position: absolute; left: 10.2%; width: 79.6%; height: 10%; }
+.dc-axis-row--x { top: 28.1%; }
+.dc-axis-row--y { top: 42.8%; }
+.dc-axis-row--z { top: 57.5%; }
+.dc-axis-row label { display: block; margin-bottom: calc(14 * var(--dc-scale)); color: #646b6e; font-size: calc(18 * var(--dc-scale)); line-height: 1; }
+.dc-axis-controls { display: flex; align-items: center; justify-content: space-between; }
+.dc-axis-controls output { display: grid; width: 50%; height: calc(48 * var(--dc-scale)); place-items: center; border-radius: calc(16 * var(--dc-scale)); background: #f6f6f9; font-size: calc(24 * var(--dc-scale)); font-weight: 600; }
+.dc-axis-arrow { display: grid; width: calc(48 * var(--dc-scale)); height: calc(48 * var(--dc-scale)); place-items: center; padding: 0; border: 2px solid var(--dc-orange); border-radius: 50%; background: #fff; color: var(--dc-orange); }
+.dc-axis-arrow svg { width: 83%; height: 83%; fill: none; stroke: currentColor; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.dc-axis-arrow g { transform-box: view-box; transform-origin: center; }
+.dc-axis-arrow:active { background: #fff1df; }
+.dc-arrow-left { transform: rotate(-90deg); }
+.dc-arrow-right { transform: rotate(90deg); }
+.dc-arrow-down { transform: rotate(180deg); }
+.dc-motor { position: absolute; top: 71.8%; left: 10.2%; display: flex; width: 44%; align-items: center; justify-content: space-between; }
+.dc-motor-label { display: flex; align-items: center; gap: 6px; font-size: calc(15 * var(--dc-scale)); font-weight: 650; white-space: nowrap; }
+.dc-motor-label svg { width: 26px; height: 26px; fill: currentColor; }
+.dc-motor-hint { position: absolute; top: 77.2%; left: 10.2%; width: 79.6%; margin: 0; color: #999; font-size: calc(10 * var(--dc-scale)); line-height: 1.65; }
+.dc-reset { position: absolute; top: 89.55%; left: 4.3%; width: 91.4%; height: 5.9%; }
+.dc-temperature-page { background: #f5f6fb; }
+.dc-nozzle-label { position: absolute; top: 15.7%; left: 34.4%; display: flex; width: 31.2%; height: 5.4%; align-items: center; justify-content: center; gap: 7px; border-radius: 99px; color: #fff; background: var(--dc-gradient); font-size: calc(15 * var(--dc-scale)); font-weight: 650; }
+.dc-nozzle-label svg { width: 20px; height: 20px; fill: #fff; }
+.dc-temperature-orb { position: absolute; top: 34.7%; left: 22.8%; display: grid; width: 54.4%; aspect-ratio: 1; align-content: center; justify-items: center; padding: 0; border: 0; border-radius: 50%; background: radial-gradient(circle, #ffeddd 45%, #ffe7c9 65%, #f8ce94); }
+.dc-temperature-numbers { white-space: nowrap; line-height: 1.3; }
+.dc-current { color: #f39117; font-size: calc(28 * var(--dc-scale)); font-weight: 550; letter-spacing: -1.8px; }
+.dc-temperature-divider { margin: 0 2px; color: #f39117; font-size: calc(36 * var(--dc-scale)); font-weight: 300; }
+.dc-target { color: #666c6e; font-size: calc(19 * var(--dc-scale)); }
+.dc-edit-target { display: flex; align-items: center; gap: 5px; margin-top: 6px; font-size: calc(14 * var(--dc-scale)); font-weight: 650; }
+.dc-edit-target svg { width: 20px; height: 20px; fill: none; stroke: #929b9c; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.dc-temperature-orb::before { position: absolute; inset: -5px; border: 3px solid transparent; border-radius: 50%; content: ""; pointer-events: none; }
+#temperature-screen[data-operation="heat"] .dc-temperature-orb::before { border-top-color: #f39a27; border-right-color: #f9ca87; animation: dc-orbit 1.4s linear infinite; }
+#temperature-screen[data-operation="cool"] .dc-temperature-orb::before { border-bottom-color: #f39a27; border-left-color: #f9ca87; animation: dc-orbit 1.4s linear infinite reverse; }
+#temperature-screen:not([data-operation="idle"]) .dc-temperature-orb { animation: dc-glow 1.8s ease-in-out infinite alternate; }
+.dc-temperature-state { position: absolute; top: 62%; left: 10%; width: 80%; margin: 0; color: #df8a23; text-align: center; font-size: 12px; }
+.dc-temperature-warning { position: absolute; top: 82.8%; left: 4.3%; display: flex; width: 91.4%; height: 4.2%; align-items: center; justify-content: center; gap: 6px; margin: 0; border-radius: 7px; color: #e44d50; background: #ffede9; font-size: calc(12 * var(--dc-scale)); font-weight: 550; }
+.dc-temperature-actions { position: absolute; top: 89%; left: 4.3%; display: flex; width: 91.4%; height: 6.4%; justify-content: space-between; }
+.dc-temperature-actions button { width: 47%; font-size: calc(15 * var(--dc-scale)); font-weight: 650; }
+.dc-cool-button { border: 1.5px solid #e74f53; border-radius: 99px; color: #e74f53; background: transparent; }
+.dc-temperature-actions button:disabled { opacity: .4; cursor: default; }
+.dc-target-drawer { position: fixed; top: auto; bottom: calc(100vh - var(--frame-top) - var(--frame-height)); left: 50%; width: min(100vw, var(--device-width)); max-width: none; max-height: min(90vh, 500px); margin: 0; padding: 28px 24px 32px; border: 0; border-radius: 20px 20px 0 0; color: #29313a; background: #fff; transform: translateX(-50%); }
+.dc-target-drawer[open] { animation: dc-drawer-in .22s ease-out; }
+.dc-target-drawer::backdrop { background: #1d222960; }
+.dc-target-drawer h2 { margin: 0 28px 30px 0; font-size: 18px; text-align: center; }
+.dc-target-drawer label { display: block; margin-bottom: 12px; font-size: 14px; }
+.dc-target-input-wrap { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 10px; background: #f5f6fa; }
+.dc-target-input-wrap input { width: 100%; min-width: 0; padding: 0; border: 0; outline: none; background: transparent; font-family: inherit; font-size: 24px; text-align: center; }
+.dc-target-input-wrap:focus-within { outline: 2px solid #70a0fa; }
+.dc-target-range { color: #999; font-size: 11px; }
+.dc-target-error { margin: 8px 0; color: #d74649; font-size: 12px; }
+.dc-target-save { width: 100%; min-height: 48px; margin-top: 18px; border: 0; border-radius: 99px; color: #fff; background: linear-gradient(105deg, #a46bfa, #508dfb); font-size: 16px; }
+#temperature-cancel-dialog h2 { padding: 0; font-size: 17px; }
+@keyframes dc-orbit { to { transform: rotate(360deg); } }
+@keyframes dc-glow { to { box-shadow: 0 0 22px #f8c48166; } }
+@keyframes dc-drawer-in { from { translate: 0 100%; } to { translate: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .dc-page *, .dc-page *::before, .dc-target-drawer { animation: none !important; transition: none !important; } }

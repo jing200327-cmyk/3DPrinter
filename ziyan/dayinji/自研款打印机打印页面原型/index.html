@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="styles-prepare-print.css?v=r003">
   <link rel="stylesheet" href="styles-simulation.css?v=r001">
   <link rel="stylesheet" href="styles-filament-guide.css?v=1">
+  <link rel="stylesheet" href="styles-device-control.css?v=1">
 </head>
 <body>
   <main id="device-page" class="phone-shell" aria-label="自研款 3D 打印机设备页">
@@ -263,12 +264,20 @@
         <button id="open-firmware-version" class="reuse-hotspot reuse-hotspot--firmware-version" type="button" aria-label="固件版本"></button>
         <span id="firmware-status-badge" class="firmware-status-badge" hidden>新的固件版本可用</span>
         <button id="open-print-options" class="reuse-hotspot reuse-hotspot--print-options" type="button" aria-label="打印选项"></button>
-        <button id="open-timelapse-settings" class="reuse-hotspot reuse-hotspot--timelapse-setting" type="button" aria-label="延时摄影"></button>
+        <div class="settings-control-extension">
+          <button id="open-device-control" class="settings-control-entry" type="button">设备控制<span aria-hidden="true">›</span></button>
+          <button id="open-timelapse-settings" class="settings-timelapse-entry" type="button">延时摄影<span aria-hidden="true">›</span></button>
+        </div>
         <button id="open-remove-printer" class="reuse-hotspot reuse-hotspot--remove-printer" type="button" aria-label="移除打印机"></button>
       </div>
     </div>
     <button id="device-settings-back" class="reuse-screen-back" type="button" aria-label="返回打印机页面"></button>
   </section>
+
+  <!-- 设备控制及运动、温度子页，由 prototype-device-control.js 构建真实交互 -->
+  <section id="device-control-screen" class="reuse-screen dc-screen" hidden tabindex="-1" aria-label="设备控制"></section>
+  <section id="motion-control-screen" class="reuse-screen dc-screen" hidden tabindex="-1" aria-label="运动控制"></section>
+  <section id="temperature-screen" class="reuse-screen dc-screen" hidden tabindex="-1" aria-label="温度控制" data-operation="idle"></section>
 
   <!-- 打印选项（复用 打印选项.png） -->
   <section id="print-options-screen" class="reuse-screen" hidden tabindex="-1" aria-label="打印选项">
@@ -1067,6 +1076,7 @@
     </form>
   </dialog>
   <script src="prototype.js?v=r020"></script>
+  <script src="prototype-device-control.js?v=1"></script>
   <script src="prototype-simulation.js?v=r001"></script>
 </body>
 </html>
