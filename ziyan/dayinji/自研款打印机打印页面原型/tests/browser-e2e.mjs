@@ -1502,14 +1502,12 @@ try {
       }
       const analysisComplete = readStage();
       advancePreparation();
-      const calibration = readStage();
-      for (let index = 0; index < 4; index += 1) advancePreparation();
-      const homing = readStage();
-      for (let index = 0; index < 4; index += 1) advancePreparation();
-      const leveling = readStage();
-      for (let index = 0; index < 4; index += 1) advancePreparation();
-      const heating = readStage();
-      for (let index = 0; index < 4; index += 1) advancePreparation();
+      const stages = [readStage()];
+      for (let index = 0; index < 15; index += 1) {
+        advancePreparation();
+        stages.push(readStage());
+      }
+      advancePreparation();
       const afterPreparation = {
         status: document.querySelector('#task-panel').dataset.status,
         preparingHidden: document.querySelector('#preparation-progress').hidden,
@@ -1522,7 +1520,7 @@ try {
         connectionLabel: document.querySelector('#printer-connection-state-label').textContent,
         connectionImageHidden: document.querySelector('#printer-connection-state-image').hidden
       };
-      return { initial, analysisProgress, analysisComplete, stages: [calibration, homing, leveling, heating], afterPreparation };
+      return { initial, analysisProgress, analysisComplete, stages, afterPreparation };
     })()`
   });
   const preparing = preparation.result.value;
@@ -1535,7 +1533,7 @@ try {
   assert(preparing.initial.stage.label === '正在分析模型' && !preparing.initial.stage.percentHidden && preparing.initial.stage.percent === '0%', 'Analysis stage must begin at 0%.');
   assert(preparing.analysisProgress.length === 10 && preparing.analysisProgress.every((value, index, values) => index === 0 || value > values[index - 1]), `Analysis progress must rise in distinct jumps: ${JSON.stringify(preparing.analysisProgress)}`);
   assert(preparing.analysisComplete.label === '正在分析模型' && preparing.analysisComplete.percent === '100%' && !preparing.analysisComplete.percentHidden, 'Analysis progress must jump to 100% before the next stage.');
-  assert(JSON.stringify(preparing.stages.map(stage => stage.label)) === JSON.stringify(['校准中', '归零中', '调平中', '升温中']) && preparing.stages.every(stage => stage.percentHidden), `Preparation stage order or percent visibility is incorrect: ${JSON.stringify(preparing.stages)}`);
+  assert(preparing.stages.length === 16 && preparing.stages.every(stage => stage.label === '升温中' && stage.percentHidden), `Preparation must progress directly from analysis to heating: ${JSON.stringify(preparing.stages)}`);
   assert(preparing.afterPreparation.status === 'printing' && preparing.afterPreparation.preparingHidden && preparing.afterPreparation.countdownVisible && preparing.afterPreparation.printProgressVisible && preparing.afterPreparation.finishVisible && preparing.afterPreparation.pauseVisible && preparing.afterPreparation.queueVisible, `Preparation did not switch to printing after 26 seconds: ${JSON.stringify(preparing.afterPreparation)}`);
   assert(preparing.afterPreparation.connectionStatus === 'busy' && preparing.afterPreparation.connectionLabel === '忙碌' && preparing.afterPreparation.connectionImageHidden, `Printing transition did not keep the source busy indicator: ${JSON.stringify(preparing.afterPreparation)}`);
 
