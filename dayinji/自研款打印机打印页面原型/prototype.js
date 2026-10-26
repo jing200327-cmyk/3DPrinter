@@ -137,10 +137,7 @@ const TOTAL_SECONDS = activeTask.seconds;
 const PREPARATION_DURATION_SECONDS = 26;
 const PREPARATION_STAGES = [
   { label: '正在分析模型', startsAt: 0 },
-  { label: '校准中', startsAt: 10 },
-  { label: '归零中', startsAt: 14 },
-  { label: '调平中', startsAt: 18 },
-  { label: '升温中', startsAt: 22 }
+  { label: '升温中', startsAt: 10 }
 ];
 const ANALYSIS_PROGRESS_STEPS = [0, 6, 14, 27, 39, 53, 68, 82, 93, 100];
 let secondsRemaining = TOTAL_SECONDS;
@@ -422,7 +419,7 @@ window.addEventListener('load', bindScrollIndicator);
 });
 
 function renderPreparation() {
-  /* 重新打印后的准备中只承接喷嘴升温，不重复分析/校准等阶段 */
+  /* 重新打印后的准备中只承接喷嘴升温，不重复分析模型。 */
   if (reprintPreparation) {
     preparationLabel.textContent = '升温中';
     preparationPercent.hidden = true;
