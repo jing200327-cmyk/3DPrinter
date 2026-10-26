@@ -1,0 +1,13 @@
+#family-prepare-screen [hidden] { display: none !important; }
+.family-prepare-page .prepare-idle { color: #8991a5; }
+.family-prepare-page .prepare-idle i { background: #f3b339; }
+.family-prepare-page .prepare-options { top: 66.8%; }
+.family-plate-row { position: absolute; pointer-events: auto; transition: top 180ms ease; }
+.family-plate-row[data-slot="0"] { top: 28.148%; }
+.family-plate-row[data-slot="1"] { top: 45.926%; }
+.family-plate-row.is-dragging { z-index: 6; transition: none; }
+.family-prepare-summary { position: absolute; top: 84%; left: 5.7%; width: 88%; margin: 0; color: #8991a5; font-size: 3.4cqw; line-height: 1.65; }
+.family-prepare-page .family-model-thumb { position: absolute; top: -15%; left: -21%; width: 330%; height: 140%; max-width: none; object-fit: fill; }
+.family-prepare-page[data-readonly="true"] .plate-row-grip { display: none; }
+.family-prepare-page .prepare-start:disabled { opacity: .42; }
+@media (prefers-reduced-motion: reduce) { .family-plate-row { transition: none; } }
