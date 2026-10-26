@@ -1982,7 +1982,7 @@ try {
     returnByValue: true,
     expression: `(() => ({ search: location.search, title: document.querySelector('#task-title').textContent, stateText: document.querySelector('#task-state').textContent }))()`
   });
-  assert(nextPlateGirlStarted.result.value.title === '女孩的打印任务 1' && nextPlateGirlStarted.result.value.stateText === '准备中', `下一盘 did not promote the girl task: ${JSON.stringify(nextPlateGirlStarted.result.value)}`);
+  assert(nextPlateGirlStarted.result.value.title === '骨架沧龙_01_011409' && nextPlateGirlStarted.result.value.stateText === '准备中', `下一盘 did not promote the girl task: ${JSON.stringify(nextPlateGirlStarted.result.value)}`);
 
   await cdp.send('Page.navigate', { url: `${pageUrl}?status=preparing` });
   await delay(500);

@@ -31,11 +31,11 @@ const base=process.env.PRINTER_PAGE_URL||pathToFileURL(path.join(__dirname,'../i
   await page.reload();assert.equal(await page.locator('#cancelled-model-actions').isVisible(),true);
   await page.goto(base+'?status=cancelled&plates=single');assert.equal(await page.locator('#cancelled-model-actions').isVisible(),true);
  });
- await scenario('right console switches fresh single and multi simulations; family stays disabled',async page=>{
+ await scenario('right console switches fresh single and multi simulations; family entry is available',async page=>{
   await page.goto(base);
   assert.equal(await page.locator('#simulation-console').count(),1);
   const consoleBox=await page.locator('#simulation-console').boundingBox(),phone=await page.locator('#device-page').boundingBox();assert(consoleBox.x>=phone.x+phone.width);
-  assert.equal(await page.locator('#simulate-family').isDisabled(),true);
+  assert.equal(await page.locator('#simulate-family').isEnabled(),true);
   await page.locator('#simulate-single').click();await page.waitForURL(u=>u.searchParams.get('plates')==='single');
   assert.equal(await page.locator('#task-panel').getAttribute('data-status'),'printing');
   assert.equal(await page.locator('[data-queue-task]:not([hidden])').count(),0);

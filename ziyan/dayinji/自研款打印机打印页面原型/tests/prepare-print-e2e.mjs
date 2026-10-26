@@ -131,6 +131,8 @@ try {
     await screenshot(`prepare-${width}.png`);
   }
   await send('Emulation.setDeviceMetricsOverride', {width:375,height:812,deviceScaleFactor:1,mobile:false});
+  // 等待桌面控制台收起和设备框响应式布局完成，再进行坐标命中检查。
+  await delay(150);
   await click('#prepare-switch-printer');
   assert.equal(await evaluate('document.querySelector("#add-printer-screen").hidden'), false);
   await click('#add-printer-back');
@@ -138,7 +140,9 @@ try {
   const printingLoad=waitForLoad();
   await click('#start-print');
   await printingLoad;
-  assert.match(await evaluate('location.search'), /plate=2.*status=preparing/);
+  const submitted = new URLSearchParams(await evaluate('location.search'));
+  assert.equal(submitted.get('plate'), '2');
+  assert.equal(submitted.get('status'), 'preparing');
   const stateLoad = waitForLoad();
   await send('Page.navigate', {url: pageUrl+'?plate=1&status=printing'});
   await stateLoad;

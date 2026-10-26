@@ -113,8 +113,8 @@ const plateCatalog = {
   3: { taskAsset: '../../src/dayinji/选择要打印的盘3.jpg', queueAsset: '../../src/dayinji/打印队列3.jpg', title: '史蒂夫_03_012207', duration: '1 h 35 min', grams: 20, seconds: 1 * 60 * 60 + 35 * 60 }
 };
 const girlTaskCatalog = {
-  'girl-1': { id: 'girl-1', owner: 'girl', journey: 'v3', task: 'girl-1', taskAsset: '../../src/dayinjirenwukongzhi/女孩的打印任务_1.jpg', queueAsset: '../../src/dayinjirenwukongzhi/女孩的待打印任务__1.jpg', title: '女孩的打印任务 1', duration: '5 h 37 min', grams: 40, seconds: 5 * 60 * 60 + 37 * 60 },
-  'girl-2': { id: 'girl-2', owner: 'girl', journey: 'v3', task: 'girl-2', taskAsset: '../../src/dayinjirenwukongzhi/女孩的打印任务_2.jpg', queueAsset: '../../src/dayinjirenwukongzhi/女孩的待打印任务_2.jpg', title: '女孩的打印任务 2', duration: '48 min', grams: 5, seconds: 48 * 60 }
+  'girl-1': { id: 'girl-1', owner: 'girl', journey: 'v3', task: 'girl-1', taskAsset: '../../src/dayinjirenwukongzhi/女孩的打印任务_1.jpg', queueAsset: '../../src/dayinjirenwukongzhi/女孩的待打印任务__1.jpg', title: '骨架沧龙_01_011409', duration: '5 h 37 min', grams: 40, seconds: 5 * 60 * 60 + 37 * 60 },
+  'girl-2': { id: 'girl-2', owner: 'girl', journey: 'v3', task: 'girl-2', taskAsset: '../../src/dayinjirenwukongzhi/女孩的打印任务_2.jpg', queueAsset: '../../src/dayinjirenwukongzhi/女孩的待打印任务_2.jpg', title: '骨架沧龙_02_011405', duration: '48 min', grams: 5, seconds: 48 * 60 }
 };
 const activeGirlTaskId = Object.hasOwn(girlTaskCatalog, params.get('activeTask')) ? params.get('activeTask') : null;
 const activeTask = activeGirlTaskId ? girlTaskCatalog[activeGirlTaskId] : plateCatalog[activePlate];
@@ -663,6 +663,7 @@ function openPrepareStateScreen(preferredPlate, queueTaskId) {
 function openQueueTaskSettings(queueId) {
   const queueTask = getVisibleQueueTasks().find((task) => task.id === queueId);
   if (!queueTask) return;
+  if (window.__FAMILY_QUEUE?.owns(queueTask)) return window.__FAMILY_QUEUE.openQueuedTask(queueTask);
   const plate = queueTask && plateCatalog[queueTask.plate] ? queueTask.plate : '2';
   openPrepareStateScreen(plate, queueTask.id);
 }
