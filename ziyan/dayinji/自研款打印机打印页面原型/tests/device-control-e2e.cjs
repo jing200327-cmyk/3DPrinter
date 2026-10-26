@@ -19,6 +19,18 @@ const base = process.env.PRINTER_PAGE_URL || pathToFileURL(path.join(__dirname, 
       return rect('#open-device-control').top >= rect('#open-print-options').bottom - 1 && rect('#open-timelapse-settings').top > rect('#open-device-control').bottom;
     });
     assert(settingsLayout);
+    await page.locator('#open-print-options').click();
+    assert.equal(await page.locator('#power-loss-resume').count(), 1, 'Print options must include power-loss recovery');
+    assert.equal(await page.locator('#power-loss-resume').getAttribute('aria-checked'), 'false');
+    await page.locator('#power-loss-resume').click();
+    assert.equal(await page.locator('#power-loss-resume').getAttribute('aria-checked'), 'true');
+    await page.locator('#print-options-back').click();
+    await page.locator('#open-print-options').click();
+    assert.equal(await page.locator('#power-loss-resume').getAttribute('aria-checked'), 'true');
+    await page.locator('#power-loss-resume').click();
+    assert.equal(await page.locator('#power-loss-resume').getAttribute('aria-checked'), 'false');
+    if (process.env.CONTROL_SHOTS) await page.locator('#print-options-screen').screenshot({ animations: 'disabled', path: path.join(process.env.CONTROL_SHOTS, 'print-options-power-loss.png') });
+    await page.locator('#print-options-back').click();
     await page.locator('#open-device-control').click();
     await page.locator('#open-motion-control').click();
     const values = () => page.locator('[data-axis-value]').allTextContents();
@@ -123,6 +135,10 @@ const base = process.env.PRINTER_PAGE_URL || pathToFileURL(path.join(__dirname, 
     await page.locator('#temperature-back').click();
     assert.equal(await page.locator('#exterior-light').getAttribute('aria-checked'), 'true');
     await page.locator('#open-level-calibration').click();
+    assert.equal(await page.locator('#calibration-clean-stage').isVisible(), true);
+    await page.locator('#calibration-exit').click();
+    await page.locator('#calibration-exit-confirm').click();
+    await page.clock.runFor(3000);
     assert.equal(await page.locator('#device-control-screen').isVisible(), true);
     for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 320, height: 568 }]) {
       await page.setViewportSize(viewport);

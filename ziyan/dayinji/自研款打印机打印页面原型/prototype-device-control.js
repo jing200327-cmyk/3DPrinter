@@ -70,13 +70,13 @@
   $('#device-control-back').addEventListener('click', goBackInReuseScreens);
   $('#motion-control-back').addEventListener('click', goBackInReuseScreens);
   $('#temperature-back').addEventListener('click', goBackInReuseScreens);
-  $('#open-level-calibration').addEventListener('click', () => showToast('调平校准页面暂未开放'));
   const toggle = button => {
     const checked = button.getAttribute('aria-checked') !== 'true';
     button.setAttribute('aria-checked', String(checked));
     return checked;
   };
   $('#exterior-light').addEventListener('click', event => toggle(event.currentTarget));
+  $('#power-loss-resume').addEventListener('click', event => toggle(event.currentTarget));
   $('#motor-release').addEventListener('click', event => {
     showToast(toggle(event.currentTarget) ? '电机已释放，可手动移动打印头' : '电机保持力矩已恢复');
   });
