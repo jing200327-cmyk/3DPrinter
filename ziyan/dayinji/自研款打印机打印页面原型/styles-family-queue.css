@@ -1,6 +1,6 @@
 #family-prepare-screen [hidden] { display: none !important; }
 .family-prepare-page .prepare-idle { color: #8991a5; }
-.family-prepare-page .prepare-idle i { background: #f3b339; }
+.family-prepare-page .prepare-idle i { background: #ef4444; }
 .family-prepare-page .prepare-options { top: 66.8%; }
 .family-plate-row { position: absolute; pointer-events: auto; transition: top 180ms ease; }
 .family-plate-row[data-slot="0"] { top: 28.148%; }
