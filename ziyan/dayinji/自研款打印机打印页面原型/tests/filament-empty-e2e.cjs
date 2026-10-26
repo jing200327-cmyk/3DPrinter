@@ -72,6 +72,10 @@ const base = process.env.PRINTER_PAGE_URL || pathToFileURL(path.join(__dirname, 
     await page.locator('#simulate-filament-detected').click();
     await page.keyboard.press('Escape');
     assert.equal(await page.locator('#filament-spool').isVisible(), true);
+    // 等首次桌面→窄屏的媒体查询事件完成，再打开控制台，避免随后被自动收起。
+    await page.clock.resume();
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.waitForFunction(() => !document.querySelector('#simulation-console').open);
     for (const viewport of [{ width: 320, height: 568 }, { width: 375, height: 812 }, { width: 768, height: 1024 }]) {
       await page.setViewportSize(viewport);
       if (await page.locator('#simulation-console').getAttribute('open') === null) await page.locator('#simulation-console summary').click();
