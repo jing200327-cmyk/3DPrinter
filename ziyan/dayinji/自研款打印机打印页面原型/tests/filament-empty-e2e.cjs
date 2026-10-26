@@ -29,6 +29,10 @@ const base = process.env.PRINTER_PAGE_URL || pathToFileURL(path.join(__dirname, 
     if (process.env.FILAMENT_EMPTY_SHOTS) await panel.screenshot({ animations: 'disabled', path: path.join(process.env.FILAMENT_EMPTY_SHOTS, 'filament-empty-panel.png') });
     await page.locator('#simulate-filament-detected').click();
     assert.equal(await page.locator('#filament-detected-dialog').isVisible(), true);
+    assert.equal(await page.locator('#filament-detected-settings').count(), 1, 'Detected alert must offer a settings shortcut');
+    const acknowledgeBox = await page.locator('#filament-detected-ok').boundingBox();
+    const settingsBox = await page.locator('#filament-detected-settings').boundingBox();
+    assert(settingsBox.x > acknowledgeBox.x && Math.abs(settingsBox.y - acknowledgeBox.y) < 1);
     assert.equal(await page.locator('#filament-detected-copy').textContent(), '当前已检测到耗材，请点击耗材设置耗材信息并进料');
     assert.equal(await panel.getAttribute('data-filament-presence'), 'present');
     if (process.env.FILAMENT_EMPTY_SHOTS) await page.screenshot({ animations: 'disabled', path: path.join(process.env.FILAMENT_EMPTY_SHOTS, 'filament-detected-dialog.png') });
@@ -38,6 +42,15 @@ const base = process.env.PRINTER_PAGE_URL || pathToFileURL(path.join(__dirname, 
     assert.equal(await page.locator('#filament-spool').isVisible(), true);
     assert.equal(await page.locator('#filament-selection-ring').isVisible(), false);
     assert.equal(await page.locator('#open-material-settings').isVisible(), true);
+    assert.equal(await page.locator('#load-filament').isDisabled(), true);
+    await page.locator('#simulate-filament-detected').click();
+    await page.locator('#filament-detected-settings').click();
+    assert.equal(await page.locator('#filament-detected-dialog').isVisible(), false);
+    assert.equal(await page.locator('#material-settings-screen').isVisible(), true);
+    await page.locator('#material-settings-back').click();
+    assert.equal(await page.locator('#filament-detected-dialog').isVisible(), false);
+    assert.equal(await page.locator('#filament-spool').isVisible(), true);
+    assert.equal(await page.locator('#filament-selection-ring').isVisible(), false);
     assert.equal(await page.locator('#load-filament').isDisabled(), true);
     await page.locator('#open-material-settings').click();
     assert.equal(await page.locator('#material-settings-screen').isVisible(), true);
@@ -67,7 +80,9 @@ const base = process.env.PRINTER_PAGE_URL || pathToFileURL(path.join(__dirname, 
       const size = await page.locator('#filament-empty-message').evaluate(el => ({ width: el.clientWidth, height: el.clientHeight, scrollWidth: el.scrollWidth, scrollHeight: el.scrollHeight }));
       assert(size.scrollWidth <= size.width && size.scrollHeight <= size.height);
       await page.locator('#simulate-filament-detected').click();
-      await page.locator('#filament-detected-ok').click();
+      await page.locator('#filament-detected-settings').click();
+      assert.equal(await page.locator('#material-settings-screen').isVisible(), true);
+      await page.locator('#material-settings-back').click();
     }
     assert.deepEqual(errors, []);
     console.log('PASS: filament empty state, detected alert, restored material/feed flow, background operation reset, task isolation and responsive console');

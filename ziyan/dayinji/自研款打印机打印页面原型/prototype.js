@@ -1131,6 +1131,10 @@ document.querySelector('#logic-demo-none').addEventListener('click', () => {
 
 /* ---------- 耗材设置与三个子页面 ---------- */
 document.querySelector('#open-material-settings').addEventListener('click', () => openReuseScreen('materialSettings'));
+document.querySelector('#filament-detected-settings').addEventListener('click', () => {
+  document.querySelector('#filament-detected-dialog').close();
+  openReuseScreen('materialSettings');
+});
 document.querySelector('#material-settings-back').addEventListener('click', goBackInReuseScreens);
 document.querySelector('#open-material-name').addEventListener('click', () => openReuseScreen('materialName'));
 document.querySelector('#open-material-type').addEventListener('click', () => openReuseScreen('materialType'));

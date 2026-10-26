@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f4f5fa">
   <title>自研款打印机打印页面原型</title>
-  <link rel="stylesheet" href="styles.css?v=r015">
+  <link rel="stylesheet" href="styles.css?v=r016">
   <link rel="stylesheet" href="styles-share-printer.css?v=r008">
   <link rel="stylesheet" href="styles-filament-operation.css?v=r008">
   <link rel="stylesheet" href="styles-3d-preview.css?v=r008">
@@ -1026,7 +1026,10 @@
     <form method="dialog">
       <h2 id="filament-detected-title">检测到耗材</h2>
       <p id="filament-detected-copy">当前已检测到耗材，请点击耗材设置耗材信息并进料</p>
-      <div class="dialog-actions"><button id="filament-detected-ok" type="submit" value="ok" data-tone="primary" autofocus>我知道了</button></div>
+      <div class="dialog-actions">
+        <button id="filament-detected-ok" type="submit" value="ok" data-tone="primary" autofocus>我知道了</button>
+        <button id="filament-detected-settings" type="button" data-tone="primary">去设置</button>
+      </div>
     </form>
   </dialog>
 
@@ -1091,7 +1094,7 @@
       </div>
     </form>
   </dialog>
-  <script src="prototype.js?v=r022"></script>
+  <script src="prototype.js?v=r023"></script>
   <script src="prototype-device-control.js?v=1"></script>
   <script src="prototype-simulation.js?v=r002"></script>
 </body>
