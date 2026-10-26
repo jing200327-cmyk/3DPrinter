@@ -1,0 +1,39 @@
+.calibration-page { font-family: Arial, "Microsoft YaHei", sans-serif; }
+#calibration-clean-stage, #calibration-points-stage { position: absolute; inset: 0; }
+.calibration-page .dc-nav { z-index: 1; }
+.calibration-progress { position: absolute; top: 13.7%; left: 17%; display: flex; width: 66%; height: 2.5%; align-items: center; gap: calc(7 * var(--dc-scale)); }
+.calibration-progress-first, .calibration-progress-second { flex: none; width: calc(20 * var(--dc-scale)); height: calc(20 * var(--dc-scale)); border: calc(5 * var(--dc-scale)) solid #f59a23; border-radius: 50%; }
+.calibration-progress-second { border-color: #c5c5c7; }
+.calibration-progress-line { flex: 1; border-top: calc(2 * var(--dc-scale)) dashed #ddd; }
+[data-stage="points"] .calibration-progress-first { position: relative; background: #f59a23; }
+[data-stage="points"] .calibration-progress-first::after { position: absolute; top: -1px; left: -1px; width: calc(10 * var(--dc-scale)); height: calc(6 * var(--dc-scale)); border: solid #fff; border-width: 0 0 3px 3px; transform: rotate(-45deg); content: ""; }
+[data-stage="points"] .calibration-progress-line { border-top-style: solid; border-color: #f59a23; }
+[data-stage="points"] .calibration-progress-second { border-color: #f59a23; }
+.calibration-clean-title, .calibration-count { position: absolute; top: 19.5%; left: 0; width: 100%; margin: 0; text-align: center; font-size: calc(19 * var(--dc-scale)); font-weight: 700; line-height: 1.5; }
+.calibration-clean-copy, .calibration-guidance { position: absolute; top: 23.8%; left: 10.5%; width: 79%; margin: 0; color: #60686a; text-align: center; font-size: calc(14 * var(--dc-scale)); line-height: 1.6; }
+.calibration-clean-copy { left: 4.3%; width: 91.4%; font-size: calc(13.5 * var(--dc-scale)); letter-spacing: calc(.3 * var(--dc-scale)); }
+.calibration-clean-photo { position: absolute; top: 28.2%; left: 4.3%; width: 91.4%; height: 23.1%; overflow: hidden; border-radius: calc(16 * var(--dc-scale)); }
+/* 直接复用参考图中的喷头照片，使用容器裁切，保留原始图片文件。 */
+.calibration-clean-photo img { position: absolute; top: -122.5%; left: -4.7%; width: 109.4%; max-width: none; height: auto; }
+.calibration-continue, .calibration-actions { position: absolute; top: 89.05%; left: 4.3%; width: 91.4%; height: 6.4%; }
+.calibration-count { top: 19.4%; font-weight: 500; font-size: calc(20 * var(--dc-scale)); }
+.calibration-count span { color: #25bf5e; }
+.calibration-grid { position: absolute; top: 36.55%; left: 20.7%; width: 58.6%; height: 17.2%; }
+.calibration-grid-outline { position: absolute; inset: 0; border: 1px dashed #bfc0c3; }
+.calibration-point { position: absolute; top: calc(var(--point-row) * 50%); left: calc(var(--point-column) * 50%); display: grid; width: calc(28 * var(--dc-scale)); height: calc(28 * var(--dc-scale)); place-items: center; border-radius: 50%; background: #bfc0c4; transform: translate(-50%, -50%); }
+.calibration-point::after { width: 76%; height: 76%; border: calc(2 * var(--dc-scale)) solid #fff; border-radius: 50%; content: ""; }
+.calibration-point[data-state="current"], .calibration-point[data-state="complete"] { background: #1cbe57; }
+.calibration-point[data-state="complete"]::after { width: 45%; height: 26%; margin-top: -10%; border-width: 0 0 calc(3 * var(--dc-scale)) calc(3 * var(--dc-scale)); border-radius: 0; transform: rotate(-45deg); }
+.calibration-offset-card { position: absolute; top: 58.45%; left: 4.3%; width: 91.4%; height: 18.1%; border-radius: calc(25 * var(--dc-scale)); background: #f6f6fa; }
+.calibration-offset-label { position: absolute; top: 17%; left: 10.9%; font-size: calc(13 * var(--dc-scale)); }
+#calibration-offset { position: absolute; top: 34%; left: 10.9%; color: #08121d; font-size: calc(29 * var(--dc-scale)); font-weight: 600; letter-spacing: -1px; }
+.calibration-offset-card small { position: absolute; top: 72%; left: 10.9%; color: #999; font-size: calc(10.5 * var(--dc-scale)); }
+.calibration-offset-card .dc-axis-arrow { position: absolute; right: 11.2%; }
+#calibration-up { top: 12%; }
+#calibration-down { top: 55.2%; }
+.calibration-offset-card .dc-axis-arrow[aria-pressed="true"] { color: #fff; background: #f59a23; }
+.calibration-actions { display: flex; justify-content: space-between; }
+.calibration-actions > button { width: 46.5%; font-size: calc(15 * var(--dc-scale)); font-weight: 650; }
+.calibration-outline-button { border: calc(1.5 * var(--dc-scale)) solid #eb9b2b; border-radius: 99px; color: #eb9b2b; background: #fff; }
+.calibration-processing-dialog { max-width: calc(100vw - 32px); padding: 0; border: 0; border-radius: 24px; background: transparent; overflow: visible; }
+.calibration-processing-dialog::backdrop { background: rgb(28 32 44 / 38%); backdrop-filter: blur(2px); }

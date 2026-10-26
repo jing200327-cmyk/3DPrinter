@@ -12,7 +12,8 @@
   <link rel="stylesheet" href="styles-prepare-print.css?v=r003">
   <link rel="stylesheet" href="styles-simulation.css?v=r002">
   <link rel="stylesheet" href="styles-filament-guide.css?v=1">
-  <link rel="stylesheet" href="styles-device-control.css?v=1">
+  <link rel="stylesheet" href="styles-device-control.css?v=2">
+  <link rel="stylesheet" href="styles-calibration.css?v=1">
 </head>
 <body>
   <main id="device-page" class="phone-shell" aria-label="自研款 3D 打印机设备页">
@@ -280,12 +281,17 @@
   <section id="device-control-screen" class="reuse-screen dc-screen" hidden tabindex="-1" aria-label="设备控制"></section>
   <section id="motion-control-screen" class="reuse-screen dc-screen" hidden tabindex="-1" aria-label="运动控制"></section>
   <section id="temperature-screen" class="reuse-screen dc-screen" hidden tabindex="-1" aria-label="温度控制" data-operation="idle"></section>
+  <section id="calibration-screen" class="reuse-screen dc-screen" hidden tabindex="-1" aria-label="调平校准" data-stage="clean"></section>
 
   <!-- 打印选项（复用 打印选项.png） -->
   <section id="print-options-screen" class="reuse-screen" hidden tabindex="-1" aria-label="打印选项">
     <div class="reuse-screen-frame">
       <div class="reuse-stage" style="--reuse-ratio: 348 / 751">
         <img src="../../原型修改复用图片资源/打印选项.png" alt="打印选项页，包含缠料检测、断料检测与提示音开关">
+        <div class="power-loss-option">
+          <div><strong id="power-loss-label">断电续打</strong><p id="power-loss-description">意外断电后保留打印进度，恢复供电后可继续未完成的打印任务。</p></div>
+          <button id="power-loss-resume" class="dc-switch" type="button" role="switch" aria-labelledby="power-loss-label" aria-describedby="power-loss-description" aria-checked="false"></button>
+        </div>
       </div>
     </div>
     <button id="print-options-back" class="reuse-screen-back" type="button" aria-label="返回设备设置"></button>
@@ -1095,7 +1101,8 @@
     </form>
   </dialog>
   <script src="prototype.js?v=r023"></script>
-  <script src="prototype-device-control.js?v=1"></script>
+  <script src="prototype-device-control.js?v=2"></script>
+  <script src="prototype-calibration.js?v=1"></script>
   <script src="prototype-simulation.js?v=r002"></script>
 </body>
 </html>
