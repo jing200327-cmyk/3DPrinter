@@ -52,6 +52,7 @@ function showScreen(name) {
   /* 演示台入口显隐 + 起始页改写按钮的几何对齐（函数在后面声明，声明提升可用） */
   renderDemoChrome();
   positionStartOverlay();
+  document.dispatchEvent(new CustomEvent('prototype:screenchange', { detail: { screen: name } }));
 }
 
 function showToast(message) {

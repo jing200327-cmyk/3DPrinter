@@ -156,6 +156,16 @@ def main():
     </section>
 
     <section class="card">
+      <h2>打印机无网打印</h2>
+      <p>连接配网首页 → 打印机无网打印 → 两步连接热点引导 → 连接等待 / 超时重试 → 导入文件。支持我的AI创作、我的切片，以及仅限 gcode 的模拟手机文件选择。</p>
+      <div class="links">
+        <a href="lianjiepeiwnag/打印机首次配网连接流程原型/index.html?flow=offline">打开无网打印完整链路<span>首页「购买打印机」下方新增入口</span></a>
+        <a href="lianjiepeiwnag/打印机首次配网连接流程原型/index.html?screen=offline-guide">连接打印机热点页<span>两步图文指引 · 成功 / 超时演示</span></a>
+        <a href="lianjiepeiwnag/打印机首次配网连接流程原型/index.html?screen=offline-library">导入文件页<span>AI创作 / 我的切片 · 上传等待与成功提示</span></a>
+      </div>
+    </section>
+
+    <section class="card">
       <h2>自研款打印机打印页面原型</h2>
       <p>设备页、打印任务、耗材、设备设置、固件升级、添加打印机与分享打印机；离线工作台支持账号切换、重连成功与超时失败演示。</p>
       <div class="links">

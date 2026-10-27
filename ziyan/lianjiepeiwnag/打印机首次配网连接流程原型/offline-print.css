@@ -1,0 +1,81 @@
+/* 无网打印链路：沿用现有页面的色彩、按钮和连接水波纹。 */
+.offline-start-entry { position:absolute; z-index:4; padding:0 12px; border:0; border-radius:6px; background:transparent; color:#333a44; font-weight:600; text-decoration:underline; text-underline-offset:3px; cursor:pointer; transform:translateX(-50%); }
+.offline-screen { height:100dvh; min-height:100dvh; padding-bottom:0; background:#f6f5fa; }
+.offline-screen .flow-header { height:66px; }
+.offline-body { height:calc(100dvh - 154px); overflow-y:auto; overscroll-behavior:contain; padding:18px 18px 24px; }
+.offline-intro { margin:0 0 18px; color:#687181; font-size:13px; line-height:1.75; }
+.offline-step { margin-bottom:14px; padding:18px; border:1px solid #ebeaf3; border-radius:18px; background:white; }
+.offline-step-head { display:flex; gap:10px; align-items:flex-start; }
+.offline-step h2 { margin:2px 0 7px; font-size:17px; }
+.offline-step p { margin:0; color:#697180; font-size:13px; line-height:1.7; }
+.offline-step .blue-copy { color:#3779df; font-weight:600; }
+.offline-art { display:block; width:100%; height:156px; margin:12px 0 0; object-fit:contain; border-radius:12px; background:#f4f7fd; }
+.offline-step:last-of-type .offline-art { height:112px; }
+.offline-demo { margin:16px 0 0; padding:10px 12px; border:1px dashed #d6d3e7; border-radius:10px; color:#777284; font-size:11px; }
+.offline-demo summary { cursor:pointer; }
+.offline-demo label { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:10px; }
+.offline-demo select { min-height:36px; border:1px solid #d6d3e7; border-radius:8px; background:white; font-size:12px; }
+.offline-screen .sticky-action { min-height:88px; }
+.offline-screen .sticky-action button { width:100%; min-height:50px; }
+.offline-connection-note { margin:4px 0 0; color:#868b99; font-size:11px; text-align:center; }
+.offline-success-screen .offline-body { display:grid; justify-items:center; align-content:center; height:calc(100dvh - 66px); text-align:center; gap:16px; }
+.offline-success-screen h2 { margin:0; font-size:23px; }
+.offline-success-screen p { margin:0; color:#707987; font-size:14px; }
+.offline-success-screen .primary-button { width:100%; margin-top:18px; }
+.offline-success-screen .connected-check { width:78px; height:78px; font-size:36px; color:white; }
+.offline-library-status { display:flex; align-items:center; gap:7px; margin-bottom:18px; font-size:12px; color:#4d7165; }
+.offline-library-status::before { content:''; width:7px; height:7px; border-radius:50%; background:#30ae83; }
+.offline-source-tabs { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:23px; }
+.offline-source-tab { position:relative; display:flex; flex-direction:column; align-items:flex-start; gap:7px; min-height:104px; padding:16px 12px; border:1.5px solid #e7e4f4; border-radius:15px; text-align:left; background:#f0edfa; cursor:pointer; }
+.offline-source-tab:nth-child(2) { background:#eaf2fc; border-color:#dfe9f8; }
+.offline-source-tab[aria-selected="true"] { border-color:#7d6be9; box-shadow:0 0 0 1px #7d6be9; }
+.offline-source-tab[aria-selected="true"]::after { content:'✓'; position:absolute; top:9px; right:9px; color:#6c59d9; font-size:12px; }
+.offline-source-icon { color:#8068e0; font-size:23px; line-height:1; }
+.offline-source-tab:nth-child(2) .offline-source-icon { color:#4d8bdf; }
+.offline-source-tab strong { font-size:16px; }
+.offline-source-tab small { font-size:10px; color:#737c8e; }
+.offline-grid-heading { display:flex; align-items:center; justify-content:space-between; margin-bottom:13px; }
+.offline-grid-heading h2 { margin:0; font-size:16px; }
+.offline-grid-heading span { color:#8b90a0; font-size:11px; }
+.offline-model-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:15px 10px; }
+.offline-model { display:grid; gap:8px; padding:0; border:0; background:none; text-align:left; cursor:pointer; }
+.offline-model-image { display:grid; aspect-ratio:1; place-items:center; overflow:hidden; border:1px solid #eeeaf6; border-radius:12px; background:#eeeaf6; }
+.offline-model:nth-child(3n+2) .offline-model-image { background:#e9f0f7; border-color:#e6edf4; }
+.offline-model:nth-child(3n) .offline-model-image { background:#f4ede6; border-color:#eee8e3; }
+.offline-model img { width:88%; height:88%; object-fit:contain; mix-blend-mode:multiply; }
+.offline-model-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; color:#454c5c; }
+.offline-model small { margin-top:-4px; font-size:10px; color:#9196a0; }
+.offline-modal { width:min(330px,calc(100vw - 40px)); padding:28px 24px; border:0; border-radius:22px; text-align:center; color:var(--ink); box-shadow:0 20px 60px #1a213333; }
+.offline-modal::backdrop { background:rgb(35 40 53 / 48%); }
+.offline-modal h2 { margin:12px 0; font-size:19px; }
+.offline-modal p { color:#707888; font-size:13px; line-height:1.8; }
+.offline-modal .primary-button,.offline-modal .secondary-button { width:100%; margin-top:10px; min-height:44px; }
+.offline-error-icon { display:grid; width:50px; height:50px; place-items:center; margin:auto; border-radius:50%; color:#df5161; background:#fff0f1; font-size:28px; }
+.offline-upload-mark { display:grid; width:52px; height:52px; margin:auto; place-items:center; border-radius:16px; background:#eeeafd; color:#7761df; font-size:28px; }
+.offline-modal #offline-upload-copy { min-height:42px; margin:0 0 18px; color:#5d6576; font-size:14px; }
+.offline-upload-progress { width:100%; height:7px; border:0; border-radius:10px; overflow:hidden; accent-color:#7560df; }
+.offline-upload-progress::-webkit-progress-bar { background:#eeebf6; border-radius:10px; }
+.offline-upload-progress::-webkit-progress-value { background:linear-gradient(90deg,#9965ee,#528bf1); border-radius:10px; transition:width .15s linear; }
+.offline-upload-percent { margin:9px 0 0!important; font-variant-numeric:tabular-nums; color:#7460db!important; }
+.offline-upload-filename { margin:16px 0 0!important; overflow-wrap:anywhere; font-size:11px!important; }
+.offline-files-screen { background:#f3f3f8; }
+.offline-files-screen .system-header { height:66px; }
+.offline-file-body { height:calc(100dvh - 154px); overflow-y:auto; padding:20px 16px; }
+.offline-files-location { display:flex; justify-content:space-between; color:#1e79d2; font-size:13px; margin-bottom:22px; }
+.offline-file-body h2 { margin:0 0 14px; font-size:27px; }
+.offline-files-hint { padding:11px 12px; border-radius:10px; background:#e9eef9; font-size:12px; color:#5f718d; line-height:1.7; }
+.offline-file-list { overflow:hidden; margin-top:18px; border-radius:12px; background:white; }
+.offline-file-row { display:flex; width:100%; align-items:center; gap:11px; padding:16px 13px; border:0; border-bottom:1px solid #f0f0f5; background:white; text-align:left; cursor:pointer; }
+.offline-file-icon { display:grid; flex:none; width:37px; height:45px; border:1px solid #c9dbf3; border-radius:5px; place-items:center; background:#f0f6fe; font-size:9px; color:#4387d9; font-weight:700; }
+.offline-file-info { display:grid; gap:6px; min-width:0; flex:1; }
+.offline-file-info strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; font-weight:500; }
+.offline-file-info small { color:#9498a1; font-size:10px; }
+.offline-file-check { display:grid; flex:none; width:21px; height:21px; border:1px solid #c9cfd9; border-radius:50%; place-items:center; color:transparent; font-size:13px; }
+.offline-file-row[aria-pressed="true"] .offline-file-check { background:#3987e9; border-color:#3987e9; color:white; }
+.offline-file-row[aria-disabled="true"] { color:#969ca6; }
+.offline-file-row[aria-disabled="true"] .offline-file-icon { color:#9aa1af; background:#f5f5f7; border-color:#e0e2e7; }
+.offline-file-row[aria-disabled="true"] .offline-file-check { border-style:dashed; }
+.offline-files-screen .sticky-action { background:#f9f9fc; }
+.offline-files-screen .primary-button { background:#3585e7; }
+.offline-files-screen .primary-button:disabled { background:#c6cfde; cursor:default; }
+@media(max-width:359px) { .offline-body { padding-inline:13px; }.offline-step { padding:14px; }.offline-source-tab { padding-inline:10px; }.offline-source-tab strong { font-size:14px; } }
