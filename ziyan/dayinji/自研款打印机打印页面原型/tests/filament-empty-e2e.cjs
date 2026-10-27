@@ -23,8 +23,8 @@ const base = process.env.PRINTER_PAGE_URL || pathToFileURL(path.join(__dirname, 
     assert.equal(await page.locator('#filament-empty-message').isVisible(), true);
     assert.equal(await page.locator('#filament-spool').isVisible(), false);
     assert.equal(await page.locator('#open-material-settings').isVisible(), false);
-    assert.equal(await page.locator('#load-filament').isDisabled(), true);
-    assert.equal(await page.locator('#unload-filament').isDisabled(), true);
+    assert.equal(await page.locator('#load-filament').isDisabled(), false);
+    assert.equal(await page.locator('#unload-filament').isDisabled(), false);
     await panel.scrollIntoViewIfNeeded();
     if (process.env.FILAMENT_EMPTY_SHOTS) await panel.screenshot({ animations: 'disabled', path: path.join(process.env.FILAMENT_EMPTY_SHOTS, 'filament-empty-panel.png') });
     await page.locator('#simulate-filament-detected').click();
@@ -42,7 +42,7 @@ const base = process.env.PRINTER_PAGE_URL || pathToFileURL(path.join(__dirname, 
     assert.equal(await page.locator('#filament-spool').isVisible(), true);
     assert.equal(await page.locator('#filament-selection-ring').isVisible(), false);
     assert.equal(await page.locator('#open-material-settings').isVisible(), true);
-    assert.equal(await page.locator('#load-filament').isDisabled(), true);
+    assert.equal(await page.locator('#load-filament').isDisabled(), false);
     await page.locator('#simulate-filament-detected').click();
     await page.locator('#filament-detected-settings').click();
     assert.equal(await page.locator('#filament-detected-dialog').isVisible(), false);
@@ -51,7 +51,7 @@ const base = process.env.PRINTER_PAGE_URL || pathToFileURL(path.join(__dirname, 
     assert.equal(await page.locator('#filament-detected-dialog').isVisible(), false);
     assert.equal(await page.locator('#filament-spool').isVisible(), true);
     assert.equal(await page.locator('#filament-selection-ring').isVisible(), false);
-    assert.equal(await page.locator('#load-filament').isDisabled(), true);
+    assert.equal(await page.locator('#load-filament').isDisabled(), false);
     await page.locator('#open-material-settings').click();
     assert.equal(await page.locator('#material-settings-screen').isVisible(), true);
     await page.locator('#material-settings-back').click();
@@ -66,7 +66,7 @@ const base = process.env.PRINTER_PAGE_URL || pathToFileURL(path.join(__dirname, 
     assert.equal(await panel.getAttribute('data-filament-presence'), 'empty');
     assert.equal(await panel.getAttribute('data-filament-state'), 'idle');
     assert.equal(await page.locator('#filament-status').isVisible(), false);
-    assert.equal(await page.locator('#load-filament').isDisabled(), true);
+    assert.equal(await page.locator('#load-filament').isDisabled(), false);
     assert.equal(page.url(), originalUrl);
     assert.equal(await page.locator('#task-panel').getAttribute('data-status'), originalTaskState);
     await page.locator('#simulate-filament-detected').click();
