@@ -1,13 +1,12 @@
 /* ==========================================================================
    打印机离线状态 · 工作台页面（index-offline.html）
    --------------------------------------------------------------------------
-   与 index.html（在线工作台）并存的新分支页：不改动原有页面、脚本与样式，
-   只复用 styles.css 的设备框 / 头部 / 摄像头裁切 / 底部导航 / Toast /
+   与 index.html（在线工作台）共用 prototype-connection.js 的连接与恢复逻辑，
+   复用 styles.css 的设备框 / 头部 / 摄像头裁切 / 底部导航 / Toast /
    复用整图页（.reuse-screen 等）规则。
    本文件的规则全部收在离线页专属类名作用域内：
      .connection-refresh   「离线」右侧的蓝色刷新按钮（重新连接快捷入口）
      .offline-notice       摄像头下方的离线态说明卡片（替代任务 / 耗材面板）
-     .reconnect-sheet-*    「重新连接」分支演示底部弹层
    顶部右侧的「添加打印机 / 设备设置」及其打开的两个整图页，位置、样式与
    热区坐标全部复用在线工作台的 .hotspot--* / .reuse-*（与在线工作台一致）。
    设计语言与分享打印机模块一致：主色 #4388F5、卡片 16px 圆角、轻阴影。
@@ -91,82 +90,3 @@
   cursor: pointer;
 }
 .offline-reconnect:active { background: linear-gradient(135deg, #4488f0, #336fd8); }
-
-/* ---- 「重新连接」分支演示：底部弹层 ----
-   与分享打印机模块的底部面板同构：贴设备框内缘、圆角顶部、上滑动画。 */
-.reconnect-sheet-layer {
-  position: fixed;
-  z-index: 46;
-  top: var(--frame-top);
-  left: 50%;
-  display: flex;
-  width: min(100vw, var(--device-width));
-  height: var(--frame-height);
-  flex-direction: column;
-  justify-content: flex-end;
-  background: rgb(24 29 39 / 42%);
-  transform: translateX(-50%);
-}
-.reconnect-sheet-layer[hidden] { display: none; }
-.reconnect-sheet {
-  display: flex;
-  max-height: 88%;
-  flex-direction: column;
-  padding: 8px 16px 14px;
-  border-radius: 22px 22px 0 0;
-  background: #fff;
-  animation: reconnect-sheet-in 240ms cubic-bezier(0.22, 0.61, 0.36, 1);
-}
-@keyframes reconnect-sheet-in { from { transform: translateY(100%); } to { transform: translateY(0); } }
-.reconnect-sheet-grabber { width: 38px; height: 4px; margin: 0 auto 12px; border-radius: 999px; background: #e3e7ee; }
-.reconnect-demo-badge {
-  align-self: flex-start;
-  margin-bottom: 8px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  color: #7a5cf0;
-  background: #f1edff;
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-}
-.reconnect-sheet-title { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
-.reconnect-sheet-copy { margin: 0 0 12px; color: #5b6474; font-size: 12.5px; line-height: 1.6; }
-
-/* 两个分支选项：左文右箭头 */
-.reconnect-branch {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  border: 1.5px solid #e8ecf4;
-  border-radius: 14px;
-  background: #fff;
-  text-align: left;
-  cursor: pointer;
-}
-.reconnect-branch:active { background: #f7fafd; }
-.reconnect-branch-main { display: grid; flex: 1; min-width: 0; gap: 3px; }
-.reconnect-branch-main strong { font-size: 14px; font-weight: 600; }
-.reconnect-branch-main span { color: #98a2b3; font-size: 11.5px; line-height: 1.5; }
-.reconnect-branch + .reconnect-branch { margin-top: 8px; }
-.reconnect-branch-chevron {
-  flex: none;
-  width: calc(8 * var(--u));
-  height: calc(8 * var(--u));
-  border-top: 2px solid #b6bec9;
-  border-right: 2px solid #b6bec9;
-  transform: rotate(45deg);
-}
-.reconnect-sheet-cancel {
-  min-height: 46px;
-  margin-top: 10px;
-  border: 0;
-  border-radius: 14px;
-  background: #f4f6fa;
-  color: #5b6474;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.reconnect-sheet-cancel:active { background: #eaeef5; }

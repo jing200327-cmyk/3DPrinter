@@ -7,10 +7,12 @@
   <title>打印机离线状态 · 自研款打印机打印页面原型</title>
   <!-- 复用在线工作台的设备框 / 头部 / 摄像头裁切 / 底部导航 / Toast / 复用整图页样式（只引用，不修改）；
        离线态专属规则全部收在 styles-offline.css 的专属类名作用域内 -->
-  <link rel="stylesheet" href="styles.css?v=r013">
-  <link rel="stylesheet" href="styles-offline.css?v=r001">
+  <link rel="stylesheet" href="styles.css?v=r017">
+  <link rel="stylesheet" href="styles-offline.css?v=r002">
+  <link rel="stylesheet" href="styles-simulation.css?v=r003">
+  <link rel="stylesheet" href="styles-connection.css?v=1">
 </head>
-<body>
+<body data-connection-page="offline">
   <main id="device-page" class="phone-shell" aria-label="自研款 3D 打印机设备页 · 打印机离线状态">
     <header class="printer-header" aria-label="打印机连接状态">
       <div class="source-crop source-crop--header" aria-hidden="true">
@@ -52,6 +54,7 @@
         </span>
         <p class="offline-notice-copy">当前打印机处于离线状态，请重新连接打印机。</p>
         <button id="reconnect-button" class="offline-reconnect" type="button">重新连接</button>
+        <p id="offline-troubleshooting" class="offline-troubleshooting"></p>
       </section>
     </div>
 
@@ -90,152 +93,19 @@
     <button id="device-settings-back" class="reuse-screen-back" type="button" aria-label="返回离线工作台"></button>
   </section>
 
-  <!-- 重新连接的分支演示（底部弹层）：演示控件，不属于产品 UI。
-       刷新按钮触发连接状态检测（向云端及局域网连接服务查询设备状态，检测中 Loading、禁止重复点击），
-       检测后按「打印机是否完成配网 + APP 能否获取云端设备联网状态」自动执行：
-       分支一：打印机已完成配网 → 直接重新建立连接，跳转打印页原型（在线态）
-       分支二：打印机未完成配网 → 跳转配网流程第一步骤页「选择要设置的打印机」 -->
-  <div id="reconnect-sheet-layer" class="reconnect-sheet-layer" hidden>
-    <div class="reconnect-sheet" role="dialog" aria-modal="true" aria-labelledby="reconnect-sheet-title" tabindex="-1">
-      <span class="reconnect-sheet-grabber" aria-hidden="true"></span>
-      <span class="reconnect-demo-badge">演示 · 分支选择</span>
-      <h2 id="reconnect-sheet-title" class="reconnect-sheet-title">重新连接打印机</h2>
-      <p class="reconnect-sheet-copy">点击「重新连接」后，App 将触发连接状态检测——向云端及局域网连接服务查询设备状态，检测中按钮进入 Loading 状态、禁止重复点击，随后按「打印机是否完成配网」自动执行。请选择要演示的分支：</p>
-      <button id="reconnect-branch-paired" class="reconnect-branch" type="button">
-        <span class="reconnect-branch-main">
-          <strong>打印机已完成配网</strong>
-          <span>直接重新建立连接，跳转至打印页原型（在线态）</span>
-        </span>
-        <span class="reconnect-branch-chevron" aria-hidden="true"></span>
-      </button>
-      <button id="reconnect-branch-unpaired" class="reconnect-branch" type="button">
-        <span class="reconnect-branch-main">
-          <strong>打印机未完成配网</strong>
-          <span>跳转至配网流程第一步骤页「选择要设置的打印机」</span>
-        </span>
-        <span class="reconnect-branch-chevron" aria-hidden="true"></span>
-      </button>
-      <button id="reconnect-sheet-cancel" class="reconnect-sheet-cancel" type="button">取消</button>
-    </div>
-  </div>
+  <dialog id="reconnect-timeout-dialog" class="app-dialog" aria-labelledby="reconnect-timeout-title" aria-describedby="reconnect-timeout-copy">
+    <form method="dialog">
+      <h2 id="reconnect-timeout-title">无法连接打印机</h2>
+      <p id="reconnect-timeout-copy"></p>
+      <div class="dialog-actions">
+        <button id="reconnect-dismiss" type="button">取消</button>
+        <button id="reconnect-reconfigure" type="button" data-tone="primary">重新配网连接</button>
+      </div>
+    </form>
+  </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script>
-    /* ---------- 打印机离线工作台 ---------- */
-    /* 打印机首次配网连接流程原型（配网流程第一步骤页「选择要设置的打印机」） */
-    const PAIRING_FLOW_PATH = '../../lianjiepeiwnag/打印机首次配网连接流程原型/index.html';
-
-    const toast = document.querySelector('#toast');
-    const sheetLayer = document.querySelector('#reconnect-sheet-layer');
-    const sheet = sheetLayer.querySelector('.reconnect-sheet');
-    const reconnectButton = document.querySelector('#reconnect-button');
-    const connectionRefresh = document.querySelector('#connection-refresh');
-    const devicePage = document.querySelector('#device-page');
-    const offlineReuseScreens = [...document.querySelectorAll('.reuse-screen')];
-    let toastTimer = null;
-    let sheetReturnFocus = null;
-
-    function showToast(message) {
-      toast.textContent = message;
-      toast.classList.add('is-visible');
-      window.clearTimeout(toastTimer);
-      toastTimer = window.setTimeout(() => toast.classList.remove('is-visible'), 2400);
-    }
-
-    function openReconnectSheet(trigger) {
-      sheetReturnFocus = trigger || null;
-      sheetLayer.hidden = false;
-      sheet.focus({ preventScroll: true });
-    }
-
-    function closeReconnectSheet() {
-      sheetLayer.hidden = true;
-      if (sheetReturnFocus && document.contains(sheetReturnFocus)) {
-        sheetReturnFocus.focus({ preventScroll: true });
-      }
-      sheetReturnFocus = null;
-    }
-
-    /* 卡片主按钮直接打开分支弹层 */
-    reconnectButton.addEventListener('click', () => openReconnectSheet(reconnectButton));
-    /* 头部刷新按钮：触发连接状态检测（Loading、禁止重复点击）后再打开分支弹层 */
-    connectionRefresh.addEventListener('click', () => {
-      if (connectionRefresh.disabled) return;
-      connectionRefresh.classList.add('is-loading');
-      connectionRefresh.disabled = true;
-      showToast('正在检测打印机连接状态…');
-      window.setTimeout(() => {
-        connectionRefresh.classList.remove('is-loading');
-        connectionRefresh.disabled = false;
-        openReconnectSheet(connectionRefresh);
-      }, 900);
-    });
-    document.querySelector('#reconnect-sheet-cancel').addEventListener('click', closeReconnectSheet);
-    /* 点遮罩关闭 */
-    sheetLayer.addEventListener('click', (event) => {
-      if (event.target === sheetLayer) closeReconnectSheet();
-    });
-    document.addEventListener('keydown', (event) => {
-      if (event.key !== 'Escape') return;
-      if (!sheetLayer.hidden) closeReconnectSheet();
-      else if (offlineReuseScreens.some((screen) => !screen.hidden)) closeOfflineReuseScreens();
-    });
-
-    /* 分支一：打印机已完成配网 → 直接重新建立连接，回到打印页原型（在线态） */
-    document.querySelector('#reconnect-branch-paired').addEventListener('click', () => {
-      closeReconnectSheet();
-      showToast('连接已重新建立，正在返回打印页…');
-      window.setTimeout(() => { window.location.href = 'index.html'; }, 700);
-    });
-
-    /* 分支二：打印机未完成配网 → 跳转配网流程第一步骤页「选择要设置的打印机」 */
-    document.querySelector('#reconnect-branch-unpaired').addEventListener('click', () => {
-      closeReconnectSheet();
-      showToast('打印机未完成配网，前往重新配网…');
-      window.setTimeout(() => {
-        window.location.href = `${PAIRING_FLOW_PATH}?screen=printer-select`;
-      }, 700);
-    });
-
-    /* ---------- 顶部两个入口打开的复用整图页（添加打印机 / 设备设置） ---------- */
-    function openOfflineReuseScreen(screen) {
-      offlineReuseScreens.forEach((item) => { item.hidden = item !== screen; });
-      devicePage.inert = true;
-      document.body.classList.add('operation-open');
-      screen.focus({ preventScroll: true });
-    }
-
-    function closeOfflineReuseScreens() {
-      offlineReuseScreens.forEach((item) => { item.hidden = true; });
-      devicePage.inert = false;
-      document.body.classList.remove('operation-open');
-    }
-
-    /* 添加打印机 → 添加打印机页；设备设置 → 设备设置页（与在线工作台同位置同行为） */
-    document.querySelector('#printer-switch').addEventListener('click', () => {
-      openOfflineReuseScreen(document.querySelector('#add-printer-screen'));
-    });
-    document.querySelector('#printer-settings').addEventListener('click', () => {
-      openOfflineReuseScreen(document.querySelector('#device-settings-screen'));
-    });
-    document.querySelector('#add-printer-back').addEventListener('click', closeOfflineReuseScreens);
-    document.querySelector('#device-settings-back').addEventListener('click', closeOfflineReuseScreens);
-
-    /* 添加打印机页：配置新的打印机 → 配网流程第一步骤页「选择要设置的打印机」 */
-    document.querySelector('#configure-new-printer').addEventListener('click', () => {
-      showToast('前往配置新的打印机…');
-      window.setTimeout(() => {
-        window.location.href = `${PAIRING_FLOW_PATH}?screen=printer-select`;
-      }, 700);
-    });
-
-    /* 设备设置页四行：都需要与打印机通信，离线态暂不可用 */
-    ['#open-firmware-version', '#open-print-options', '#open-timelapse-settings', '#open-remove-printer'].forEach((selector) => {
-      document.querySelector(selector).addEventListener('click', () => {
-        showToast('打印机离线，该功能暂不可用');
-      });
-    });
-  </script>
+  <script src="prototype-connection.js?v=1"></script>
 </body>
 </html>

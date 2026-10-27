@@ -443,16 +443,23 @@ function advancePreparation() {
 }
 
 function renderPrinterConnectionState(taskStatus) {
-  const connectionStatus = connectionStatusOverride || (['ready', 'cancelled', 'cancelled-all', 'completed'].includes(taskStatus) ? 'idle' : 'busy');
-  const labels = { idle: '空闲', busy: '忙碌', offline: '离线' };
+  const connectionStatus = printerConnectionState.dataset.recoveryState || connectionStatusOverride || (['ready', 'cancelled', 'cancelled-all', 'completed'].includes(taskStatus) ? 'idle' : 'busy');
+  const labels = { idle: '空闲', busy: '忙碌', offline: '离线', connecting: '连接中...' };
   printerConnectionState.dataset.connectionStatus = connectionStatus;
   printerConnectionStateLabel.textContent = labels[connectionStatus];
-  printerConnectionStateImage.hidden = connectionStatus === 'busy';
-  if (connectionStatus !== 'busy') {
+  printerConnectionStateImage.hidden = ['busy', 'connecting'].includes(connectionStatus);
+  if (!printerConnectionStateImage.hidden) {
     printerConnectionStateImage.src = printerConnectionStateImage.dataset[`${connectionStatus}Src`];
     printerConnectionStateImage.alt = `${labels[connectionStatus]}状态`;
   }
 }
+
+document.addEventListener('prototype-connection-change', () => renderPrinterConnectionState(currentStatus));
+document.addEventListener('prototype-connection-camera-off', () => {
+  window.clearTimeout(cameraLimitTimer);
+  cameraMonitor.dataset.cameraState = 'off';
+  renderCameraMonitor();
+});
 
 function setTaskStatus(status) {
   if (isSinglePlateModel && status === 'cancelled') status = 'cancelled-all';
@@ -521,6 +528,7 @@ function setTaskStatus(status) {
 }
 
 function tick() {
+  if (printerConnectionState.dataset.recoveryState) return;
   if (currentStatus === 'preparing') {
     advancePreparation();
     return;
