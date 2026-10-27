@@ -157,11 +157,11 @@ def main():
 
     <section class="card">
       <h2>自研款打印机打印页面原型</h2>
-      <p>设备页、打印任务、耗材、设备设置、固件升级、添加打印机与分享打印机；另含打印机离线状态工作台（重新连接分支）。</p>
+      <p>设备页、打印任务、耗材、设备设置、固件升级、添加打印机与分享打印机；离线工作台支持账号切换、重连成功与超时失败演示。</p>
       <div class="links">
         <a href="dayinji/自研款打印机打印页面原型/index.html">打开打印页面原型<span>设备首页</span></a>
         <a href="dayinji/自研款打印机打印页面原型/index.html?share=normal">分享打印机<span>二维码 + 邀请码 + 异常态</span></a>
-        <a href="dayinji/自研款打印机打印页面原型/index-offline.html">打印机离线状态<span>离线工作台 · 重新连接分支</span></a>
+        <a href="dayinji/自研款打印机打印页面原型/index-offline.html">打印机离线状态<span>超管 / 受限共享成员 · 10s 超时分支</span></a>
       </div>
     </section>
 

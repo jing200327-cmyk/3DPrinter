@@ -1,0 +1,20 @@
+/* 连接演示控件仅位于控制台内；离线产品弹窗复用 app-dialog。 */
+.connection-console-heading { margin: 16px 0 10px; font-size: 13px; }
+.connection-console-actions { margin-top: 16px; }
+.simulation-sensor-control input { width: 100%; min-height: 40px; padding: 0 10px; border: 1px solid #dfe4ef; border-radius: 10px; color: #1f2329; background: #fff; font: inherit; }
+.connection-console-note, .connection-console-status { margin: 12px 0 0; color: #7d8595; font-size: 12px; line-height: 1.7; }
+.connection-console-status { color: #5a63a1; }
+.printer-connection-state[data-connection-status="connecting"] img { display: none; }
+.printer-connection-state[data-connection-status="connecting"] #printer-connection-state-label { position: absolute; top: calc(100 * var(--u)); left: calc(64 * var(--u)); display: flex; align-items: center; gap: calc(6 * var(--u)); width: calc(107 * var(--u)); height: calc(36 * var(--u)); padding: 0; overflow: visible; clip: auto; color: #979ca7; background: #fff; font-size: calc(14 * var(--u)); }
+.printer-connection-state[data-connection-status="connecting"] #printer-connection-state-label::before { content: ''; width: calc(9 * var(--u)); height: calc(9 * var(--u)); flex: none; border: 2px solid #d9dce2; border-top-color: #8793b0; border-radius: 50%; animation: reconnect-button-spin .8s linear infinite; }
+.printer-header:has([data-connection-status="connecting"]) .connection-refresh { left: calc(170 * var(--u)); }
+.offline-troubleshooting { margin: 0; color: #8a919e; font-size: 12px; line-height: 1.7; text-align: left; }
+#connection-console :disabled { cursor: default; opacity: .65; }
+#reconnect-timeout-dialog [hidden] { display: none; }
+#reconnect-timeout-dialog h2 { padding-right: 0; }
+#reconnect-timeout-dialog p { overflow-wrap: anywhere; }
+#reconnect-timeout-dialog[data-account="restricted"] .dialog-actions { grid-template-columns: 1fr; }
+.offline-reconnect.is-loading { display: flex; justify-content: center; align-items: center; gap: 9px; opacity: .7; cursor: default; }
+.offline-reconnect.is-loading::before { content: ''; width: 16px; height: 16px; border: 2px solid #ffffff70; border-top-color: #fff; border-radius: 50%; animation: reconnect-button-spin .8s linear infinite; }
+@keyframes reconnect-button-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .offline-reconnect.is-loading::before { animation: none; } }
