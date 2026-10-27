@@ -20,3 +20,5 @@
   .prototype-console:not([open]) { width: auto; }
   .prototype-console summary { padding: 10px 12px; font-size: 12px; }
 }
+.simulation-sensor-control { display: grid; gap: 8px; margin-top: 16px; color: #5b6474; font-size: 13px; }
+.simulation-sensor-control select { width: 100%; min-height: 40px; padding: 0 10px; border: 1px solid #dfe4ef; border-radius: 10px; color: #1f2329; background: #fff; font: inherit; }

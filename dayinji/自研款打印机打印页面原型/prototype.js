@@ -1319,15 +1319,15 @@ fanFilterReplacedButton.addEventListener('click', () => {
   showToast('已更换滤芯，风扇剩余 400h');
 });
 
-/* ---------- 耗材面板：料盘选中 → 进料 → 进料完成 → 退料 ---------- */
+/* ---------- 耗材面板：进退料入口始终可用，料盘选择仅用于展示 ---------- */
 function renderFilamentPanel() {
   const hasFilament = filamentPanel.dataset.filamentPresence !== 'empty';
   const state = filamentPanel.dataset.filamentState || 'idle';
   const statusLabel = hasFilament ? FILAMENT_STATUS_LABELS[state] || '' : '';
-  const loadActive = hasFilament && filamentSpoolSelected && (state === 'idle' || state === 'retracted');
-  const loadBusy = hasFilament && state === 'feeding';
-  const unloadActive = hasFilament && state === 'loaded';
-  const unloadBusy = hasFilament && state === 'retracting';
+  const loadBusy = state === 'feeding';
+  const unloadBusy = state === 'retracting';
+  filamentPanel.dataset.filamentInstallation = hasFilament ? 'installed' : 'first-install';
+  filamentPanel.setAttribute('aria-label', hasFilament ? '耗材控制面板' : '耗材控制面板，首次安装耗材');
 
   document.querySelector('#filament-empty-message').hidden = hasFilament;
   document.querySelector('#filament-empty-title').hidden = hasFilament;
@@ -1343,21 +1343,21 @@ function renderFilamentPanel() {
   filamentSpoolButton.setAttribute('aria-pressed', String(filamentSpoolSelected));
   filamentSpoolButton.setAttribute('aria-label', filamentSpoolSelected ? '料架上的蓝色耗材料盘，已选择' : '选择料架上的蓝色耗材料盘');
 
-  /* 进行中时按钮保持可点：回退到打印页后可以再点回来查看当前进度（进程不中断） */
-  loadFilamentButton.disabled = !(loadActive || loadBusy);
-  loadFilamentButton.classList.toggle('is-active', loadActive);
+  /* 入口不依赖料盘选中、耗材有无或当前操作状态。 */
+  loadFilamentButton.disabled = false;
+  loadFilamentButton.classList.add('is-active');
   loadFilamentButton.classList.toggle('is-busy', loadBusy);
   loadFilamentButton.textContent = loadBusy ? '进料中...' : '进料';
-  loadFilamentButton.setAttribute('aria-label', loadBusy ? '进料中，点击查看进料进度' : '进料');
+  loadFilamentButton.setAttribute('aria-label', loadBusy ? '进料中，点击进入安装耗材引导' : '进料');
 
-  unloadFilamentButton.disabled = !(unloadActive || unloadBusy);
-  unloadFilamentButton.classList.toggle('is-active', unloadActive);
+  unloadFilamentButton.disabled = false;
+  unloadFilamentButton.classList.add('is-active');
   unloadFilamentButton.classList.toggle('is-busy', unloadBusy);
   unloadFilamentButton.textContent = unloadBusy ? '退料中...' : '退料';
-  unloadFilamentButton.setAttribute('aria-label', unloadBusy ? '退料中，点击查看退料进度' : '退料');
+  unloadFilamentButton.setAttribute('aria-label', unloadBusy ? '退料中，点击进入退出耗材引导' : '退料');
 }
 
-/* 点击蓝色耗材圆盘：绿色边框选中，同时点亮左下角进料按钮 */
+/* 点击蓝色耗材圆盘：仅展示绿色选中边框。 */
 filamentSpoolButton.addEventListener('click', () => {
   filamentSpoolSelected = true;
   renderFilamentPanel();
@@ -1365,7 +1365,7 @@ filamentSpoolButton.addEventListener('click', () => {
 
 /* ==========================================================================
    进料中 / 退料中：真实页面 + 时间轴状态机（R005）
-   - 步骤来自需求：进料 3 步 = 加热喷嘴温度 → 抽回当前耗材 → 送出新耗材；
+   - 进料 2 步 = 加热喷嘴温度 → 吐出耗材丝；
      退料 2 步 = 加热喷嘴温度 → 退出当前耗材（步骤条第 3 点是「退料完成」完成态）
    - 「回退」只离开页面、进程继续（可随时点回面板按钮回到进度页）；
      点「取消」二次确认后中止进程并回到打印页
@@ -1380,25 +1380,25 @@ const FO_CONFIG = {
     hint: '可退出页面，进料将继续进行',
     steps: [
       { key: 'heat', label: '加热喷嘴温度' },
-      { key: 'pull', label: '抽回当前耗材', art: 'assets/耗材操作-进料-抽回当前耗材.png' },
-      { key: 'push', label: '送出新耗材', art: 'assets/耗材操作-进料-送出新耗材.png' }
+      { key: 'push', label: '吐出耗材丝', art: 'assets/耗材操作-进料-送出新耗材.png' }
     ],
-    done: { label: '送出新耗材', art: 'assets/耗材操作-进料-送出新耗材.png' }
+    done: { label: '进料完成', art: 'assets/耗材操作-进料-送出新耗材.png' }
   },
   retract: {
+    completionNode: true,
     title: '退料中',
     hint: '可退出页面，退料将继续进行',
     steps: [
       { key: 'heat', label: '加热喷嘴温度' },
       { key: 'pull', label: '退出当前耗材', art: 'assets/耗材操作-退料-退出当前耗材.png' }
     ],
-    done: { label: '退料完成', art: 'assets/耗材操作-退料-退料完成.png' }
+    done: { label: '退料完成，请将耗材从料管中抽出', art: 'assets/耗材操作-退料-退料完成.png' }
   }
 };
 const foConfig = {
   tick: 100,
   heat: 10000,      /* 加热喷嘴温度：耗时较长 */
-  move: 5000,       /* 抽回 / 送出 / 退出耗材 */
+  move: 5000,       /* 吐出耗材丝 / 退出耗材 */
   tipAt: 6000,      /* 进入页面后 6s 弹「加热时间较长，请耐心等待」（需求要求 5~10s 内） */
   tipHide: 4000
 };
@@ -1418,7 +1418,7 @@ let foTipTimer = 0;
 
 function foNodeLabels(config) {
   const labels = config.steps.map((step) => step.label);
-  if (labels.length < 3) labels.push(config.done.label);
+  if (config.completionNode) labels.push(config.done.label);
   return labels;
 }
 
@@ -1429,7 +1429,9 @@ function foActiveStep() {
 }
 
 function foActiveNode() {
-  return Math.min(3, foState.done ? 3 : foState.step);
+  if (!foState.operation) return 0;
+  const count = foNodeLabels(FO_CONFIG[foState.operation]).length;
+  return foState.done ? count : Math.min(count, foState.step);
 }
 
 function foRender() {
@@ -1440,11 +1442,17 @@ function foRender() {
   const progress = foState.done ? 1 : foState.progress;
   const activeNode = foActiveNode();
   const labels = foNodeLabels(config);
+  filamentOperationScreen.dataset.operation = foState.operation;
+  filamentOperationScreen.dataset.step = String(foState.step);
+  filamentOperationScreen.dataset.phase = foState.done ? 'done' : 'running';
 
   /* 步骤条：当前点及之前的圆点与连接线都为橙色 */
   [...filamentOperationSteps.children].forEach((node, index) => {
     const order = index + 1;
-    node.dataset.state = order < activeNode ? 'done' : order === activeNode ? 'active' : 'todo';
+    node.hidden = order > labels.length;
+    const line = node.querySelector('.fo-step-line');
+    if (line) line.hidden = order >= labels.length;
+    node.dataset.state = foState.done || order < activeNode ? 'done' : order === activeNode ? 'active' : 'todo';
     node.setAttribute('aria-label', `${order}. ${labels[index] || ''}`);
   });
 
@@ -1474,7 +1482,7 @@ function foRender() {
   filamentOperationLabel.textContent = step.label;
 
   /* 底部提示条：进料最后一步换成“观察是否有耗材丝送出”，其余是喷头高温提醒 */
-  const infoPhase = foState.operation === 'feed' && (foState.done || foState.step >= 3);
+  const infoPhase = foState.operation === 'feed' && (foState.done || foState.step >= 2);
   filamentOperationBanner.dataset.tone = infoPhase ? 'info' : 'warn';
   filamentOperationBanner.textContent = infoPhase ? '观察是否有耗材丝送出，如果有则进料完成' : '喷头温度高，请勿触碰';
 
@@ -1569,6 +1577,11 @@ function foOpenScreen() {
 }
 
 function foEnter(operation) {
+  /* 两个入口都可点击，但不能用相反指令覆盖正在执行的进程。 */
+  if (foState.running && foState.operation !== operation) {
+    showToast(`当前正在${foState.operation === 'feed' ? '进料' : '退料'}，请完成或取消后再操作`);
+    return false;
+  }
   /* 同一条进程还在跑：直接回到进度页继续看，不重开计时 */
   const resuming = foState.running && foState.operation === operation;
   if (!resuming) {
@@ -1578,6 +1591,7 @@ function foEnter(operation) {
     foStart(operation);
   }
   foOpenScreen();
+  return true;
 }
 
 /* 回退：只离开页面，进程继续在后台跑 */
@@ -1620,18 +1634,14 @@ function foFinish() {
   showToast(operation === 'feed' ? '进料完成' : '退料完成');
 }
 
-/* 先阅读安装说明；正在进料时仍可直接查看进度。 */
+/* 点击入口不校验耗材；传感器校验位于安装引导的进料动作中。 */
 loadFilamentButton.addEventListener('click', () => {
-  if (loadFilamentButton.disabled) return;
-  if (foState.running) foEnter('feed');
-  else openFilamentGuide('feed');
+  openFilamentGuide('feed');
 });
 
-/* 先阅读退出说明；正在退料时仍可直接查看进度。 */
+/* 退料同样不依赖耗材选择。 */
 unloadFilamentButton.addEventListener('click', () => {
-  if (unloadFilamentButton.disabled) return;
-  if (foState.running) foEnter('retract');
-  else openFilamentGuide('retract');
+  openFilamentGuide('retract');
 });
 
 /* 回退：不中断进程 */
@@ -2433,9 +2443,16 @@ function closeFilamentGuide() {
 }
 document.querySelector('#filament-guide-back').addEventListener('click', closeFilamentGuide);
 document.querySelector('#filament-guide-start').addEventListener('click', () => {
-  closeFilamentGuide();
-  filamentSpoolSelected = true;
-  foEnter(filamentGuideOperation);
+  /* 原型由控制台模拟打印机断料传感器信号，与料盘选中状态无关。 */
+  if (filamentGuideOperation === 'feed' && filamentPanel.dataset.filamentSensor !== 'present') {
+    document.querySelector('#filament-not-detected-dialog').showModal();
+    return;
+  }
+  if (filamentGuideOperation === 'feed') filamentPanel.dataset.filamentPresence = 'present';
+  if (foEnter(filamentGuideOperation)) {
+    closeFilamentGuide();
+    devicePage.inert = true;
+  }
 });
 document.querySelector('#filament-guide-video').addEventListener('click', () => filamentVideo.showModal());
 document.querySelector('#filament-video-close').addEventListener('click', () => filamentVideo.close());

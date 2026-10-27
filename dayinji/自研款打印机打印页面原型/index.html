@@ -7,10 +7,10 @@
   <title>自研款打印机打印页面原型</title>
   <link rel="stylesheet" href="styles.css?v=r016">
   <link rel="stylesheet" href="styles-share-printer.css?v=r008">
-  <link rel="stylesheet" href="styles-filament-operation.css?v=r008">
+  <link rel="stylesheet" href="styles-filament-operation.css?v=r009">
   <link rel="stylesheet" href="styles-3d-preview.css?v=r008">
   <link rel="stylesheet" href="styles-prepare-print.css?v=r003">
-  <link rel="stylesheet" href="styles-simulation.css?v=r002">
+  <link rel="stylesheet" href="styles-simulation.css?v=r003">
   <link rel="stylesheet" href="styles-filament-guide.css?v=1">
   <link rel="stylesheet" href="styles-device-control.css?v=2">
   <link rel="stylesheet" href="styles-calibration.css?v=1">
@@ -135,7 +135,7 @@
         <span>新的固件版本可用，</span><span class="firmware-banner-cta">立即升级&gt;</span>
       </button>
 
-      <section class="filament-panel" data-filament-state="idle" data-filament-presence="present" aria-label="耗材控制面板">
+      <section class="filament-panel" data-filament-state="idle" data-filament-presence="present" data-filament-sensor="present" aria-label="耗材控制面板">
         <div class="filament-panel-frame">
           <button id="fan-filter-banner" class="fan-filter-banner" type="button" aria-label="当前风扇剩余100h需要更换滤芯，前往风扇滤芯更换">
             <span class="fan-filter-copy">当前风扇剩余<span id="fan-filter-hours">100h</span>需要更换滤芯</span>
@@ -149,8 +149,8 @@
             <span id="filament-status" class="filament-status" role="status" aria-live="polite" hidden></span>
             <button id="filament-spool" class="filament-spool-hotspot" type="button" aria-label="选择料架上的蓝色耗材料盘" aria-pressed="false"></button>
             <button id="open-material-settings" class="filament-edit-hotspot" type="button" aria-label="打开耗材设置"></button>
-            <button id="load-filament" class="filament-action-button filament-action-button--load" type="button" aria-label="进料" disabled>进料</button>
-            <button id="unload-filament" class="filament-action-button filament-action-button--unload" type="button" aria-label="退料" disabled>退料</button>
+            <button id="load-filament" class="filament-action-button filament-action-button--load is-active" type="button" aria-label="进料">进料</button>
+            <button id="unload-filament" class="filament-action-button filament-action-button--unload is-active" type="button" aria-label="退料">退料</button>
           </div>
         </div>
       </section>
@@ -165,7 +165,7 @@
        进料中 / 退料中（真实 DOM 高保真页）
        设计稿来自 原型修改复用图片资源/进料中.png（4 屏）与 退料中.png（3 屏），
        按 686px→375px 换算后逐元素重排；插画资源取自设计稿裁切（assets/耗材操作-*.png）。
-       进料 3 步：加热喷嘴温度 → 抽回当前耗材 → 送出新耗材
+       进料 2 步：加热喷嘴温度 → 吐出耗材丝
        退料 2 步：加热喷嘴温度 → 退出当前耗材（步骤条第 3 点为「退料完成」态）
        ========================================================================== -->
   <section id="filament-guide-screen" class="fg-screen" hidden tabindex="-1" aria-labelledby="filament-guide-title">
@@ -235,7 +235,7 @@
     <div class="fo-stage">
       <p id="filament-operation-percent" class="fo-percent is-hidden">0%</p>
       <div id="filament-operation-ring" class="fo-ring is-heating">
-        <img id="filament-operation-art" class="fo-ring-art" src="assets/耗材操作-进料-抽回当前耗材.png" alt="" aria-hidden="true" hidden>
+        <img id="filament-operation-art" class="fo-ring-art" src="assets/耗材操作-进料-送出新耗材.png" alt="" aria-hidden="true" hidden>
         <svg class="fo-ring-svg" viewBox="0 0 220 220" aria-hidden="true">
           <circle class="fo-ring-track" cx="110" cy="110" r="108.4"></circle>
           <circle id="filament-operation-arc" class="fo-ring-arc" cx="110" cy="110" r="108.4"></circle>
@@ -1022,13 +1022,24 @@
       <h3 class="simulation-section-title">耗材状态模拟</h3>
       <p id="simulation-filament-status" class="simulation-filament-status" role="status">当前：已有耗材</p>
       <div class="simulation-options simulation-actions" role="group" aria-label="耗材状态模拟">
-        <button id="simulate-filament-empty" type="button">耗材空态</button>
+        <button id="simulate-filament-empty" type="button">首次安装耗材（无料）</button>
         <button id="simulate-filament-detected" type="button">进料检测到</button>
       </div>
+      <label class="simulation-sensor-control" for="simulation-filament-sensor">断料传感器信号
+        <select id="simulation-filament-sensor"><option value="present">有料</option><option value="absent">无料</option></select>
+      </label>
     </div>
   </details>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <dialog id="filament-not-detected-dialog" class="app-dialog" aria-labelledby="filament-not-detected-title" aria-describedby="filament-not-detected-copy">
+    <form method="dialog">
+      <h2 id="filament-not-detected-title">未检测到耗材</h2>
+      <p id="filament-not-detected-copy">当前打印机未检测到耗材进入，请安装耗材并将耗材插入至喷头不能移动为止</p>
+      <div class="dialog-actions" style="grid-template-columns: 1fr"><button id="filament-not-detected-ok" type="submit" value="ok" data-tone="primary" autofocus>我知道了</button></div>
+    </form>
+  </dialog>
 
   <dialog id="filament-detected-dialog" class="app-dialog filament-detected-dialog" aria-labelledby="filament-detected-title" aria-describedby="filament-detected-copy">
     <form method="dialog">
@@ -1102,10 +1113,10 @@
       </div>
     </form>
   </dialog>
-  <script src="prototype.js?v=r025"></script>
+  <script src="prototype.js?v=r026"></script>
   <script src="prototype-device-control.js?v=2"></script>
   <script src="prototype-calibration.js?v=1"></script>
   <script src="prototype-family-queue.js?v=2"></script>
-  <script src="prototype-simulation.js?v=r003"></script>
+  <script src="prototype-simulation.js?v=r004"></script>
 </body>
 </html>

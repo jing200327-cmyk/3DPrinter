@@ -210,6 +210,15 @@
   letter-spacing: 0.3px;
 }
 .fo-spacer { flex: 1 1 auto; min-height: 0; }
+.fo-screen[data-operation="retract"][data-phase="done"] .fo-step-label {
+  max-width: calc(100% - 40px);
+  height: auto;
+  min-height: 49px;
+  padding-block: 10px;
+  text-align: center;
+  text-wrap: balance;
+  line-height: 1.5;
+}
 
 /* ---------- 底部提示条（整宽）+ 主按钮 ---------- */
 .fo-banner {

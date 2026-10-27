@@ -31,12 +31,19 @@ function simulateFilamentPresence(present) {
   filamentSpoolSelected = false;
   filamentPanel.dataset.filamentState = 'idle';
   filamentPanel.dataset.filamentPresence = present ? 'present' : 'empty';
+  filamentPanel.dataset.filamentSensor = present ? 'present' : 'absent';
+  document.querySelector('#simulation-filament-sensor').value = filamentPanel.dataset.filamentSensor;
   renderFilamentPanel();
-  document.querySelector('#simulation-filament-status').textContent = present ? '当前：已检测到耗材' : '当前：未检测到耗材';
+  document.querySelector('#simulation-filament-status').textContent = present ? '当前：已检测到耗材' : '当前：首次安装耗材（未检测到耗材）';
   filamentPanel.scrollIntoView({ block: 'center', behavior: 'instant' });
 }
 document.querySelector('#simulate-filament-empty').addEventListener('click', () => simulateFilamentPresence(false));
 document.querySelector('#simulate-filament-detected').addEventListener('click', () => {
   simulateFilamentPresence(true);
   document.querySelector('#filament-detected-dialog').showModal();
+});
+
+/* 信号可在引导页内切换，模拟安装后收到的硬件结果，不重置页面或正在执行的流程。 */
+document.querySelector('#simulation-filament-sensor').addEventListener('change', event => {
+  filamentPanel.dataset.filamentSensor = event.target.value;
 });
