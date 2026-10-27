@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="220" viewBox="0 0 600 220">
+ <rect width="600" height="220" rx="22" fill="#f4f7fd"/>
+ <rect x="107" y="28" width="91" height="157" rx="17" fill="#fff" stroke="#b8c9e8" stroke-width="4"/><rect x="132" y="36" width="40" height="7" rx="3" fill="#c8d4e9"/>
+ <rect x="118" y="64" width="69" height="91" rx="7" fill="#eaf1ff"/>
+ <path d="M131 96Q152 76 174 96M140 106Q152 94 165 106" fill="none" stroke="#5b8fea" stroke-width="4" stroke-linecap="round"/><circle cx="152" cy="116" r="4" fill="#5b8fea"/>
+ <path d="M225 106H353" stroke="#90afe0" stroke-width="3" stroke-dasharray="6 7"/><path d="M344 98L355 106L344 114" fill="none" stroke="#90afe0" stroke-width="3"/>
+ <path d="M264 78Q290 55 316 78M275 86Q290 73 305 86" fill="none" stroke="#7165e4" stroke-width="5" stroke-linecap="round"/><circle cx="290" cy="96" r="4" fill="#7165e4"/>
+ <rect x="383" y="48" width="111" height="117" rx="16" fill="white" stroke="#bbcbe5" stroke-width="4"/><rect x="403" y="69" width="71" height="70" rx="6" fill="#e9eef8"/><path d="M413 124H464M428 78V106H450V78" fill="none" stroke="#bccbe3" stroke-width="4"/><rect x="399" y="162" width="16" height="9" rx="3" fill="#b8c9e5"/><rect x="462" y="162" width="16" height="9" rx="3" fill="#b8c9e5"/>
+ <text x="152" y="208" font-family="Microsoft YaHei,sans-serif" font-size="16" text-anchor="middle" fill="#7b8aa0">我的手机</text><text x="438" y="208" font-family="Microsoft YaHei,sans-serif" font-size="16" text-anchor="middle" fill="#7b8aa0">打印机热点</text>
+</svg>

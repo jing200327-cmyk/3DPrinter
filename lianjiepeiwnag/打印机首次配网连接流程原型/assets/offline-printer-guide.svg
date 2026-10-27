@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300" viewBox="0 0 600 300">
+ <rect width="600" height="300" rx="22" fill="#f4f7fd"/>
+ <ellipse cx="264" cy="262" rx="150" ry="13" fill="#e2e8f5"/>
+ <path d="M144 65L321 42L386 81V233L209 257L144 219Z" fill="#d8dfee" stroke="#bac6dd" stroke-width="3"/>
+ <path d="M144 65L209 101L386 81L321 42Z" fill="#fdfefe"/>
+ <path d="M209 101L386 81V233L209 257Z" fill="#edf1f8" stroke="#bac6dd" stroke-width="3"/>
+ <rect x="158" y="89" width="27" height="111" rx="8" fill="#c3ccde"/>
+ <path d="M239 129L336 116M239 144L336 131M239 159L336 146" stroke="#c2cbe0" stroke-width="5" stroke-linecap="round"/>
+ <rect x="237" y="195" width="35" height="20" rx="4" fill="#a8b5cc"/>
+ <circle cx="328" cy="201" r="22" fill="#4a8af2" stroke="#fff" stroke-width="4"/>
+ <circle cx="328" cy="201" r="33" fill="none" stroke="#8fbbff" stroke-width="2" stroke-dasharray="5 5"/>
+ <path d="M352 181L424 129H471" fill="none" stroke="#4a8af2" stroke-width="3" stroke-linecap="round"/>
+ <rect x="412" y="85" width="147" height="39" rx="19" fill="#e0ecff"/>
+ <text x="486" y="111" font-family="Microsoft YaHei,sans-serif" font-size="19" text-anchor="middle" fill="#3473d2">长按蓝色按钮</text>
+ <path d="M286 64Q315 33 345 56M298 69Q316 50 334 64" fill="none" stroke="#6b9ce6" stroke-width="5" stroke-linecap="round"/><circle cx="317" cy="76" r="4" fill="#6b9ce6"/>
+ <text x="278" y="287" font-family="Microsoft YaHei,sans-serif" font-size="15" text-anchor="middle" fill="#8693a9">打印机背面示意</text>
+</svg>
