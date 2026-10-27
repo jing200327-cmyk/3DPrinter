@@ -51,7 +51,6 @@ const filamentCancelDialog = document.querySelector('#filament-cancel-dialog');
 const filamentCancelTitle = document.querySelector('#filament-cancel-title');
 const filamentCancelCopy = document.querySelector('#filament-cancel-copy');
 const filamentPanel = document.querySelector('.filament-panel');
-const filamentSelectionRing = document.querySelector('#filament-selection-ring');
 const filamentStatus = document.querySelector('#filament-status');
 const filamentSpoolButton = document.querySelector('#filament-spool');
 const loadFilamentButton = document.querySelector('#load-filament');
@@ -1338,7 +1337,6 @@ function renderFilamentPanel() {
   filamentStatus.hidden = !statusLabel;
   filamentStatus.textContent = statusLabel;
 
-  filamentSelectionRing.hidden = !hasFilament || !filamentSpoolSelected;
   filamentSpoolButton.classList.toggle('is-selected', filamentSpoolSelected);
   filamentSpoolButton.setAttribute('aria-pressed', String(filamentSpoolSelected));
   filamentSpoolButton.setAttribute('aria-label', filamentSpoolSelected ? '料架上的蓝色耗材料盘，已选择' : '选择料架上的蓝色耗材料盘');
@@ -1357,7 +1355,7 @@ function renderFilamentPanel() {
   unloadFilamentButton.setAttribute('aria-label', unloadBusy ? '退料中，点击进入退出耗材引导' : '退料');
 }
 
-/* 点击蓝色耗材圆盘：仅展示绿色选中边框。 */
+/* 点击料盘仅记录选中状态，不添加圆圈高光。 */
 filamentSpoolButton.addEventListener('click', () => {
   filamentSpoolSelected = true;
   renderFilamentPanel();
