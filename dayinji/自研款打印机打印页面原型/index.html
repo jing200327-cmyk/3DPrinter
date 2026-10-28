@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="styles-share-printer.css?v=r008">
   <link rel="stylesheet" href="styles-filament-operation.css?v=r009">
   <link rel="stylesheet" href="styles-3d-preview.css?v=r008">
-  <link rel="stylesheet" href="styles-prepare-print.css?v=r003">
+  <link rel="stylesheet" href="styles-prepare-print.css?v=r004">
   <link rel="stylesheet" href="styles-simulation.css?v=r003">
   <link rel="stylesheet" href="styles-filament-guide.css?v=1">
   <link rel="stylesheet" href="styles-device-control.css?v=2">
@@ -1028,10 +1028,21 @@
       <label class="simulation-sensor-control" for="simulation-filament-sensor">断料传感器信号
         <select id="simulation-filament-sensor"><option value="present">有料</option><option value="absent">无料</option></select>
       </label>
+      <label class="simulation-sensor-control" for="simulation-filament-fed">是否进料
+        <select id="simulation-filament-fed"><option value="yes">进料</option><option value="no">未进料</option></select>
+      </label>
     </div>
   </details>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <dialog id="print-filament-required-dialog" class="app-dialog" aria-labelledby="print-filament-required-title" aria-describedby="print-filament-required-copy">
+    <form method="dialog">
+      <h2 id="print-filament-required-title">请先安装耗材并进料</h2>
+      <p id="print-filament-required-copy">当前打印机尚未安装耗材并进料，请在打印前进料</p>
+      <div class="dialog-actions"><button id="print-filament-required-cancel" value="cancel" data-tone="neutral">暂不</button><button id="print-filament-go-feed" type="button" data-tone="primary">去进料</button></div>
+    </form>
+  </dialog>
 
   <dialog id="filament-not-detected-dialog" class="app-dialog" aria-labelledby="filament-not-detected-title" aria-describedby="filament-not-detected-copy">
     <form method="dialog">
@@ -1113,11 +1124,11 @@
       </div>
     </form>
   </dialog>
-  <script src="prototype.js?v=r029"></script>
+  <script src="prototype.js?v=r030"></script>
   <script src="prototype-device-control.js?v=2"></script>
   <script src="prototype-calibration.js?v=1"></script>
   <script src="prototype-family-queue.js?v=2"></script>
-  <script src="prototype-simulation.js?v=r004"></script>
+  <script src="prototype-simulation.js?v=r005"></script>
   <script src="prototype-connection.js?v=1"></script>
 </body>
 </html>
