@@ -37,6 +37,8 @@
 .prepare-material-color { display: flex; align-items: center; justify-content: center; height: 31%; background: var(--prepare-blue); color: #fff; font-size: 2.5cqw; line-height: 1; }
 .prepare-material--mismatch { border-color: #ef5157; }
 .prepare-material--mismatch .prepare-material-color { background: var(--prepare-green); }
+.prepare-material--empty { border-color: #ef5157; }
+.prepare-material [hidden] { display: none !important; }
 .prepare-material-body { display: flex; align-items: center; justify-content: space-evenly; height: 69%; padding: .5cqw 1cqw; }
 .prepare-spool { width: 6cqw; height: 7.5cqw; object-fit: contain; }
 .prepare-loaded-color { color: #687486; font-size: 2.65cqw; }

@@ -32,6 +32,7 @@ function simulateFilamentPresence(present) {
   filamentPanel.dataset.filamentState = 'idle';
   filamentPanel.dataset.filamentPresence = present ? 'present' : 'empty';
   filamentPanel.dataset.filamentSensor = present ? 'present' : 'absent';
+  setFilamentFed(false);
   document.querySelector('#simulation-filament-sensor').value = filamentPanel.dataset.filamentSensor;
   renderFilamentPanel();
   document.querySelector('#simulation-filament-status').textContent = present ? '当前：已检测到耗材' : '当前：首次安装耗材（未检测到耗材）';
@@ -46,4 +47,23 @@ document.querySelector('#simulate-filament-detected').addEventListener('click', 
 /* 信号可在引导页内切换，模拟安装后收到的硬件结果，不重置页面或正在执行的流程。 */
 document.querySelector('#simulation-filament-sensor').addEventListener('change', event => {
   filamentPanel.dataset.filamentSensor = event.target.value;
+  filamentPanel.dataset.filamentPresence = event.target.value === 'present' ? 'present' : 'empty';
+  if (event.target.value === 'absent') {
+    if (prePrintFeedPending) foAbort();
+    setFilamentFed(false);
+  } else {
+    window.history.replaceState(null, '', taskSessionUrl());
+  }
+  renderFilamentPanel();
+});
+
+document.querySelector('#simulation-filament-fed').value = filamentPanel.dataset.filamentFed;
+document.querySelector('#simulation-filament-sensor').value = filamentPanel.dataset.filamentSensor;
+document.querySelector('#simulation-filament-fed').addEventListener('change', event => {
+  if (prePrintFeedPending) {
+    event.target.value = 'no';
+    showToast('正在执行打印前进料，请等待完成');
+    return;
+  }
+  setFilamentFed(event.target.value === 'yes');
 });
