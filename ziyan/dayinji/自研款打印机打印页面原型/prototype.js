@@ -1354,13 +1354,13 @@ function renderFilamentPanel() {
   loadFilamentButton.classList.add('is-active');
   loadFilamentButton.classList.toggle('is-busy', loadBusy);
   loadFilamentButton.textContent = loadBusy ? '进料中...' : '进料';
-  loadFilamentButton.setAttribute('aria-label', loadBusy ? '进料中，点击进入安装耗材引导' : '进料');
+  loadFilamentButton.setAttribute('aria-label', loadBusy ? '进料中，点击查看进料进度' : '进料');
 
   unloadFilamentButton.disabled = false;
   unloadFilamentButton.classList.add('is-active');
   unloadFilamentButton.classList.toggle('is-busy', unloadBusy);
   unloadFilamentButton.textContent = unloadBusy ? '退料中...' : '退料';
-  unloadFilamentButton.setAttribute('aria-label', unloadBusy ? '退料中，点击进入退出耗材引导' : '退料');
+  unloadFilamentButton.setAttribute('aria-label', unloadBusy ? '退料中，点击查看退料进度' : '退料');
 }
 
 /* 点击料盘仅记录选中状态，不添加圆圈高光。 */
@@ -1642,11 +1642,19 @@ function foFinish() {
 
 /* 点击入口不校验耗材；传感器校验位于安装引导的进料动作中。 */
 loadFilamentButton.addEventListener('click', () => {
+  if (filamentPanel.dataset.filamentState === 'feeding') {
+    foEnter('feed');
+    return;
+  }
   openFilamentGuide('feed');
 });
 
 /* 退料同样不依赖耗材选择。 */
 unloadFilamentButton.addEventListener('click', () => {
+  if (filamentPanel.dataset.filamentState === 'retracting') {
+    foEnter('retract');
+    return;
+  }
   openFilamentGuide('retract');
 });
 
