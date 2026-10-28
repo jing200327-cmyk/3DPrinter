@@ -277,9 +277,9 @@ node .\tests\check-offline-page.mjs
 
 - 右侧模拟控制台分别提供「断料传感器信号」与「是否进料（进料 / 未进料）」。准备页实时跟随传感器信号：无料时，下方耗材料盘替换为独立空态图标，右侧复用红色警示符号，上方模型颜色不变。
 - 点击「开始打印」先检查传感器。无料时不提交任务，弹窗提示「当前打印机尚未安装耗材并进料，请在打印前进料」，点「去进料」进入安装耗材引导。取消、引导返回和手动进料完成后均保留原选盘与延时摄影设置；用户回到准备页后再次提交。
-- 有料但未进料：工作台任务先显示「准备中－进料中」，复用现有设备进料过程；进料完成后标记已进料，再按「正在分析模型 → 升温中 → 打印中」执行。前置进料中断或取消后不继续打印。已进料不重复执行进料；退料或切换为无料会清除已进料标记。
+- 检测到有料后沿用原有「正在分析模型 → 升温中 → 打印中」流程，不再按已进料标记追加工作台进料等待态。手动安装、进料和退料继续使用各自原有引导和进度页。
 - 演示默认已进料，以保留原有打印路径。跨页面通过 `filamentSensor=present|absent`、`filamentFed=yes|no` 保存状态。`?status=ready&screen=prepare-print&filamentSensor=absent&filamentFed=no` 可直接评审无料准备页。
-- 验收：`node tests/print-filament-gate-e2e.cjs`；`PRINT_FILAMENT_SHOTS` 可指定页面截图目录。文档对应 1.2.3 的 PRINT-D-02、PRINT-D-03 与 PRINT-D-04。
+- 验收：`node tests/print-filament-gate-e2e.cjs`；`PRINT_FILAMENT_SHOTS` 可指定页面截图目录。文档对应 1.2.3 的 PRINT-D-02 与 PRINT-D-03。
 
 ## 2026-10-22 模型模拟控制台
 

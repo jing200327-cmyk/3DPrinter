@@ -148,7 +148,6 @@ let reprintPreparation = false;
 filamentPanel.dataset.filamentSensor = params.get('filamentSensor') === 'absent' ? 'absent' : 'present';
 filamentPanel.dataset.filamentFed = params.get('filamentFed') === 'no' ? 'no' : 'yes';
 if (filamentPanel.dataset.filamentSensor === 'absent') filamentPanel.dataset.filamentPresence = 'empty';
-let prePrintFeedPending = params.get('prePrintFeed') === '1' || (params.get('status') === 'preparing' && filamentPanel.dataset.filamentFed === 'no');
 let filamentGuideReturnStack = null;
 let filamentSpoolSelected = false;
 let cameraLimitTimer;
@@ -278,8 +277,7 @@ function taskSessionUrl(status = currentStatus) {
   else next.searchParams.delete('completed');
   next.searchParams.set('filamentSensor', filamentPanel.dataset.filamentSensor);
   next.searchParams.set('filamentFed', filamentPanel.dataset.filamentFed);
-  if (prePrintFeedPending && status === 'preparing') next.searchParams.set('prePrintFeed', '1');
-  else next.searchParams.delete('prePrintFeed');
+  next.searchParams.delete('prePrintFeed');
   return next;
 }
 
@@ -429,11 +427,6 @@ window.addEventListener('load', bindScrollIndicator);
 });
 
 function renderPreparation() {
-  if (prePrintFeedPending) {
-    preparationLabel.textContent = '进料中';
-    preparationPercent.hidden = true;
-    return;
-  }
   /* 重新打印后的准备中只承接喷嘴升温，不重复分析模型。 */
   if (reprintPreparation) {
     preparationLabel.textContent = '升温中';
@@ -449,7 +442,6 @@ function renderPreparation() {
 
 function advancePreparation() {
   if (currentStatus !== 'preparing') return;
-  if (prePrintFeedPending) return;
   preparationElapsedSeconds = Math.min(PREPARATION_DURATION_SECONDS, preparationElapsedSeconds + 1);
   if (preparationElapsedSeconds === PREPARATION_DURATION_SECONDS) {
     reprintPreparation = false;
@@ -479,15 +471,6 @@ document.addEventListener('prototype-connection-camera-off', () => {
 });
 
 function setTaskStatus(status) {
-  if (prePrintFeedPending && status !== 'preparing') {
-    window.clearInterval(foTimer);
-    foState.running = false;
-    foState.operation = null;
-    prePrintFeedPending = false;
-    filamentPanel.dataset.filamentState = 'idle';
-    setFilamentFed(false);
-    renderFilamentPanel();
-  }
   if (isSinglePlateModel && status === 'cancelled') status = 'cancelled-all';
   if (status === 'cancelled-all') cancelTasksForActiveRole();
   if (status === 'completed') {
@@ -1280,7 +1263,7 @@ document.querySelector('#prepare-state-back').addEventListener('click', closeReu
 document.querySelector('#prepare-state-start').addEventListener('click', () => {
   if (prepareStateStart.disabled) return;
   if (!validatePrintFilament()) return;
-  startQueuedTask(selectedQueuedTask(), prePrintFeedPending ? 'preparing' : 'printing');
+  startQueuedTask(selectedQueuedTask(), 'printing');
 });
 
 /* 带参数回到打印页：切换当前任务盘并落到指定状态 */
@@ -1359,7 +1342,6 @@ function validatePrintFilament() {
     document.querySelector('#print-filament-required-dialog').showModal();
     return false;
   }
-  prePrintFeedPending = filamentPanel.dataset.filamentFed !== 'yes';
   return true;
 }
 
@@ -1663,12 +1645,6 @@ function foComplete() {
   foHideTip();
   foRender();
   setFilamentFed(foState.operation === 'feed');
-  if (prePrintFeedPending) {
-    prePrintFeedPending = false;
-    foSettlePanel();
-    window.history.replaceState(null, '', taskSessionUrl());
-    renderPreparation();
-  }
   if (!filamentOperationScreen.hidden) return;
   foSettlePanel();
   showToast(foState.operation === 'feed' ? '进料完成' : '退料完成');
@@ -1718,8 +1694,6 @@ function foLeave() {
 
 /* 取消：中止进程，回到打印页并把面板还原成发起前的状态 */
 function foAbort() {
-  const cancellingPrintFeed = prePrintFeedPending;
-  prePrintFeedPending = false;
   window.clearInterval(foTimer);
   foTimer = 0;
   const operation = foState.operation;
@@ -1732,10 +1706,6 @@ function foAbort() {
   document.body.classList.remove('operation-open');
   filamentPanel.dataset.filamentState = foState.panelStateBefore || 'idle';
   foState.operation = null;
-  if (cancellingPrintFeed) {
-    setFilamentFed(false);
-    setTaskStatus('cancelled');
-  }
   renderFilamentPanel();
   showToast(operation === 'feed' ? '已取消进料' : '已取消退料');
   returnToPrintPreparation();
@@ -1882,17 +1852,6 @@ else if (params.get('status') === 'cancelled') setTaskStatus('cancelled');
 else if (params.get('status') === 'cancelled-all') setTaskStatus('cancelled-all');
 else if (params.get('status') === 'preparing') setTaskStatus('preparing');
 else setTaskStatus('ready');
-if (currentStatus === 'preparing' && prePrintFeedPending) {
-  if (filamentPanel.dataset.filamentSensor === 'present') {
-    foState.panelStateBefore = filamentPanel.dataset.filamentState;
-    filamentPanel.dataset.filamentState = 'feeding';
-    renderFilamentPanel();
-    foStart('feed');
-  } else {
-    prePrintFeedPending = false;
-    setTaskStatus('ready');
-  }
-}
 bindScrollIndicator();
 
 /* ==========================================================================
