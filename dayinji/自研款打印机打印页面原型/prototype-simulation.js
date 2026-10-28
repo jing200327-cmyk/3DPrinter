@@ -49,7 +49,6 @@ document.querySelector('#simulation-filament-sensor').addEventListener('change',
   filamentPanel.dataset.filamentSensor = event.target.value;
   filamentPanel.dataset.filamentPresence = event.target.value === 'present' ? 'present' : 'empty';
   if (event.target.value === 'absent') {
-    if (prePrintFeedPending) foAbort();
     setFilamentFed(false);
   } else {
     window.history.replaceState(null, '', taskSessionUrl());
@@ -60,10 +59,5 @@ document.querySelector('#simulation-filament-sensor').addEventListener('change',
 document.querySelector('#simulation-filament-fed').value = filamentPanel.dataset.filamentFed;
 document.querySelector('#simulation-filament-sensor').value = filamentPanel.dataset.filamentSensor;
 document.querySelector('#simulation-filament-fed').addEventListener('change', event => {
-  if (prePrintFeedPending) {
-    event.target.value = 'no';
-    showToast('正在执行打印前进料，请等待完成');
-    return;
-  }
   setFilamentFed(event.target.value === 'yes');
 });
