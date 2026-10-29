@@ -494,6 +494,7 @@ const demoState = {
      v2 = 群组判断逻辑（家长授权 → 群组内 Toast / 群组外个人二维码页） */
   startVersion: 'v1',
   /* v2 家长授权判断用：当前儿童账号是否已在家庭群组内 */
+  offlinePrint: false,
   inFamilyGroup: false
 };
 
@@ -525,7 +526,7 @@ function renderDemoChrome() {
   const placement = activeName === 'start' ? 'float' : 'top';
   demoChip.dataset.placement = placement;
   demoChip.dataset.account = demoState.account;
-  demoChipMode.textContent = demoState.account === 'child' ? '儿童受限' : '家长';
+  demoChipMode.textContent = demoState.account === 'child' ? '儿童账号' : '基础账号';
   /* 放在导航栏右侧时收起「· 家长/儿童」后缀，避免和居中标题挤在一起（模式在起始页可见） */
   demoChipExtra.hidden = placement === 'top';
 }
@@ -559,14 +560,19 @@ function renderDeviceCards() {
 }
 
 function renderStartAccount() {
-  const child = demoState.account === 'child';
-  startOverlay.hidden = !child;
-  startOverlayV2.hidden = !child;
-  /* 儿童模式下隐藏原先的透明热区，避免和改写后的按钮抢点击 */
-  addPrinterButton.hidden = child;
-  addPrinterButton.setAttribute('aria-hidden', String(child));
-  addPrinterButtonV2.hidden = child;
-  addPrinterButtonV2.setAttribute('aria-hidden', String(child));
+  startOverlay.hidden = false;
+  startOverlayV2.hidden = false;
+  [addPrinterButton, addPrinterButtonV2].forEach((button) => {
+    button.hidden = true;
+    button.setAttribute('aria-hidden', 'true');
+  });
+  document.querySelectorAll('[data-start-action="offline"]').forEach((button) => {
+    button.hidden = !demoState.offlinePrint;
+  });
+  document.querySelector('#demo-offline-toggle').setAttribute('aria-checked', String(demoState.offlinePrint));
+  document.querySelector('#demo-offline-status').textContent = demoState.offlinePrint
+    ? '已开启 · 两个账号的首页均显示此入口'
+    : '已关闭 · 两个账号的首页均隐藏此入口';
   positionStartOverlay();
 }
 
@@ -602,7 +608,7 @@ function positionStartOverlay() {
 
 /* 儿童受限账号的起始页落点：v2 落在起始页v2，其余（家长 / v1）落在原起始页 */
 function startScreenName() {
-  return demoState.account === 'child' && demoState.startVersion === 'v2' ? 'start-v2' : 'start';
+  return 'start';
 }
 
 /* 账号或版本变化后，若当前停在某个起始页，则跳到该状态下对应的起始页 */
@@ -810,33 +816,42 @@ document.querySelector('#demo-enter').addEventListener('click', () => {
   showScreen(startScreenName());
 });
 
-/* 儿童受限账号：前往认证 → 认证占位页（本期不实现） */
-document.querySelector('#start-cta-auth').addEventListener('click', () => showScreen('auth-todo'));
-/* 儿童受限账号：家长授权 → 加入共享打印机 */
-document.querySelector('#start-cta-authorize').addEventListener('click', () => {
-  clearJoinErrors();
-  showScreen('join-scan');
+/* 两种账号共用入口：儿童仅弹授权提示，基础账号沿用配网流程。 */
+const childAuthorizationDialog = document.querySelector('#child-authorization-dialog');
+let authorizationTrigger = null;
+function handleStartAction(action, trigger) {
+  if (demoState.account === 'child') {
+    authorizationTrigger = trigger;
+    childAuthorizationDialog.showModal();
+    document.querySelector('#child-authorization-confirm').focus();
+    return;
+  }
+  if (action === 'add') {
+    showScreen('printer-select');
+    locationDialog.showModal();
+  } else if (action === 'offline') {
+    showScreen('offline-guide');
+  } else {
+    showToast('购买打印机入口（原型演示）');
+  }
+}
+document.querySelector('#child-authorization-confirm').addEventListener('click', () => childAuthorizationDialog.close());
+childAuthorizationDialog.addEventListener('close', () => authorizationTrigger?.focus({ preventScroll: true }));
+for (const suffix of ['', '-v2']) {
+  document.querySelector(`#start-cta-auth${suffix}`).addEventListener('click', (event) => handleStartAction('add', event.currentTarget));
+  document.querySelector(`#start-cta-authorize${suffix}`).addEventListener('click', (event) => handleStartAction('buy', event.currentTarget));
+}
+document.querySelectorAll('[data-start-action="offline"]').forEach((button) => {
+  button.addEventListener('click', (event) => handleStartAction('offline', event.currentTarget));
 });
+document.querySelector('#demo-offline-toggle').addEventListener('click', () => {
+  demoState.offlinePrint = !demoState.offlinePrint;
+  renderStartAccount();
+});
+
 document.querySelector('#auth-todo-back').addEventListener('click', () => showScreen('start'));
 document.querySelector('#auth-todo-back-cta').addEventListener('click', () => showScreen('start'));
 
-/* ==========================================================================
-   儿童受限账号起始页 v2
-   —— 首页内容与 v1 相同（同一张整图 + 前往认证 / 家长授权），
-      仅「家长授权」逻辑不同：先判断当前儿童账号是否在家庭群组内。
-   —— 已在群组内：本页弹 Toast「已向小明妈妈发起打印机授权申请」，不跳转；
-   —— 未加入群组：跳转儿童账号个人二维码页，家长扫码加入家庭群组。
-   ========================================================================== */
-/* v2 的「前往认证」与 v1 同路：认证占位页 */
-document.querySelector('#start-cta-auth-v2').addEventListener('click', () => showScreen('auth-todo'));
-/* v2 的「家长授权」：家庭群组判断 + 两个分支 */
-document.querySelector('#start-cta-authorize-v2').addEventListener('click', () => {
-  if (demoState.inFamilyGroup) {
-    showToast(FAMILY_AUTH_TOAST);
-    return;
-  }
-  showScreen('child-qr');
-});
 /* 二维码页返回：回到起始页v2（不是 v1） */
 document.querySelector('#child-qr-back').addEventListener('click', () => showScreen('start-v2'));
 
@@ -973,7 +988,7 @@ window.__joinShare = {
 /* 支持从其他原型深链到指定页面，例如 ?screen=printer-select 直接打开“选择要设置的打印机” */
 const requestedScreen = new URLSearchParams(window.location.search).get('screen');
 if (requestedScreen && screens.some((screen) => screen.dataset.screen === requestedScreen)) {
-  showScreen(requestedScreen);
+  showScreen(requestedScreen === 'start-v2' ? 'start' : requestedScreen);
 } else {
   /* 未指定页面：儿童 v2 落到起始页v2，家长 / v1 保持默认起始页 */
   showScreen(startScreenName());

@@ -616,3 +616,11 @@
 .child-qr__badge img { width: 100%; height: 100%; object-fit: cover; }
 .child-qr__hint { margin: 0; max-width: 264px; font-size: 14px; font-weight: 600; line-height: 1.7; color: var(--jo-ink); }
 .child-qr__note { margin: 0; padding: 0 4px; font-size: 11.5px; line-height: 1.7; color: var(--jo-muted); text-align: center; }
+
+/* 首页入口与演示台中的无网打印开关。 */
+.demo-option[role="switch"][aria-checked="true"] { border-color: var(--jo-blue); background: var(--jo-blue-soft); }
+.demo-option[role="switch"][aria-checked="true"] .demo-option__tick { border-color: var(--jo-blue); background: var(--jo-blue); box-shadow: inset 0 0 0 3.5px #fff; }
+.start-cta-offline { position: absolute; left: 30%; top: 76%; width: 40%; min-height: 44px; border: 0; border-radius: 6px; color: #656b75; background: #f5f6fa; font-size: calc(26px * var(--img-scale, 1)); cursor: pointer; }
+.start-cta-offline[hidden] { display: none; }
+/* 遮住参考图中烘焙的红色标注框，保留胶囊按钮原有视觉。 */
+.start-overlay::before { position: absolute; left: 23.4%; top: 59.7%; width: 54%; height: 10.7%; background: #f5f6fa; content: ""; pointer-events: none; }

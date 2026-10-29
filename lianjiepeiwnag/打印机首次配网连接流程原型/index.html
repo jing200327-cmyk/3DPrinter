@@ -7,7 +7,7 @@
   <title>打印机首次配网连接流程原型</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="styles-join-share.css">
+  <link rel="stylesheet" href="styles-join-share.css?v=20261029">
   <link rel="stylesheet" href="styles-pairing-help.css">
   <link rel="stylesheet" href="styles-hotspot-auto.css?v=1">
   <link rel="stylesheet" href="offline-print.css?v=1">
@@ -59,14 +59,14 @@
     <section id="screen-start" class="app-screen app-screen--reference is-active" data-screen="start" aria-label="添加打印机起始页">
       <img id="start-reference" class="full-reference" src="../../src/lianjiepeiwnag/起始页.png" alt="趣打印设备起始页">
       <button id="add-printer" class="image-hotspot image-hotspot--add" type="button">添加打印机</button>
-      <button class="offline-start-entry" type="button">打印机无网打印</button>
       <!-- 右上角「帮助」：整图上已烘焙「帮助」二字，这里叠透明热区放大到 ≥44px 可点范围 -->
       <button id="start-help" class="hotspot-help" type="button" aria-label="帮助，查看连接配网常见问题">帮助</button>
       <!-- 儿童受限账号下改写按钮文案：覆盖层由 JS 对齐到「真实绘制的图片矩形」，
            left/top/width/height 是 686 × 1530 原图内的百分比（与视口高度无关）。 -->
-      <div id="start-account-overlay" class="start-overlay" hidden>
-        <button id="start-cta-auth" class="start-cta-pill" type="button">前往认证</button>
-        <button id="start-cta-authorize" class="start-cta-link" type="button"><span>家长授权</span></button>
+      <div id="start-account-overlay" class="start-overlay">
+        <button id="start-cta-auth" class="start-cta-pill" type="button">添加打印机</button>
+        <button id="start-cta-authorize" class="start-cta-link" type="button"><span>购买打印机</span></button>
+        <button class="start-cta-offline" type="button" data-start-action="offline" hidden>无网打印</button>
       </div>
     </section>
 
@@ -76,11 +76,11 @@
     <section id="screen-start-v2" class="app-screen app-screen--reference" data-screen="start-v2" hidden aria-label="儿童受限账号起始页v2">
       <img id="start-reference-v2" class="full-reference" src="../../src/lianjiepeiwnag/起始页.png" alt="趣打印设备起始页（儿童受限账号 v2）">
       <button id="add-printer-v2" class="image-hotspot image-hotspot--add" type="button">添加打印机</button>
-      <button class="offline-start-entry" type="button">打印机无网打印</button>
       <button id="start-help-v2" class="hotspot-help" type="button" aria-label="帮助，查看连接配网常见问题">帮助</button>
-      <div id="start-account-overlay-v2" class="start-overlay" hidden>
-        <button id="start-cta-auth-v2" class="start-cta-pill" type="button">前往认证</button>
-        <button id="start-cta-authorize-v2" class="start-cta-link" type="button"><span>家长授权</span></button>
+      <div id="start-account-overlay-v2" class="start-overlay">
+        <button id="start-cta-auth-v2" class="start-cta-pill" type="button">添加打印机</button>
+        <button id="start-cta-authorize-v2" class="start-cta-link" type="button"><span>购买打印机</span></button>
+        <button class="start-cta-offline" type="button" data-start-action="offline" hidden>无网打印</button>
       </div>
     </section>
 
@@ -236,15 +236,15 @@
       <div class="demo-hero">
         <span class="demo-badge">演示 · 非最终视觉</span>
         <h2>配网流程 · 两种账号情况</h2>
-        <p>同一套「首次配网连接流程」，按登录账号的类型分两种情况演示。儿童受限账号另提供起始页 v2：首页内容与 v1 相同，仅「家长授权」改为先判断家庭群组。切换后起始页的按钮文案与跳转都会跟着变。</p>
+        <p>切换基础账号或儿童账号，两个账号首页均显示「添加打印机」「购买打印机」。基础账号沿用现有流程，儿童账号点击入口后提示联系家长授权。</p>
       </div>
 
       <div class="demo-group" role="group" aria-labelledby="demo-account-title">
-        <p class="demo-group__title" id="demo-account-title">① 账号类型<small>默认 · 家长</small></p>
+        <p class="demo-group__title" id="demo-account-title">账号类型<small>默认 · 基础账号</small></p>
         <button id="demo-account-parent" class="demo-option" type="button" data-account="parent" aria-pressed="true">
           <span class="demo-option__tick" aria-hidden="true"></span>
           <span class="demo-option__main">
-            <strong>家长 · 不受限账号</strong>
+            <strong>基础账号</strong>
             <span>当前已有的默认情况，可以直接给打印机配网。</span>
             <span class="demo-tags"><span class="demo-tag">添加打印机</span><span class="demo-tag">购买打印机</span></span>
           </span>
@@ -252,89 +252,23 @@
         <button id="demo-account-child" class="demo-option" type="button" data-account="child" aria-pressed="false">
           <span class="demo-option__tick" aria-hidden="true"></span>
           <span class="demo-option__main">
-            <strong>儿童 · 受限账号</strong>
-            <span>不能自己给打印机配网，需要家长认证或家长授权共享。</span>
-            <span class="demo-tags"><span class="demo-tag">前往认证</span><span class="demo-tag">家长授权</span></span>
+            <strong>儿童账号</strong>
+            <span>当前尚未有打印机授权，点击入口提示联系家长授权。</span>
+            <span class="demo-tags"><span class="demo-tag">添加打印机</span><span class="demo-tag">购买打印机</span></span>
           </span>
         </button>
       </div>
 
-      <div class="demo-group" role="group" aria-labelledby="demo-invite-title">
-        <p class="demo-group__title" id="demo-invite-title">② 家长授权后的邀请数据<small>用于演示异常状态</small></p>
-        <button class="demo-option" type="button" data-invite="valid" aria-pressed="true">
+      <div class="demo-group" role="group" aria-labelledby="demo-offline-title">
+        <p class="demo-group__title" id="demo-offline-title">无网打印入口<small>默认关闭</small></p>
+        <button id="demo-offline-toggle" class="demo-option" type="button" role="switch" aria-checked="false">
           <span class="demo-option__tick" aria-hidden="true"></span>
-          <span class="demo-option__main"><strong>有效邀请</strong><span>扫码或输入正确邀请码即可加入。</span></span>
-        </button>
-        <button class="demo-option" type="button" data-invite="invalid" aria-pressed="false">
-          <span class="demo-option__tick" aria-hidden="true"></span>
-          <span class="demo-option__main"><strong>邀请码错误</strong><span>输入任意其他 8 位码时提示「邀请码错误，请检查后重试」。</span></span>
-        </button>
-        <button class="demo-option" type="button" data-invite="expired" aria-pressed="false">
-          <span class="demo-option__tick" aria-hidden="true"></span>
-          <span class="demo-option__main"><strong>邀请已过期</strong><span>提示「邀请已过期，请家人重新分享」。</span></span>
-        </button>
-        <button class="demo-option" type="button" data-invite="already-joined" aria-pressed="false">
-          <span class="demo-option__tick" aria-hidden="true"></span>
-          <span class="demo-option__main"><strong>已经加入这台打印机</strong><span>提示「你已经加入这台打印机」并提供「查看打印机」。</span></span>
-        </button>
-        <button class="demo-option" type="button" data-invite="family-conflict" aria-pressed="false">
-          <span class="demo-option__tick" aria-hidden="true"></span>
-          <span class="demo-option__main"><strong>已加入其他家庭</strong><span>提示家庭冲突，不会直接替换原家庭。</span></span>
-        </button>
-      </div>
-
-      <div class="demo-group" role="group" aria-labelledby="demo-device-title">
-        <p class="demo-group__title" id="demo-device-title">③ 共享打印机状态</p>
-        <button class="demo-option" type="button" data-device="online" aria-pressed="true">
-          <span class="demo-option__tick" aria-hidden="true"></span>
-          <span class="demo-option__main"><strong>在线 · 已连接</strong><span>设备信息卡展示绿色「已连接」。</span></span>
-        </button>
-        <button class="demo-option" type="button" data-device="offline" aria-pressed="false">
-          <span class="demo-option__tick" aria-hidden="true"></span>
-          <span class="demo-option__main"><strong>离线</strong><span>仍允许加入，但设备信息卡展示灰色「离线」。</span></span>
-        </button>
-      </div>
-
-      <div class="demo-group" role="group" aria-labelledby="demo-version-title">
-        <p class="demo-group__title" id="demo-version-title">④ 儿童受限账号 · 起始页版本<small>v2 只改「家长授权」逻辑</small></p>
-        <button class="demo-option" type="button" data-version="v1" aria-pressed="true">
-          <span class="demo-option__tick" aria-hidden="true"></span>
-          <span class="demo-option__main">
-            <strong>v1 · 原逻辑</strong>
-            <span>家长授权 → 加入共享打印机（扫码 / 邀请码）。</span>
-            <span class="demo-tags"><span class="demo-tag">儿童受限账号起始页</span></span>
-          </span>
-        </button>
-        <button class="demo-option" type="button" data-version="v2" aria-pressed="false">
-          <span class="demo-option__tick" aria-hidden="true"></span>
-          <span class="demo-option__main">
-            <strong>v2 · 群组判断逻辑</strong>
-            <span>家长授权 → 先判断家庭群组：群组内弹 Toast，群组外展示个人二维码。</span>
-            <span class="demo-tags"><span class="demo-tag">儿童受限账号起始页v2</span></span>
-          </span>
-        </button>
-      </div>
-
-      <div class="demo-group" role="group" aria-labelledby="demo-family-title">
-        <p class="demo-group__title" id="demo-family-title">⑤ 家庭群组状态<small>仅 v2 的「家长授权」生效</small></p>
-        <button class="demo-option" type="button" data-family="in" aria-pressed="false">
-          <span class="demo-option__tick" aria-hidden="true"></span>
-          <span class="demo-option__main">
-            <strong>已在家庭群组内</strong>
-            <span>弹 Toast「已向小明妈妈发起打印机授权申请」，停留本页。</span>
-          </span>
-        </button>
-        <button class="demo-option" type="button" data-family="out" aria-pressed="true">
-          <span class="demo-option__tick" aria-hidden="true"></span>
-          <span class="demo-option__main">
-            <strong>未加入家庭群组</strong>
-            <span>跳转儿童账号个人二维码页，家长扫码加入家庭群组。</span>
-          </span>
+          <span class="demo-option__main"><strong>显示无网打印入口</strong><span id="demo-offline-status">已关闭 · 两个账号的首页均隐藏此入口</span></span>
         </button>
       </div>
 
       <button id="demo-enter" class="jo-primary" type="button">进入演示（起始页）</button>
-      <p class="demo-note">演示数据说明：邀请码池与「分享打印机」页保持一致（ABCD1234 / K7MP4821 / TRQ96135 / WXHN2847 / JLPZ9406 / FGDR3728），其中 <b>FGDR3728</b> 预置为「已过期」，其余可用码任选其一即可走通。</p>
+      <p class="demo-note">无网打印开关对两个账号同时生效，切换账号时保留当前开关状态。</p>
     </div>
   </section>
 
@@ -608,7 +542,7 @@
   <button id="demo-chip" class="demo-chip" type="button" data-account="parent" data-placement="float" aria-label="打开演示台" hidden>
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3h4v5.2l3.4 7.6A3 3 0 0 1 14.7 20H9.3a3 3 0 0 1-2.7-4.2L10 8.2Z"></path><path d="M9 3h6"></path></svg>
     <span>演示台</span>
-    <span id="demo-chip-extra" class="demo-chip__extra"><span class="demo-chip__sep">·</span><span id="demo-chip-mode" class="demo-chip__mode">家长</span></span>
+    <span id="demo-chip-extra" class="demo-chip__extra"><span class="demo-chip__sep">·</span><span id="demo-chip-mode" class="demo-chip__mode">基础账号</span></span>
   </button>
 
   <dialog id="location-dialog" class="app-dialog" aria-labelledby="location-title">
@@ -616,6 +550,12 @@
     <h2 id="location-title">温馨提示</h2>
     <p>连接打印机前需要开启APP位置权限</p>
     <div class="dialog-actions"><button id="location-cancel" type="button">取消</button><button id="location-settings" type="button">设置</button></div>
+  </dialog>
+
+  <dialog id="child-authorization-dialog" class="app-dialog" aria-labelledby="child-authorization-title" aria-describedby="child-authorization-message">
+    <h2 id="child-authorization-title">提示</h2>
+    <p id="child-authorization-message">当前尚未有打印机授权，请联系家长授权</p>
+    <div class="dialog-actions is-single"><button id="child-authorization-confirm" type="button">我知道了</button></div>
   </dialog>
 
   <dialog id="notice-dialog" class="app-dialog" aria-labelledby="notice-title" aria-describedby="notice-message">
@@ -733,7 +673,7 @@
   <dialog id="offline-timeout" class="offline-modal" aria-labelledby="offline-timeout-title"><span class="offline-error-icon" aria-hidden="true">!</span><h2 id="offline-timeout-title">连接超时</h2><p>未能连接到打印机热点。<br>请确认打印机已开机，并长按蓝色按钮开启热点后重试。</p><button id="offline-retry" class="primary-button hotspot-gradient" type="button">重试</button><button id="offline-timeout-back" class="secondary-button" type="button">返回检查</button></dialog>
   <dialog id="offline-upload" class="offline-modal" aria-labelledby="offline-upload-title" aria-describedby="offline-upload-copy"><span class="offline-upload-mark" aria-hidden="true">↑</span><h2 id="offline-upload-title">上传中</h2><p id="offline-upload-copy">正在将模型上传云端完成切片</p><progress id="offline-upload-progress" class="offline-upload-progress" max="100" value="0" aria-label="上传进度"></progress><p id="offline-upload-percent" class="offline-upload-percent">0%</p><p id="offline-upload-filename" class="offline-upload-filename"></p></dialog>
 
-  <script src="prototype.js?v=r018"></script>
+  <script src="prototype.js?v=20261029"></script>
   <script src="offline-print.js?v=1"></script>
 </body>
 </html>
