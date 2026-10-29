@@ -1021,9 +1021,6 @@ document.querySelector('#connect-hotspot').addEventListener('click', () => {
     selectedWlan = PRINTER_WLAN;
     renderWlanNetworks();
     showScreen('home-wifi');
-    showToast('已连接打印机热点ugee Funbot，下一步给打印机配置家庭WiFi');
-    window.clearTimeout(toastTimer);
-    toastTimer = window.setTimeout(() => toast.classList.remove('is-visible'), 4000);
   }, 5000);
 });
 document.querySelector('#hotspot-timeout-cancel').addEventListener('click', () => document.querySelector('#hotspot-timeout-dialog').close());
