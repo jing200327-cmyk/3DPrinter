@@ -471,6 +471,15 @@ body.operation-open { overflow: hidden; }
    再在上面跑真实的 0→100% 白字进度（圆心 50.4% / 67.98%，圆片直径 199px）。 */
 .firmware-progress-disc { position: absolute; z-index: 2; left: 34.4%; top: 65.27%; width: 32%; height: 5.42%; border-radius: 8px; background: #0079e0; }
 .firmware-progress-percent { position: absolute; z-index: 3; left: 50.4%; top: 67.98%; color: #fff; font-size: 36px; font-weight: 300; letter-spacing: .5px; transform: translate(-50%, -50%); }
+#firmware-progress-screen .reuse-stage { container-type: inline-size; }
+.firmware-network-warning { position: absolute; z-index: 4; left: 4.6%; top: 45.6%; width: 91.2%; height: 9.6%; display: flex; flex-direction: column; align-items: center; padding: 0 2.2cqw; border-radius: 14px 14px 0 0; background: #fff; }
+.firmware-network-warning[hidden], #simulation-firmware-branches[hidden] { display: none !important; }
+.firmware-network-warning p { display: flex; align-items: center; justify-content: center; gap: 1.5cqw; width: 100%; margin: 0; padding: 1.6cqw; border-radius: 2cqw; color: #a66614; background: #fff3dd; font-size: 3.2cqw; line-height: 1.35; }
+.firmware-network-warning p span { display: grid; width: 3.5cqw; height: 3.5cqw; place-items: center; border-radius: 50%; color: white; background: #d28c29; font-size: 2.8cqw; font-weight: 700; }
+.firmware-network-warning h1 { margin: 1.6cqw 0 0; color: #222; font-size: 4.2cqw; font-weight: 500; line-height: 1.4; }
+.firmware-network-warning p span::before { content: '!'; }
+#simulation-firmware-branches .simulation-section-title { margin-top: 0; padding-top: 0; border-top: 0; }
+#simulation-firmware-network-status { margin: 8px 0 16px; color: #7d8595; font-size: 11px; line-height: 1.7; }
 /* 确认升级弹窗：左侧“取消”是白底黑边框，右侧“确认升级”沿用升级按钮的蓝紫渐变 */
 .app-dialog--firmware h2 { font-size: 17px; }
 .dialog-actions button[data-tone="outline"] { border: 1.5px solid #1c1c1e; color: #1c1c1e; background: #fff; }
