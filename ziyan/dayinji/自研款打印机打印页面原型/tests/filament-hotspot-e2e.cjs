@@ -53,7 +53,7 @@ const pairing=url('lianjiepeiwnag/打印机首次配网连接流程原型/index.
  await page.locator('#notice-confirm').click();
  await page.locator('#screen-home-wifi').waitFor({state:'visible',timeout:7000});
  assert(Date.now()-connectionStarted>=4900,'连接成功早于5秒');
- assert.match(await page.locator('#toast').textContent(),/已连接打印机热点ugee Funbot/);
+ assert.equal(await page.locator('#toast').evaluate(el=>el.classList.contains('is-visible')),false,'热点连接成功直接进入网络配置，不展示Toast');
  await page.goto(pairing+'?screen=hotspot');
  await page.locator('#hotspot-result').selectOption('timeout');
  await page.locator('#connect-hotspot').click();
