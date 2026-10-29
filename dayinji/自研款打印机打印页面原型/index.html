@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f4f5fa">
   <title>自研款打印机打印页面原型</title>
-  <link rel="stylesheet" href="styles.css?v=r018">
+  <link rel="stylesheet" href="styles.css?v=r019">
   <link rel="stylesheet" href="styles-share-printer.css?v=r008">
   <link rel="stylesheet" href="styles-filament-operation.css?v=r009">
   <link rel="stylesheet" href="styles-3d-preview.css?v=r008">
@@ -1033,6 +1033,9 @@
         <button id="simulate-filament-empty" type="button">首次安装耗材（无料）</button>
         <button id="simulate-filament-detected" type="button">进料检测到</button>
       </div>
+      <label class="simulation-sensor-control" for="simulation-prepare-printer">准备打印页 · 打印机状态
+        <select id="simulation-prepare-printer"><option value="idle">空闲</option><option value="offline">离线</option><option value="busy">忙碌</option><option value="connecting">连接中</option></select>
+      </label>
       <label class="simulation-sensor-control" for="simulation-filament-sensor">断料传感器信号
         <select id="simulation-filament-sensor"><option value="present">有料</option><option value="absent">无料</option></select>
       </label>
@@ -1135,11 +1138,11 @@
       </div>
     </form>
   </dialog>
-  <script src="prototype.js?v=r032"></script>
+  <script src="prototype.js?v=r033"></script>
   <script src="prototype-device-control.js?v=2"></script>
   <script src="prototype-calibration.js?v=1"></script>
   <script src="prototype-family-queue.js?v=2"></script>
-  <script src="prototype-simulation.js?v=r006"></script>
+  <script src="prototype-simulation.js?v=r007"></script>
   <script src="prototype-connection.js?v=1"></script>
 </body>
 </html>

@@ -15,7 +15,7 @@ simulationConsole.querySelectorAll('[data-simulation-mode]').forEach(button => {
       return;
     }
     const next = new URL(window.location.href);
-    for (const key of ['plate', 'plates', 'activeTask', 'family', 'source', 'completed', 'queue', 'results', 'screen', 'connection', 'simulation', 'queueTask']) next.searchParams.delete(key);
+    for (const key of ['plate', 'plates', 'activeTask', 'family', 'source', 'completed', 'queue', 'results', 'screen', 'connection', 'simulation', 'queueTask', 'preparePrinter', 'prepareSubmitted']) next.searchParams.delete(key);
     if (button.dataset.simulationMode === 'single') next.searchParams.set('plates', 'single');
     next.searchParams.set('status', 'printing');
     next.searchParams.set('plate', '1');
