@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f4f5fa">
   <title>自研款打印机打印页面原型</title>
-  <link rel="stylesheet" href="styles.css?v=r017">
+  <link rel="stylesheet" href="styles.css?v=r018">
   <link rel="stylesheet" href="styles-share-printer.css?v=r008">
   <link rel="stylesheet" href="styles-filament-operation.css?v=r009">
   <link rel="stylesheet" href="styles-3d-preview.css?v=r008">
@@ -987,6 +987,9 @@
     <div class="reuse-screen-frame">
       <div class="reuse-stage" style="--reuse-ratio: 375 / 812">
         <img src="assets/固件升级打印页.png" alt="打印机打印页，任务面板显示固件更新中与圆形进度">
+        <div id="firmware-network-warning" class="firmware-network-warning" role="status" aria-live="polite" hidden>
+          <p id="firmware-network-banner"><span aria-hidden="true"></span>当前网络环境差</p><h1>固件更新中</h1>
+        </div>
         <span class="firmware-progress-disc" aria-hidden="true"></span>
         <span id="firmware-progress-percent" class="firmware-progress-percent" role="progressbar" aria-label="固件更新进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">0%</span>
       </div>
@@ -1013,6 +1016,11 @@
   <details id="simulation-console" class="prototype-console" open>
     <summary>模拟控制台</summary>
     <div class="simulation-content">
+      <section id="simulation-firmware-branches" hidden aria-labelledby="simulation-firmware-title">
+        <h3 id="simulation-firmware-title" class="simulation-section-title">固件升级分支</h3>
+        <div class="simulation-options simulation-actions"><button id="simulate-firmware-network-error" type="button" disabled>网络异常</button></div>
+        <p id="simulation-firmware-network-status" class="simulation-filament-status" role="status">正常下载中</p>
+      </section>
       <p>打印任务选项从打印中状态开始演示；耗材状态可独立切换。</p>
       <div class="simulation-options" role="radiogroup" aria-label="打印任务模拟方式">
         <button id="simulate-single" type="button" role="radio" aria-checked="false" data-simulation-mode="single">单盘模型模拟</button>
@@ -1100,6 +1108,9 @@
     </form>
   </dialog>
 
+  <dialog id="firmware-network-dialog" class="app-dialog" aria-labelledby="firmware-network-title" aria-describedby="firmware-network-copy">
+    <form method="dialog"><h2 id="firmware-network-title">固件包下载中断</h2><p id="firmware-network-copy">当前网络环境差，固件包下载中断，请检查网络是否正常</p><div class="dialog-actions" style="grid-template-columns:1fr"><button id="firmware-network-confirm" type="button" data-tone="primary" autofocus>确定</button></div></form>
+  </dialog>
   <dialog id="firmware-dialog" class="app-dialog app-dialog--firmware">
     <form method="dialog">
       <h2 id="firmware-dialog-title">最新版本：2.02，是否确认升级</h2>
@@ -1124,7 +1135,7 @@
       </div>
     </form>
   </dialog>
-  <script src="prototype.js?v=r031"></script>
+  <script src="prototype.js?v=r032"></script>
   <script src="prototype-device-control.js?v=2"></script>
   <script src="prototype-calibration.js?v=1"></script>
   <script src="prototype-family-queue.js?v=2"></script>

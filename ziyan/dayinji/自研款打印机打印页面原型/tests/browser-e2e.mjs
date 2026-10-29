@@ -119,8 +119,8 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-async function waitFor(cdp, expression, message) {
-  for (let attempt = 0; attempt < 80; attempt += 1) {
+async function waitFor(cdp, expression, message, attempts = 80) {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
     try {
       const evaluation = await cdp.send('Runtime.evaluate', { returnByValue: true, expression });
       if (evaluation.result.value) return;
@@ -785,7 +785,7 @@ try {
         disc.right >= toProgress(220, 565).x - 1 && disc.bottom >= toProgress(220, 565).y - 1;
       /* 进度必须自己跑到 100% 并自动切到“更新完成” */
       const seen = [Number(percentNode.getAttribute('aria-valuenow'))];
-      for (let attempt = 0; attempt < 80; attempt += 1) {
+      for (let attempt = 0; attempt < 160; attempt += 1) {
         await wait(120);
         const current = visible();
         if (current.length === 1 && current[0] === 'firmware-done-screen') break;
@@ -959,7 +959,7 @@ try {
   await delay(1500);
   const firmwareProgressScreenshot = await cdp.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(firmwareProgressPreviewPath, Buffer.from(firmwareProgressScreenshot.data, 'base64'));
-  await waitFor(cdp, `!document.querySelector('#firmware-done-screen').hidden`, 'The firmware update never reached 100%.');
+  await waitFor(cdp, `!document.querySelector('#firmware-done-screen').hidden`, 'The firmware update never reached 100%.', 200);
   await delay(320);
   const firmwareDoneScreenshot = await cdp.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(firmwareDonePreviewPath, Buffer.from(firmwareDoneScreenshot.data, 'base64'));

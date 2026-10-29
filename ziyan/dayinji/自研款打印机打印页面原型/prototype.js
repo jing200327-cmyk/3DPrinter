@@ -66,6 +66,10 @@ const firmwareStatusBadge = document.querySelector('#firmware-status-badge');
 const firmwareDialog = document.querySelector('#firmware-dialog');
 const firmwareDialogTitle = document.querySelector('#firmware-dialog-title');
 const firmwareProgressPercent = document.querySelector('#firmware-progress-percent');
+const firmwareProgressScreen = document.querySelector('#firmware-progress-screen');
+const firmwareNetworkWarning = document.querySelector('#firmware-network-warning');
+const firmwareProgressDemo = document.querySelector('#simulation-firmware-branches');
+const firmwareNetworkErrorButton = document.querySelector('#simulate-firmware-network-error');
 const prepareStage = document.querySelector('#prepare-stage');
 const plateList = document.querySelector('#prepare-plate-list');
 const prepareStateScreen = document.querySelector('#prepare-state-screen');
@@ -196,6 +200,7 @@ let reuseStack = [];
 function openReuseScreen(name) {
   const target = document.querySelector(reuseScreenNames[name]);
   if (!target) return;
+  if (name !== 'firmwareProgress' && !firmwareProgressScreen.hidden) leaveFirmwareProgress();
   renderPrepareFilamentState();
   reuseStack.push(name);
   reuseScreenList.forEach((screen) => { screen.hidden = screen !== target; });
@@ -210,6 +215,7 @@ function openReuseScreen(name) {
 }
 
 function closeReuseScreens() {
+  if (!firmwareProgressScreen.hidden) leaveFirmwareProgress();
   reuseStack = [];
   reuseScreenList.forEach((screen) => { screen.hidden = true; });
   devicePage.inert = false;
@@ -807,13 +813,19 @@ document.querySelector('#printer-settings').addEventListener('click', () => {
       只有“更新完成页 → 我知道了”会把 ① 也置 false（设备真的升到最新）。 */
 const FIRMWARE_LATEST_VERSION = '2.02';
 /* 原图烘焙了 50% 那三个字，这里用同色圆片盖住，进度完全由前端模拟 */
-const FIRMWARE_PROGRESS_STEP_MS = 60;
+/* 留出操作控制台异常分支的时间，正常演示约 15 秒完成。 */
+const FIRMWARE_PROGRESS_STEP_MS = 300;
 const FIRMWARE_PROGRESS_STEP = 2;
+const FIRMWARE_NETWORK_RECOVERY_MS = 5000;
 let firmwareUpdateAvailable = true;
 let firmwareBannerHandled = false;
 let firmwareSettingsHasUpdate = true;
 let firmwareProgress = 0;
 let firmwareProgressTimer = null;
+let firmwareCompletionTimer = null;
+let firmwareNetworkRecoveryTimer = null;
+let firmwareNetworkPaused = false;
+const firmwareNetworkDialog = document.querySelector('#firmware-network-dialog');
 
 function renderFirmwareState() {
   /* 首页提醒条要同时满足：设备确实有新版本 **且** 这条提醒还没被处理过 */
@@ -848,24 +860,74 @@ function firmwareHasUpdateContext() {
 function stopFirmwareProgress() {
   window.clearInterval(firmwareProgressTimer);
   firmwareProgressTimer = null;
+  window.clearTimeout(firmwareCompletionTimer);
+  firmwareCompletionTimer = null;
 }
 
 function renderFirmwareProgress(value) {
   firmwareProgress = value;
   firmwareProgressPercent.textContent = `${value}%`;
   firmwareProgressPercent.setAttribute('aria-valuenow', String(value));
+  firmwareProgressPercent.setAttribute('aria-valuetext', firmwareNetworkPaused ? `${value}%，下载已暂停` : `${value}%`);
+  firmwareNetworkErrorButton.disabled = firmwareNetworkPaused || value >= 100;
 }
+
+function renderFirmwareNetwork(state) {
+  firmwareNetworkPaused = state !== 'online';
+  firmwareProgressScreen.dataset.networkState = state;
+  firmwareNetworkWarning.hidden = state !== 'recovering';
+  document.querySelector('#simulation-firmware-network-status').textContent = {
+    online: '正常下载中，可模拟网络异常',
+    interrupted: '下载已暂停，等待确认提示',
+    recovering: '网络异常，确认后 5 秒模拟恢复'
+  }[state];
+  renderFirmwareProgress(firmwareProgress);
+}
+
+function clearFirmwareNetwork() {
+  window.clearTimeout(firmwareNetworkRecoveryTimer);
+  firmwareNetworkRecoveryTimer = null;
+  if (firmwareNetworkDialog.open) firmwareNetworkDialog.close();
+  renderFirmwareNetwork('online');
+}
+
+function leaveFirmwareProgress() {
+  stopFirmwareProgress();
+  clearFirmwareNetwork();
+  firmwareProgressDemo.hidden = true;
+}
+
+firmwareNetworkErrorButton.addEventListener('click', () => {
+  if (firmwareProgressScreen.hidden || !firmwareProgressTimer || firmwareNetworkPaused || firmwareProgress >= 100) return;
+  renderFirmwareNetwork('interrupted');
+  firmwareNetworkDialog.showModal();
+});
+firmwareNetworkDialog.addEventListener('cancel', event => event.preventDefault());
+document.querySelector('#firmware-network-confirm').addEventListener('click', () => {
+  if (!firmwareNetworkDialog.open) return;
+  firmwareNetworkDialog.close();
+  renderFirmwareNetwork('recovering');
+  window.clearTimeout(firmwareNetworkRecoveryTimer);
+  firmwareNetworkRecoveryTimer = window.setTimeout(() => {
+    firmwareNetworkRecoveryTimer = null;
+    if (firmwareProgressScreen.hidden || !firmwareProgressTimer) return;
+    renderFirmwareNetwork('online');
+  }, FIRMWARE_NETWORK_RECOVERY_MS);
+});
 
 function startFirmwareProgress() {
   stopFirmwareProgress();
+  clearFirmwareNetwork();
   renderFirmwareProgress(0);
+  firmwareProgressDemo.hidden = false;
   firmwareProgressTimer = window.setInterval(() => {
+    if (firmwareNetworkPaused) return;
     const next = Math.min(100, firmwareProgress + FIRMWARE_PROGRESS_STEP);
     renderFirmwareProgress(next);
     if (next < 100) return;
     /* 满 100% 自动进“更新完成”，并停掉定时器，避免回到首页还在跑 */
     stopFirmwareProgress();
-    window.setTimeout(() => openReuseScreen('firmwareDone'), 320);
+    firmwareCompletionTimer = window.setTimeout(() => openReuseScreen('firmwareDone'), 320);
   }, FIRMWARE_PROGRESS_STEP_MS);
 }
 
