@@ -588,3 +588,10 @@ body.operation-open { overflow: hidden; }
 }
 /* 视口比 812 矮时 --frame-height 会等于 100vh，--frame-top 自动归零、不留上下留白 */
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+/* 准备打印设备状态提示固定在设备框顶部。 */
+.toast.toast--prepare { top: calc(var(--frame-top) + 76px); bottom: auto; width: max-content; max-width: calc(min(100vw, var(--device-width)) - 32px); border-radius: 12px; text-align: center; }
+#prepare-stage .prepare-idle[data-printer-state="offline"] i { background: #9199a7; }
+#prepare-stage .prepare-idle[data-printer-state="busy"] i { background: #ef4b53; }
+#prepare-stage .prepare-idle[data-printer-state="connecting"] i { background: #efab36; }
+#prepare-stage .prepare-start:disabled { opacity: .48; cursor: default; }

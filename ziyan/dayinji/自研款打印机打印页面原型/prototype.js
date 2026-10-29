@@ -119,13 +119,20 @@ const girlTaskCatalog = {
   'girl-1': { id: 'girl-1', owner: 'girl', journey: 'v3', task: 'girl-1', taskAsset: '../../src/dayinjirenwukongzhi/女孩的打印任务_1.jpg', queueAsset: '../../src/dayinjirenwukongzhi/女孩的待打印任务__1.jpg', title: '骨架沧龙_01_011409', duration: '5 h 37 min', grams: 40, seconds: 5 * 60 * 60 + 37 * 60 },
   'girl-2': { id: 'girl-2', owner: 'girl', journey: 'v3', task: 'girl-2', taskAsset: '../../src/dayinjirenwukongzhi/女孩的打印任务_2.jpg', queueAsset: '../../src/dayinjirenwukongzhi/女孩的待打印任务_2.jpg', title: '骨架沧龙_02_011405', duration: '48 min', grams: 5, seconds: 48 * 60 }
 };
+/* 新模型在设备忙碌时作为独立批次排队，不能复用当前正在执行的任务 ID。 */
+const preparedTaskCatalog = Object.fromEntries(modelPlateIds.map(plate => {
+  const id = `prepared-${plate}`;
+  return [id, { id, owner: 'boy', submission: 'prepared-model', plate, ...plateCatalog[plate] }];
+}));
+const activePreparedTaskId = Object.hasOwn(preparedTaskCatalog, params.get('activeTask')) ? params.get('activeTask') : null;
 const activeGirlTaskId = Object.hasOwn(girlTaskCatalog, params.get('activeTask')) ? params.get('activeTask') : null;
-const activeTask = activeGirlTaskId ? girlTaskCatalog[activeGirlTaskId] : plateCatalog[activePlate];
-const activeTaskId = activeGirlTaskId || `plate-${activePlate}`;
+const activeTask = activeGirlTaskId ? girlTaskCatalog[activeGirlTaskId] : activePreparedTaskId ? preparedTaskCatalog[activePreparedTaskId] : plateCatalog[activePlate];
+const activeTaskId = activeGirlTaskId || activePreparedTaskId || `plate-${activePlate}`;
 const isFamilyQueue = params.get('family') === 'multi' || params.get('source') === 'journey-v3';
 const taskCatalog = Object.fromEntries([
   ...modelPlateIds.map(plate => ({ id: `plate-${plate}`, owner: 'boy', submission: 'steve', journey: 'v2', plate, ...plateCatalog[plate] })),
-  ...Object.values(girlTaskCatalog).map(task => ({ ...task, submission: 'girl-model' }))
+  ...Object.values(girlTaskCatalog).map(task => ({ ...task, submission: 'girl-model' })),
+  ...Object.values(preparedTaskCatalog)
 ].map(task => [task.id, task]));
 const taskResults = new Map([...completedPlates].map(plate => [`plate-${plate}`, 'completed']));
 try {
@@ -134,7 +141,7 @@ try {
     if (Object.hasOwn(taskCatalog, id) && ['completed', 'cancelled'].includes(result)) taskResults.set(id, result);
   }
 } catch { /* 无效的演示链接按未保存状态加载。 */ }
-const initialQueueIds = params.has('queue') ? params.get('queue').split(',') : Object.keys(taskCatalog).filter(id => taskCatalog[id].owner === 'boy' || (isFamilyQueue && !isSinglePlateModel));
+const initialQueueIds = params.has('queue') ? params.get('queue').split(',') : Object.keys(taskCatalog).filter(id => taskCatalog[id].submission !== 'prepared-model' && (taskCatalog[id].owner === 'boy' || (isFamilyQueue && !isSinglePlateModel)));
 let familyQueueTasks = [...new Set(initialQueueIds)].filter(id => Object.hasOwn(taskCatalog, id) && id !== activeTaskId && !taskResults.has(id)).map(id => taskCatalog[id]);
 const TOTAL_SECONDS = activeTask.seconds;
 const PREPARATION_DURATION_SECONDS = 26;
@@ -312,6 +319,15 @@ function renderPlateTaskAndQueue() {
   taskTitle.textContent = activeTask.title;
   taskMeta.textContent = `${activeTask.duration} · PLA · ${activeTask.grams} g`;
 
+  while (queueTaskButtons.length < visibleQueueTasks.length) {
+    const button = queueTaskButtons[0].cloneNode(true);
+    button.removeAttribute('id');
+    button.dataset.dynamicQueue = 'true';
+    button.querySelectorAll('[id]').forEach(node => node.removeAttribute('id'));
+    button.addEventListener('click', () => openQueueTaskSettings(button.dataset.queueId));
+    printQueue.querySelector('.queue-list').append(button);
+    queueTaskButtons.push(button);
+  }
   queueTaskButtons.forEach((button, index) => {
     const queueTask = visibleQueueTasks[index];
     button.hidden = !queueTask;
@@ -375,7 +391,8 @@ function renderProgress() {
   progressFill.style.width = `${progress}%`;
 }
 
-function showToast(message) {
+function showToast(message, position = 'default') {
+  toast.classList.toggle('toast--prepare', position === 'prepare');
   window.clearTimeout(toastTimer);
   toast.textContent = message;
   toast.classList.add('is-visible');
@@ -525,7 +542,7 @@ function setTaskStatus(status) {
   localFileButton.hidden = status !== 'completed' || !allCompleted;
   completionActions.classList.remove('is-single');
   const showEmpty = shouldShowEmptyQueue(status);
-  queueToggle.hidden = isReady || isPreparing || (familyQueueTasks.length === 0 && !showEmpty);
+  queueToggle.hidden = (isReady && !familyQueueTasks.some(task => task.submission === 'prepared-model')) || isPreparing || (familyQueueTasks.length === 0 && !showEmpty);
   if (isCancelled && !queueToggle.hidden) {
     queueToggle.setAttribute('aria-expanded', 'true');
     printQueue.hidden = false;
@@ -635,7 +652,8 @@ function renderStateRows() {
   stateStampImage.hidden = true;
   stateRows.forEach((row) => {
     const plate = row.dataset.row;
-    const result = taskResults.get(`plate-${plate}`) || (plate === stampedPlate ? resolvePrepareStateKey() : null);
+    const prepared = taskCatalog[prepareQueueTaskId]?.submission === 'prepared-model';
+    const result = taskResults.get(`${prepared ? 'prepared' : 'plate'}-${plate}`) || (plate === stampedPlate ? resolvePrepareStateKey() : null);
     const stamped = Boolean(result);
     row.classList.toggle('is-stamped', stamped);
     row.setAttribute('aria-disabled', String(stamped));
@@ -656,7 +674,8 @@ function renderStateRows() {
 
 function selectedQueuedTask() {
   const openedTask = familyQueueTasks.find(task => task.id === prepareQueueTaskId);
-  return openedTask?.owner === 'girl' ? openedTask : familyQueueTasks.find(task => task.plate === selectedStateRow);
+  if (openedTask?.owner === 'girl') return openedTask;
+  return familyQueueTasks.find(task => task.plate === selectedStateRow && (!openedTask || task.submission === openedTask.submission));
 }
 
 function updatePrepareStart() {
@@ -673,7 +692,8 @@ function openPrepareStateScreen(preferredPlate, queueTaskId) {
   const key = resolvePrepareStateKey();
   prepareStateStage.dataset.state = key;
   /* 男孩任务：当前任务盘盖戳；女孩任务：三个盘都可复用，不盖戳 */
-  stampedPlate = activeGirlTaskId ? null : String(activePlate);
+  const prepared = taskCatalog[queueTaskId]?.submission === 'prepared-model';
+  stampedPlate = activeGirlTaskId || (prepared && !activePreparedTaskId) ? null : String(activePlate);
   /* 打印中 / 暂停中打印机忙碌，其余状态空闲（与底图一致，补丁隐藏） */
   printerBusyPatch.hidden = key !== 'printing';
   renderStateRows();
@@ -716,7 +736,8 @@ function startQueuedTask(nextTask, status) {
     next.searchParams.delete('plate');
   } else {
     next.searchParams.set('plate', nextTask.plate);
-    next.searchParams.delete('activeTask');
+    if (nextTask.submission === 'prepared-model') next.searchParams.set('activeTask', nextTask.id);
+    else next.searchParams.delete('activeTask');
   }
   window.location.href = next.href;
 }
@@ -775,7 +796,7 @@ finishButton.addEventListener('click', () => {
   showToast('已进入打印完成状态');
 });
 
-document.querySelectorAll('[data-queue-task]').forEach((task) => task.addEventListener('click', () => openQueueTaskSettings(task.dataset.queueId)));
+document.querySelectorAll('[data-queue-task]:not([data-dynamic-queue])').forEach((task) => task.addEventListener('click', () => openQueueTaskSettings(task.dataset.queueId)));
 nextPlateButton.addEventListener('click', startNextPlate);
 restartPrintButton.addEventListener('click', restartPrint);
 localFileButton.addEventListener('click', () => showToast('已打开本地文件'));
@@ -1388,9 +1409,55 @@ bindTimelapseToggle(document.querySelector('#prepare-state-toggle'));
 
 /* 底部“开始打印”：带着当前选中的盘回到打印页，并把任务面板切到“准备中” */
 document.querySelector('#start-print').addEventListener('click', () => {
+  if (document.querySelector('#start-print').disabled || !handlePreparePrinterState()) return;
   if (!validatePrintFilament()) return;
   goToPrinterState(selectedPlate, 'preparing');
 });
+
+/* 准备页设备状态独立于工作台当前执行任务；切换演示状态不改写执行任务。 */
+const PREPARE_PRINTER_LABELS = { idle: '空闲', offline: '离线', busy: '忙碌', connecting: '连接中' };
+let preparePrinterStatus = Object.hasOwn(PREPARE_PRINTER_LABELS, params.get('preparePrinter')) ? params.get('preparePrinter') : 'idle';
+let prepareBatchSubmitted = params.get('prepareSubmitted') === 'yes';
+const preparePrinterControl = document.querySelector('#simulation-prepare-printer');
+function renderPreparePrinterState() {
+  const label = prepareStage.querySelector('.prepare-idle');
+  label.dataset.printerState = preparePrinterStatus;
+  label.innerHTML = `<i aria-hidden="true"></i>${PREPARE_PRINTER_LABELS[preparePrinterStatus]}`;
+  preparePrinterControl.value = preparePrinterStatus;
+  const start = document.querySelector('#start-print');
+  start.disabled = prepareBatchSubmitted;
+  start.setAttribute('aria-label', prepareBatchSubmitted ? '开始打印（本次任务已加入队列）' : '开始打印');
+}
+preparePrinterControl.addEventListener('change', event => {
+  preparePrinterStatus = event.target.value;
+  toast.classList.remove('is-visible');
+  renderPreparePrinterState();
+  const next = taskSessionUrl();
+  next.searchParams.set('preparePrinter', preparePrinterStatus);
+  history.replaceState(null, '', next);
+});
+function handlePreparePrinterState() {
+  if (preparePrinterStatus === 'offline' || preparePrinterStatus === 'connecting') {
+    showToast(preparePrinterStatus === 'offline' ? '打印机已离线' : '打印机连接中', 'prepare');
+    return false;
+  }
+  if (preparePrinterStatus !== 'busy') return true;
+  const order = [selectedPlate, ...plateOrder.filter(plate => plate !== selectedPlate)].filter(plate => modelPlateIds.includes(plate));
+  const tasks = order.map(plate => preparedTaskCatalog[`prepared-${plate}`]);
+  if (tasks.some(task => familyQueueTasks.some(queued => queued.id === task.id) || task.id === activeTaskId || taskResults.has(task.id))) return false;
+  familyQueueTasks.push(...tasks);
+  prepareBatchSubmitted = true;
+  renderPlateTaskAndQueue();
+  renderPreparePrinterState();
+  const next = taskSessionUrl();
+  next.searchParams.set('screen', 'prepare-print');
+  next.searchParams.set('preparePrinter', 'busy');
+  next.searchParams.set('prepareSubmitted', 'yes');
+  history.replaceState(null, '', next);
+  showToast('打印机正忙碌，打印任务已添加至打印队列', 'prepare');
+  return false;
+}
+renderPreparePrinterState();
 
 function setFilamentFed(fed) {
   filamentPanel.dataset.filamentFed = fed ? 'yes' : 'no';
