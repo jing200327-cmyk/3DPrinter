@@ -1515,8 +1515,11 @@ function renderPrepareFilamentState() {
     warning.setAttribute('aria-label', empty ? '未检测到耗材' : '颜色不匹配');
     warning.title = empty ? '未安装耗材，请先安装并进料' : '模型颜色与耗材颜色不匹配';
     material.setAttribute('aria-label', empty ? `${material.querySelector('.prepare-material-color').textContent}模型，未检测到耗材，请先安装并进料` : material.dataset.materialDefaultLabel);
+    if (filamentBackpack.active) prepareBackpack.renderMaterial(material, warning);
+    else prepareBackpack.restoreMaterial(material);
     material.dataset.materialRenderedLabel = material.getAttribute('aria-label');
   });
+  if (prepareBackpack.dialog.open) prepareBackpack.renderPicker();
 }
 
 document.querySelector('#print-filament-go-feed').addEventListener('click', () => {

@@ -1,0 +1,33 @@
+.is-backpack-material .prepare-material-body { position: relative; }
+.prepare-backpack-trigger { position: absolute; z-index: 3; inset: 0; width: 100%; height: 100%; border: 0; background: transparent; cursor: pointer; }
+.prepare-backpack-trigger:focus-visible { outline: 2px solid #7561ed; outline-offset: -2px; }
+.prepare-backpack-trigger:disabled { cursor: default; }
+.prepare-page .state-row > .is-backpack-material { pointer-events: auto; }
+.prepare-backpack-spool { flex: none; width: 6cqw; height: 7.5cqw; color: #343b43; }
+.prepare-backpack-spool svg { display: block; width: 100%; height: 100%; }
+.prepare-backpack-spool .bp-winding { fill: var(--spool-color); }
+.is-backpack-material .prepare-loaded-color { font-size: 2.2cqw; white-space: nowrap; }
+.bp-picker { position: fixed; z-index: 100; top: calc(var(--frame-top) + var(--frame-height)); left: 50%; bottom: auto; width: min(100vw, var(--device-width)); max-width: none; max-height: min(80dvh, 620px); margin: 0; padding: 10px 20px max(24px, env(safe-area-inset-bottom)); overflow: auto; border: 0; border-radius: 24px 24px 0 0; color: #252b36; background: #fff; transform: translate(-50%, -100%); box-shadow: 0 -8px 36px #20233414; font-family: inherit; }
+.bp-picker[open] { animation: bp-picker-rise 220ms ease-out; }
+.bp-picker::backdrop { background: rgb(22 28 42 / 35%); }
+.bp-picker [hidden], #simulation-backpack-color-control[hidden] { display: none !important; }
+.bp-picker-handle { width: 36px; height: 4px; margin: 0 auto 16px; border-radius: 4px; background: #dedfe6; }
+.bp-picker header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 16px; }
+.bp-picker h2 { margin: 0; font-size: 18px; font-weight: 600; }
+#backpack-material-close { flex: none; width: 44px; height: 44px; margin: -10px -12px -10px 0; padding: 0; border: 0; background: transparent; color: #727887; font-size: 28px; cursor: pointer; }
+.bp-picker-warning { position: sticky; z-index: 1; top: 0; display: block; margin: 0 -20px 16px; padding: 12px 20px; color: #d6464e; background: #ffeded; font-size: 13px; line-height: 1.6; }
+.bp-picker-model { margin: 0 0 16px; color: #858b98; font-size: 13px; }
+.bp-picker-empty { margin: 0 0 14px; color: #858b98; font-size: 13px; }
+.bp-picker-slots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 24px; }
+.bp-picker-slot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; padding: 10px 0; border: 1.5px solid transparent; border-radius: 12px; background: #f7f8fa; color: #343b43; font: inherit; font-size: 12px; cursor: pointer; }
+.bp-picker-slot svg { width: 100%; max-width: 66px; aspect-ratio: 1; }
+.bp-picker-slot.has-material .bp-winding { fill: var(--spool-color); }
+.bp-picker-slot[aria-checked="true"] { border-color: #7561ed; background: #f1eeff; }
+.bp-picker-slot i { position: absolute; right: -1px; bottom: -1px; display: none; width: 20px; height: 20px; border-radius: 10px 0 10px 0; background: #7561ed; color: #fff; font-style: normal; text-align: center; line-height: 20px; }
+.bp-picker-slot[aria-checked="true"] i { display: block; }
+.bp-picker-slot:disabled { opacity: .6; cursor: default; }
+.bp-picker-confirm { width: 100%; min-height: 48px; border: 0; border-radius: 999px; background: linear-gradient(110deg, #7950f2, #347ff1); color: #fff; font: inherit; font-size: 16px; cursor: pointer; }
+.bp-picker-confirm:disabled { opacity: .4; cursor: default; }
+.bp-picker button:focus-visible { outline: 2px solid #7561ed; outline-offset: 3px; }
+@keyframes bp-picker-rise { from { opacity: 0; transform: translate(-50%, -70%); } to { opacity: 1; transform: translate(-50%, -100%); } }
+@media (prefers-reduced-motion: reduce) { .bp-picker[open] { animation: none; } }
