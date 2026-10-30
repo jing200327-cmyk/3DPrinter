@@ -90,3 +90,9 @@
   cursor: pointer;
 }
 .offline-reconnect:active { background: linear-gradient(135deg, #4488f0, #336fd8); }
+
+/* 新版独立切换：仅保留离线说明和顶部刷新入口。 */
+body[data-offline-layout="new"] :is(.offline-reconnect, .offline-troubleshooting)[hidden] { display: none !important; }
+body[data-offline-layout="new"] .offline-notice { padding-bottom: 28px; }
+body[data-offline-layout="new"] .printer-connection-state[data-connection-status="connecting"] #printer-connection-state-label { color: #e8a03e; }
+body[data-offline-layout="new"] .printer-connection-state[data-connection-status="connecting"] #printer-connection-state-label::before { border: 2px dotted #dfc34c; }

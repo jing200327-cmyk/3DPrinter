@@ -1,0 +1,70 @@
+from pathlib import Path
+from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
+from playwright.sync_api import sync_playwright, expect
+import os
+import tempfile
+
+BASE = os.environ.get('PRINTER_OFFLINE_URL', (Path(__file__).resolve().parents[1] / 'index-offline.html').as_uri())
+OUT = Path(os.environ.get('OFFLINE_VERSION_SHOTS') or tempfile.mkdtemp(prefix='offline-version-'))
+OUT.mkdir(exist_ok=True)
+def url(**params):
+    parts = urlsplit(BASE)
+    return urlunsplit(parts._replace(query=urlencode({**dict(parse_qsl(parts.query)), **params})))
+
+with sync_playwright() as p:
+    browser = p.chromium.launch()
+    page = browser.new_page(viewport={'width':1440,'height':1000})
+    errors = []
+    page.on('pageerror', lambda e: errors.append(str(e)))
+    page.clock.install()
+    page.clock.pause_at(2000000000000)
+    page.goto(url())
+    expect(page.locator('#reconnect-button')).to_be_visible()
+    expect(page.locator('#offline-troubleshooting')).to_be_visible()
+    expect(page.locator('.offline-notice-copy')).to_have_text('当前打印机处于离线状态，请重新连接打印机。')
+    page.locator('[data-offline-version="new"]').click(timeout=3000)
+    expect(page.locator('.offline-notice-copy')).to_have_text('无法进行打印，请确保设备正常开机和联网')
+    expect(page.locator('#reconnect-button')).to_be_hidden()
+    expect(page.locator('#offline-troubleshooting')).to_be_hidden()
+    expect(page.locator('#connection-refresh')).to_be_visible()
+    page.locator('#device-page').screenshot(path=str(OUT/'new-offline.png'))
+    page.reload()
+    expect(page.locator('[data-offline-version="new"]')).to_have_attribute('aria-checked','true')
+    expect(page.locator('#reconnect-button')).to_be_hidden()
+    page.locator('#connection-refresh').click()
+    expect(page.locator('#printer-connection-state')).to_have_attribute('data-connection-status','connecting')
+    expect(page.locator('#printer-connection-state-label')).to_be_visible()
+    expect(page.locator('#printer-connection-state-label')).to_have_text('连接中...')
+    expect(page.locator('#connection-refresh')).to_be_disabled()
+    expect(page.locator('[data-offline-version="classic"]')).to_be_disabled()
+    page.locator('#device-page').screenshot(path=str(OUT/'new-connecting.png'))
+    page.clock.run_for(10001)
+    expect(page.locator('#reconnect-timeout-dialog')).to_be_visible()
+    expect(page.locator('#printer-connection-state')).to_have_attribute('data-connection-status','offline')
+    page.locator('#reconnect-dismiss').click()
+    expect(page.locator('#reconnect-button')).to_be_hidden()
+    page.locator('[data-offline-version="classic"]').click()
+    expect(page.locator('#reconnect-button')).to_be_visible()
+    expect(page.locator('#offline-troubleshooting')).to_be_visible()
+    expect(page.locator('.offline-notice-copy')).to_have_text('当前打印机处于离线状态，请重新连接打印机。')
+    print('PASS: classic preserved, new copy and hidden content, persistent toggle, connecting and timeout')
+    page.locator('[data-offline-version="new"]').click()
+    page.locator('[data-reconnect-result="success"]').click()
+    page.locator('#connection-refresh').click()
+    page.clock.run_for(2000)
+    page.wait_for_url(lambda u: urlsplit(u).path.endswith('/index.html'))
+    expect(page.locator('#task-panel')).to_be_visible()
+    assert 'offlineVersion=new' in page.url
+    print('PASS: refresh success recovers online and retains version preference')
+    page.goto(url(offlineVersion='new', connectionAccount='restricted'))
+    page.locator('#connection-refresh').click()
+    page.clock.run_for(10001)
+    expect(page.locator('#reconnect-reconfigure')).to_be_hidden()
+    page.locator('#reconnect-dismiss').click()
+    for width in [320,375,768,1440]:
+        page.set_viewport_size({'width':width,'height':950})
+        page.locator('#device-page').screenshot(path=str(OUT/f'new-{width}.png'))
+        expect(page.locator('#reconnect-button')).to_be_hidden()
+    assert not errors, errors
+    print('PASS: restricted account behavior, four viewport sizes, no page errors')
+    browser.close()
