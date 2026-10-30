@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="styles-share-printer.css?v=r008">
   <link rel="stylesheet" href="styles-filament-operation.css?v=r009">
   <link rel="stylesheet" href="styles-3d-preview.css?v=r008">
-  <link rel="stylesheet" href="styles-prepare-print.css?v=r004">
+  <link rel="stylesheet" href="styles-prepare-print.css?v=r005">
   <link rel="stylesheet" href="styles-simulation.css?v=r003">
   <link rel="stylesheet" href="styles-filament-guide.css?v=1">
   <link rel="stylesheet" href="styles-filament-backpack.css?v=1">
@@ -747,8 +747,8 @@
           </div>
         </div>
 
-        <div class="prepare-options"><h2>打印选项</h2><div class="prepare-timelapse"><span>延时摄影</span><button id="timelapse-toggle" class="timelapse-check" type="button" role="checkbox" aria-checked="true" aria-label="延时摄影"><span class="timelapse-check-box" aria-hidden="true"></span></button></div></div>
-        <button id="start-print" class="prepare-start" type="button" aria-label="开始打印">开始打印</button>
+        <div class="prepare-options"><h2>打印选项</h2><div class="prepare-option-list"><div class="prepare-timelapse"><span>延时摄影</span><button id="timelapse-toggle" class="timelapse-check" type="button" role="checkbox" aria-checked="true" aria-label="延时摄影"><span class="timelapse-check-box" aria-hidden="true"></span></button></div><div class="prepare-timelapse"><span>调平校准</span><button id="leveling-toggle" class="timelapse-check" type="button" role="checkbox" aria-checked="false" aria-label="调平校准"><span class="timelapse-check-box" aria-hidden="true"></span></button></div></div></div>
+        <div class="prepare-footer"><button id="save-slice" class="prepare-save" type="button">保存</button><button id="start-print" class="prepare-start" type="button" aria-label="开始打印">开始打印</button></div>
       </div>
     </div>
   </section>
@@ -1137,6 +1137,32 @@
     </form>
   </dialog>
 
+  <dialog id="slice-name-dialog" class="app-dialog slice-dialog" aria-labelledby="slice-name-title">
+    <form id="slice-name-form">
+      <h2 id="slice-name-title">保存切片</h2>
+      <label for="slice-name">切片名称</label>
+      <input id="slice-name" type="text" maxlength="40" autocomplete="off" aria-describedby="slice-name-error slice-name-limit" autofocus>
+      <div class="slice-input-hints"><span id="slice-name-error" role="status"></span><span id="slice-name-limit">0 / 40 字</span></div>
+      <div class="dialog-actions"><button id="slice-name-cancel" type="button">取消</button><button id="slice-name-confirm" type="submit" data-tone="primary">确定</button></div>
+    </form>
+  </dialog>
+  <dialog id="slice-saving-dialog" class="app-dialog slice-dialog" aria-labelledby="slice-saving-title" aria-describedby="slice-saving-copy">
+    <div class="slice-dialog-body">
+      <h2 id="slice-saving-title">正在保存切片…</h2>
+      <p id="slice-saving-name" class="slice-current-name"></p>
+      <div id="slice-save-progress" class="slice-progress" role="progressbar" aria-label="保存切片进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+      <strong id="slice-save-percent">0%</strong><p id="slice-saving-copy">请勿关闭页面</p>
+    </div>
+  </dialog>
+  <dialog id="slice-success-dialog" class="app-dialog slice-dialog" aria-labelledby="slice-success-title">
+    <form method="dialog">
+      <h2 id="slice-success-title">保存成功</h2>
+      <p id="slice-saved-name" class="slice-current-name"></p>
+      <p>可以在「我的 - 我的切片」中查看。</p>
+      <div class="dialog-actions"><button id="slice-save-done" value="done">完成</button><button id="slice-view-now" value="view" data-tone="primary">立即查看</button></div>
+    </form>
+  </dialog>
+
   <script src="share-code-pool.js?v=r008"></script>
   <!-- 3D 预览页逻辑；three.js 与内嵌模型数据（base64 STL，约 1.2 MB，绕开 file:// 的 CORS 限制）
        由它在第一次打开预览页时才按需加载，不拖慢打印页面首屏 -->
@@ -1159,5 +1185,6 @@
   <script src="prototype-simulation.js?v=r008"></script>
   <script src="prototype-connection.js?v=3"></script>
   <script src="prototype-completion.js?v=2"></script>
+  <script src="prototype-save-slice.js?v=1"></script>
 </body>
 </html>

@@ -71,3 +71,28 @@
 .prepare-page .state-row > img.state-stamp { position: absolute; z-index: 6; left: 49.15%; top: 50%; width: 31.46%; height: auto; aspect-ratio: 1; object-fit: contain; transform: translate(-50%, -50%); pointer-events: none; user-select: none; -webkit-user-drag: none; }
 .prepare-page .state-stamp[hidden] { display: none; }
 @media (prefers-reduced-motion: reduce) { .prepare-page .plate-row { transition: none; } }
+
+/* M15：只调整空闲版准备打印页的选项行与底部按钮。 */
+#prepare-stage .prepare-option-list { display: grid; grid-template-columns: 1fr 1fr; gap: 4cqw; }
+#prepare-stage .prepare-timelapse { margin-left: 0; margin-right: 0; }
+.prepare-footer { position: absolute; top: 92.59%; left: 1.6%; width: 97%; height: 6.82%; display: grid; grid-template-columns: 1fr 1fr; gap: 3cqw; }
+.prepare-footer .prepare-start, .prepare-save { position: static; width: 100%; height: 100%; min-height: 44px; border-radius: 99px; font-size: 4.7cqw; font-weight: 600; cursor: pointer; }
+.prepare-save { padding: 0; border: 1px solid #7950f2; color: #7950f2; background: #fff; }
+.prepare-save:active { background: #f5f1ff; }
+.slice-dialog { color: #252d3d; }
+.slice-dialog h2 { padding-right: 0; }
+.slice-dialog label { display: block; margin: 18px 0 8px; color: #6c7179; font-size: 14px; }
+.slice-dialog input { box-sizing: border-box; width: 100%; padding: 12px; border: 1px solid #d9e0e7; border-radius: 10px; color: inherit; background: #f8faff; font: inherit; font-size: 15px; }
+.slice-dialog input:focus { outline: 2px solid #7950f2; outline-offset: 2px; }
+.slice-input-hints { display: flex; justify-content: space-between; gap: 8px; margin: 10px 0 20px; min-height: 18px; font-size: 12px; }
+#slice-name-error { color: #d93f4c; }
+#slice-name-limit { margin-left: auto; color: #6c7179; white-space: nowrap; }
+.slice-dialog button:disabled { opacity: .42; cursor: default; }
+.slice-dialog .dialog-actions button[data-tone="primary"] { background: linear-gradient(110deg, #7950f2, #347ff1); }
+.slice-dialog-body { padding: 24px; text-align: center; }
+#slice-saving-dialog:focus { outline: none; }
+.slice-dialog .slice-current-name { margin: 16px 0; color: #252d3d; overflow-wrap: anywhere; }
+.slice-progress { height: 8px; overflow: hidden; border-radius: 99px; background: #e7eaf3; }
+.slice-progress > span { display: block; width: 0; height: 100%; background: linear-gradient(110deg, #7950f2, #347ff1); }
+#slice-save-percent { display: block; margin: 12px 0; font-size: 20px; color: #5866ef; }
+.slice-dialog #slice-saving-copy { margin-bottom: 0; }
