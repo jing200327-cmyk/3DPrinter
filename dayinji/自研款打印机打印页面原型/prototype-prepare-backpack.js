@@ -63,7 +63,7 @@ const prepareBackpack = {
       spool.setAttribute('aria-hidden', 'true');
       body.prepend(spool);
     }
-    spool.hidden = empty || mismatch;
+    spool.hidden = empty;
     if (!empty) {
       spool.innerHTML = bpSpool(index);
       spool.style.setProperty('--spool-color', filamentBackpack.palette[filamentBackpack.slots[index].color].hex);
