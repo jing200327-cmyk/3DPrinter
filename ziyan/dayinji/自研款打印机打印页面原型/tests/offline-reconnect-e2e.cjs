@@ -11,6 +11,7 @@ const base=process.env.PRINTER_OFFLINE_URL||pathToFileURL(path.join(__dirname,'.
   await page.clock.install();await page.clock.pauseAt(new Date());
   async function open(role='owner',result='timeout',online=false){
    const u=new URL(online?'index.html':base,base);u.search='';
+   u.searchParams.set('offlineVersion','classic');
    u.searchParams.set('connectionAccount',role);u.searchParams.set('reconnectResult',result);
    u.searchParams.set('ownerName','家长');u.searchParams.set('serverStatus','paused');
    if(online)u.searchParams.set('status','printing');

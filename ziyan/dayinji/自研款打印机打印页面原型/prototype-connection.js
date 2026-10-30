@@ -4,7 +4,7 @@
   const query = new URLSearchParams(location.search);
   const offline = document.body.dataset.connectionPage === 'offline';
   const state = {
-    offlineVersion: query.get('offlineVersion') === 'new' ? 'new' : 'classic',
+    offlineVersion: query.get('offlineVersion') === 'classic' ? 'classic' : 'new',
     account: query.get('connectionAccount') === 'restricted' ? 'restricted' : 'owner',
     result: query.get('reconnectResult') === 'success' ? 'success' : 'timeout',
     ownerName: query.get('ownerName')?.trim().slice(0, 24) || '家长',
@@ -126,7 +126,7 @@
     lockConfig(loading);
   }
   function withProfile(url) {
-    if (state.offlineVersion === 'new') url.searchParams.set('offlineVersion', 'new');
+    url.searchParams.set('offlineVersion', state.offlineVersion);
     url.searchParams.set('connectionAccount', state.account);
     url.searchParams.set('reconnectResult', state.result);
     url.searchParams.set('ownerName', state.ownerName);
@@ -194,8 +194,7 @@
     if (state.checking) return;
     state.offlineVersion = button.dataset.offlineVersion;
     const url = new URL(location.href);
-    if (state.offlineVersion === 'new') url.searchParams.set('offlineVersion', 'new');
-    else url.searchParams.delete('offlineVersion');
+    url.searchParams.set('offlineVersion', state.offlineVersion);
     history.replaceState(null, '', url);
     updateChoices();
     status.textContent = state.offlineVersion === 'new' ? '新版离线页：点击顶部蓝色刷新按钮检测连接状态。' : '现有离线页：可通过重新连接按钮或顶部刷新检测连接状态。';
