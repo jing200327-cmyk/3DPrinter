@@ -37,7 +37,7 @@
   </div></div>`;
   document.body.insertAdjacentHTML('beforeend', `
     <dialog id="calibration-processing-dialog" class="calibration-processing-dialog" aria-labelledby="calibration-processing-label" aria-busy="true">
-      <div class="transition-card"><img class="transition-mascot" src="assets/过渡-蓝色小人.png" alt=""><p id="calibration-processing-label" class="transition-label">任务处理中...</p></div>
+      <div class="transition-card"><img class="transition-mascot" src="assets/任务处理中-完整人物.png" alt="完整的红色与蓝色卡通伙伴插画"><p id="calibration-processing-label" class="transition-label">任务处理中...</p></div>
     </dialog>
     <dialog id="calibration-exit-dialog" class="app-dialog" aria-labelledby="calibration-exit-title">
       <form method="dialog"><h2 id="calibration-exit-title">退出设置的参数将全部丢失</h2><div class="dialog-actions"><button id="calibration-exit-cancel" value="cancel">取消</button><button id="calibration-exit-confirm" type="button" data-tone="primary">确定</button></div></form>
