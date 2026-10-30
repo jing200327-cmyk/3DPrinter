@@ -587,22 +587,24 @@ function openDialog({ title, copy = '', dismissText = '暂不', dismissTone = 'n
 /* ---------- 暂停中 / 继续打印中 / 取消中 过渡弹窗 ---------- */
 /* 文档：点击暂停/继续/取消后立刻弹出过渡弹窗，用户可关闭弹窗，对应按钮转为“…中”，
    等待指令执行完成后任务控制面板才切换状态；过渡期间不可取消。原型用 2s 模拟指令执行。 */
-let transitionTimer;
+let transitionTimer = null;
 function openTransition(text, buttonSwap) {
   transitionLabel.textContent = text;
   transitionOverlay.hidden = false;
   if (buttonSwap) buttonSwap();
   pauseButton.disabled = true;
   cancelButton.disabled = true;
+  finishButton.disabled = true;
 }
 function closeTransition() {
-  window.clearTimeout(transitionTimer);
   transitionOverlay.hidden = true;
 }
 function runTransition(text, buttonSwap, done) {
+  if (transitionTimer !== null) return;
   openTransition(text, buttonSwap);
   transitionTimer = window.setTimeout(() => {
-    transitionOverlay.hidden = true;
+    transitionTimer = null;
+    closeTransition();
     done();
   }, 2000);
 }
@@ -778,8 +780,7 @@ pauseButton.addEventListener('click', () => {
 
 transitionCloseButton.addEventListener('click', () => {
   /* 文档：过渡弹窗可关闭，但指令继续执行，状态仍在计时结束后切换 */
-  window.clearTimeout(transitionTimer);
-  transitionOverlay.hidden = true;
+  closeTransition();
 });
 
 cameraToggleButton.addEventListener('click', toggleCamera);

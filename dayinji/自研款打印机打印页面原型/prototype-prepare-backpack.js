@@ -16,7 +16,7 @@ const prepareBackpack = {
   match(material) {
     const available = filamentBackpack.slots.map((slot, index) => ({ ...slot, index })).filter(slot => slot.present);
     const manual = this.manualSlots.get(this.key(material));
-    if (available.some(slot => slot.index === manual)) return manual;
+    if (available.some(slot => slot.index === manual?.index && slot.color === manual.color)) return manual.index;
     this.manualSlots.delete(this.key(material));
     const rgb = hex => hex.match(/[a-f0-9]{2}/gi).map(value => parseInt(value, 16));
     const model = rgb(this.modelColor(material).hex);
@@ -27,11 +27,18 @@ const prepareBackpack = {
   mismatched(material, index) {
     return index === null || this.modelColor(material).hex !== filamentBackpack.palette[filamentBackpack.slots[index].color].hex;
   },
+  acknowledged(material, index) {
+    const manual = this.manualSlots.get(this.key(material));
+    return index !== null && manual?.index === index && manual.color === filamentBackpack.slots[index].color;
+  },
+  needsConfirmation(material, index) {
+    return this.mismatched(material, index) && !this.acknowledged(material, index);
+  },
   renderMaterial(material, warning) {
     material.classList.add('is-backpack-material');
     const index = this.match(material);
     const empty = index === null;
-    const mismatch = this.mismatched(material, index);
+    const mismatch = this.needsConfirmation(material, index);
     material.dataset.backpackSlot = empty ? '' : String(index);
     material.dataset.backpackMismatch = String(mismatch);
     material.classList.toggle('prepare-material--empty', empty);
@@ -46,8 +53,9 @@ const prepareBackpack = {
       body.append(colorLabel);
     }
     if (colorLabel.dataset.backpackOriginalText === undefined) colorLabel.dataset.backpackOriginalText = colorLabel.textContent;
-    colorLabel.hidden = empty;
-    colorLabel.textContent = empty ? '' : filamentBackpack.palette[filamentBackpack.slots[index].color].name;
+    colorLabel.hidden = empty || mismatch;
+    const colorName = empty ? '' : filamentBackpack.palette[filamentBackpack.slots[index].color].name;
+    colorLabel.textContent = this.acknowledged(material, index) ? `${index + 1}号 ${colorName}` : colorName;
     let spool = body.querySelector('.prepare-backpack-spool');
     if (!spool) {
       spool = document.createElement('span');
@@ -55,7 +63,7 @@ const prepareBackpack = {
       spool.setAttribute('aria-hidden', 'true');
       body.prepend(spool);
     }
-    spool.hidden = empty;
+    spool.hidden = empty || mismatch;
     if (!empty) {
       spool.innerHTML = bpSpool(index);
       spool.style.setProperty('--spool-color', filamentBackpack.palette[filamentBackpack.slots[index].color].hex);
@@ -65,7 +73,7 @@ const prepareBackpack = {
     if (empty) { image.src = 'assets/prepare-empty-spool.svg'; image.alt = '未安装耗材'; }
     warning.hidden = !mismatch;
     warning.setAttribute('aria-label', empty ? '未检测到耗材' : '颜色不匹配');
-    material.setAttribute('aria-label', `${this.modelColor(material).name}模型，${empty ? '未安装耗材' : `${index + 1}号料槽${colorLabel.textContent}`}${mismatch ? '，耗材不匹配' : ''}`);
+    material.setAttribute('aria-label', `${this.modelColor(material).name}模型，${empty ? '未安装耗材' : `${index + 1}号料槽${colorName}`}${mismatch ? '，耗材不匹配' : ''}`);
     let button = body.querySelector('.prepare-backpack-trigger');
     if (!button) {
       button = document.createElement('button');
@@ -99,7 +107,7 @@ const prepareBackpack = {
     if (!this.material) return;
     if (!filamentBackpack.slots[this.pendingSlot]?.present) this.pendingSlot = this.match(this.material);
     const anyMaterial = filamentBackpack.slots.some(slot => slot.present);
-    const warning = this.warningAtOpen || this.mismatched(this.material, this.pendingSlot);
+    const warning = this.warningAtOpen || this.needsConfirmation(this.material, this.pendingSlot);
     document.querySelector('#backpack-material-warning').hidden = !warning;
     document.querySelector('#backpack-material-empty').hidden = anyMaterial;
     document.querySelector('#backpack-material-model').textContent = `模型颜色：${this.modelColor(this.material).name}`;
@@ -137,7 +145,10 @@ prepareBackpack.dialog.addEventListener('click', event => {
 });
 document.querySelector('#backpack-material-confirm').addEventListener('click', () => {
   if (!filamentBackpack.slots[prepareBackpack.pendingSlot]?.present) return;
-  prepareBackpack.manualSlots.set(prepareBackpack.key(prepareBackpack.material), prepareBackpack.pendingSlot);
+  prepareBackpack.manualSlots.set(prepareBackpack.key(prepareBackpack.material), {
+    index: prepareBackpack.pendingSlot,
+    color: filamentBackpack.slots[prepareBackpack.pendingSlot].color
+  });
   prepareBackpack.dialog.close();
   renderPrepareFilamentState();
 });
