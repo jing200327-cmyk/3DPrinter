@@ -72,14 +72,11 @@ $materialNameAsset = $reuseAssetDir + '/' + [char]0x540d + [char]0x79f0 + [char]
 $materialTypeAsset = $reuseAssetDir + '/' + [char]0x8017 + [char]0x6750 + [char]0x7c7b + [char]0x578b + [char]0x4fee + [char]0x6539 + [char]0x9875 + '.png'
 $materialColorAsset = $reuseAssetDir + '/' + [char]0x989c + [char]0x8272 + [char]0x4fee + [char]0x6539 + [char]0x9875 + '.png'
 $pairingFlowPath = '../../lianjiepeiwnag/' + [char]0x6253 + [char]0x5370 + [char]0x673a + [char]0x9996 + [char]0x6b21 + [char]0x914d + [char]0x7f51 + [char]0x8fde + [char]0x63a5 + [char]0x6d41 + [char]0x7a0b + [char]0x539f + [char]0x578b + '/index.html'
-$localFileAsset = '../../src/dayinji/' + [char]0x672c + [char]0x5730 + [char]0x6587 + [char]0x4ef6 + '.jpg'
 $plateOneFile = [char]0x9009 + [char]0x4e2d + [char]0x8981 + [char]0x6253 + [char]0x5370 + [char]0x7684 + [char]0x76d8 + '1.jpg'
 $plateTwoFile = [char]0x9009 + [char]0x62e9 + [char]0x8981 + [char]0x6253 + [char]0x5370 + [char]0x7684 + [char]0x76d8 + '2' + [char]0xff08 + [char]0x4fee + [char]0x6539 + [char]0xff09 + '.jpg'
 $plateThreeFile = [char]0x9009 + [char]0x62e9 + [char]0x8981 + [char]0x6253 + [char]0x5370 + [char]0x7684 + [char]0x76d8 + '3.jpg'
 $queuePrefix = '' + [char]0x6253 + [char]0x5370 + [char]0x961f + [char]0x5217
 $restartText = '' + [char]0x91cd + [char]0x65b0 + [char]0x6253 + [char]0x5370
-$localFileToastText = '' + [char]0x5df2 + [char]0x6253 + [char]0x5f00 + [char]0x672c + [char]0x5730 + [char]0x6587 + [char]0x4ef6
-$localFileToastBehavior = "showToast('$localFileToastText')"
 $preparingCancelPrompt = '' + [char]0x662f + [char]0x5426 + [char]0x8981 + [char]0x53d6 + [char]0x6d88 + [char]0x4efb + [char]0x52a1
 $cancelCurrentText = '' + [char]0x53d6 + [char]0x6d88 + [char]0x5f53 + [char]0x524d + [char]0x4efb + [char]0x52a1
 $cancelAllText = '' + [char]0x53d6 + [char]0x6d88 + [char]0x5168 + [char]0x90e8 + [char]0x4efb + [char]0x52a1
@@ -148,9 +145,9 @@ $requiredFragments = @(
     $girlTaskTwoAsset,
     'id="completion-actions"',
     'id="restart-print"',
-    'id="local-file"',
+    'id="completed-my-models"',
     ('>' + $restartText + '</span>'),
-    $localFileAsset,
+    'class="models-icon"',
     'id="next-plate"',
     'class="filament-panel-canvas"',
     'id="filament-panel-image"',
@@ -487,7 +484,7 @@ $requiredBehaviors = @(
     'function returnToReuseScreen(name)',
     "task.addEventListener('click', () => openQueueTaskSettings(task.dataset.queueId))",
     "nextPlateButton.addEventListener('click', startNextPlate)",
-    $localFileToastBehavior,
+    "completedMyModelsButton.addEventListener('click', () => openReference(",
     'renderFilamentPanel',
     'const FILAMENT_STATUS_LABELS',
     "feeding: '$feedingStatusText'",

@@ -1940,11 +1940,11 @@ try {
     expression: `(() => ({
       status: document.querySelector('#task-panel').dataset.status,
       nextHidden: document.querySelector('#next-plate').hidden,
-      localFileHidden: document.querySelector('#local-file').hidden,
+      completedModelsHidden: document.querySelector('#completed-my-models').hidden,
       queue: [...document.querySelectorAll('[data-queue-task]:not([hidden])')].map((task) => task.dataset.plate || task.dataset.task)
     }))()`
   });
-  assert(nextPlateBefore.result.value.status === 'completed' && !nextPlateBefore.result.value.nextHidden && nextPlateBefore.result.value.localFileHidden, `The completed page did not expose 下一盘: ${JSON.stringify(nextPlateBefore.result.value)}`);
+  assert(nextPlateBefore.result.value.status === 'completed' && !nextPlateBefore.result.value.nextHidden && nextPlateBefore.result.value.completedModelsHidden, `The completed page did not expose 下一盘: ${JSON.stringify(nextPlateBefore.result.value)}`);
   await cdp.send('Runtime.evaluate', { expression: `document.querySelector('#next-plate').click()` });
   await waitFor(cdp, `document.querySelector('#task-panel')?.dataset.status === 'preparing'`, '下一盘 did not start the next queued task in the 准备中 state.');
   const nextPlateStarted = await cdp.send('Runtime.evaluate', {
@@ -2127,17 +2127,17 @@ try {
     returnByValue: true,
     expression: `(() => {
       document.querySelector('#finish-now').click();
-      const localImage = document.querySelector('#local-file img');
+      const modelsButton = document.querySelector('#completed-my-models');
       return {
         nextPlateHidden: document.querySelector('#next-plate').hidden,
-        localFileVisible: !document.querySelector('#local-file').hidden,
-        localFileLoaded: localImage.complete && localImage.naturalWidth > 0,
+        completedModelsVisible: !modelsButton.hidden,
+        completedModelsLabel: modelsButton.getAttribute('aria-label'),
         queueHidden: document.querySelector('#queue-toggle').hidden
       };
     })()`
   });
   assert(singlePlateCompletion.result.value.nextPlateHidden, 'Next plate should be hidden when the queue is empty.');
-  assert(singlePlateCompletion.result.value.localFileVisible && singlePlateCompletion.result.value.localFileLoaded, 'All-completed state did not replace next plate with the local-file image button.');
+  assert(singlePlateCompletion.result.value.completedModelsVisible && singlePlateCompletion.result.value.completedModelsLabel === '我的模型', 'All-completed state did not replace next plate with My Models.');
   assert(singlePlateCompletion.result.value.queueHidden, 'All-completed state did not hide the empty queue.');
 
   await cdp.send('Page.reload');

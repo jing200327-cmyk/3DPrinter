@@ -28,7 +28,7 @@ const cancelledModelActions = document.querySelector('#cancelled-model-actions')
 const queueEmpty = document.querySelector('#queue-empty');
 const restartPrintButton = document.querySelector('#restart-print');
 const nextPlateButton = document.querySelector('#next-plate');
-const localFileButton = document.querySelector('#local-file');
+const completedMyModelsButton = document.querySelector('#completed-my-models');
 const queueToggle = document.querySelector('#queue-toggle');
 const printQueue = document.querySelector('#print-queue');
 const devicePage = document.querySelector('#device-page');
@@ -539,7 +539,7 @@ function setTaskStatus(status) {
   const allCompleted = modelPlateIds.every(plate => taskResults.get(`plate-${plate}`) === 'completed') && familyQueueTasks.length === 0;
   nextPlateButton.hidden = status === 'completed' && allCompleted;
   nextPlateButton.disabled = familyQueueTasks.length === 0;
-  localFileButton.hidden = status !== 'completed' || !allCompleted;
+  completedMyModelsButton.hidden = status !== 'completed' || !allCompleted;
   completionActions.classList.remove('is-single');
   const showEmpty = shouldShowEmptyQueue(status);
   queueToggle.hidden = (isReady && !familyQueueTasks.some(task => task.submission === 'prepared-model')) || isPreparing || (familyQueueTasks.length === 0 && !showEmpty);
@@ -800,7 +800,7 @@ finishButton.addEventListener('click', () => {
 document.querySelectorAll('[data-queue-task]:not([data-dynamic-queue])').forEach((task) => task.addEventListener('click', () => openQueueTaskSettings(task.dataset.queueId)));
 nextPlateButton.addEventListener('click', startNextPlate);
 restartPrintButton.addEventListener('click', restartPrint);
-localFileButton.addEventListener('click', () => showToast('已打开本地文件'));
+completedMyModelsButton.addEventListener('click', () => openReference('我的模型.jpg', '我的模型', completedMyModelsButton));
 /* 探索玩具：改为复用整图页面（探索玩具页.png），点击任意位置进入模型详情页 */
 exploreToysButton.addEventListener('click', () => openReuseScreen('exploreToys'));
 myModelsButton.addEventListener('click', () => openReference('我的模型.jpg', '我的模型', myModelsButton));
