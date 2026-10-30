@@ -1,0 +1,24 @@
+/* 四槽小书包：保持设备页比例，空槽只禁用选择，编辑入口可点击。 */
+.is-backpack .filament-panel-canvas > img,
+.is-backpack #filament-empty-title,
+.is-backpack #filament-empty-message,
+.is-backpack #filament-spool,
+.is-backpack #open-material-settings { display: none !important; }
+#backpack-panel[hidden], #simulation-backpack-slot-control[hidden] { display: none; }
+.bp-title { position: absolute; top: 10px; left: 10px; margin: 0; color: #20252c; font-size: 12px; font-weight: 500; }
+.bp-slots { position: absolute; top: 17%; left: 2%; width: 96%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+.bp-slot-item { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.bp-slot-label { color: #30363d; font-size: 12px; line-height: 18px; }
+.bp-slot { display: block; width: 100%; max-width: 76px; aspect-ratio: 1; padding: 0; border: 2px solid transparent; border-radius: 50%; color: #343b43; background: transparent; cursor: pointer; }
+.bp-slot svg { display: block; width: 100%; height: 100%; }
+.bp-winding { fill: #fff; }
+.bp-slot.has-material .bp-winding { fill: var(--spool-color); }
+.bp-slot.is-selected { color: #7561ed; border-color: #7561ed; background: #f0edff; box-shadow: 0 0 0 3px rgb(117 97 237 / 14%); }
+.bp-slot:disabled { opacity: 1; cursor: default; }
+.bp-edit { display: grid; place-items: center; width: 44px; height: 32px; border: 0; background: transparent; color: #343b43; cursor: pointer; }
+.bp-edit svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.bp-edit:focus-visible, .bp-slot:focus-visible { outline: 2px solid #7561ed; outline-offset: 2px; }
+.is-backpack .filament-status { top: 11px; right: 10px; font-size: 11px; font-weight: 500; letter-spacing: 0; }
+.is-backpack .filament-status::before { width: 5px; height: 5px; margin-right: 3px; vertical-align: 1px; }
+.is-backpack .filament-action-button { color: #fff; background: linear-gradient(100deg, #9275f3, #669af5); box-shadow: none; font-weight: 500; font-size: 16px; letter-spacing: 0; height: 18%; }
+.is-backpack .filament-action-button:disabled { opacity: .5; cursor: default; }
