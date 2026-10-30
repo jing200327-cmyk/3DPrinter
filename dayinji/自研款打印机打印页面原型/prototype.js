@@ -1538,6 +1538,7 @@ fanFilterReplacedButton.addEventListener('click', () => {
 /* ---------- 耗材面板：进退料入口始终可用，料盘选择仅用于展示 ---------- */
 function renderFilamentPanel() {
   renderPrepareFilamentState();
+  if (filamentBackpack.active) return filamentBackpack.render();
   const hasFilament = filamentPanel.dataset.filamentPresence !== 'empty';
   const state = filamentPanel.dataset.filamentState || 'idle';
   const statusLabel = hasFilament ? FILAMENT_STATUS_LABELS[state] || '' : '';
@@ -1774,6 +1775,10 @@ function foComplete() {
   foHideTip();
   foRender();
   setFilamentFed(foState.operation === 'feed');
+  if (filamentBackpack.active) {
+    filamentBackpack.complete(foState.operation);
+    renderFilamentPanel();
+  }
   if (!filamentOperationScreen.hidden) return;
   foSettlePanel();
   showToast(foState.operation === 'feed' ? '进料完成' : '退料完成');
@@ -1795,6 +1800,7 @@ function foOpenScreen() {
 }
 
 function foEnter(operation) {
+  if (filamentBackpack.active && !filamentBackpack.canOperate(operation)) return false;
   /* 两个入口都可点击，但不能用相反指令覆盖正在执行的进程。 */
   if (foState.running && foState.operation !== operation) {
     showToast(`当前正在${foState.operation === 'feed' ? '进料' : '退料'}，请完成或取消后再操作`);
@@ -1804,9 +1810,11 @@ function foEnter(operation) {
   const resuming = foState.running && foState.operation === operation;
   if (!resuming) {
     foState.panelStateBefore = filamentPanel.dataset.filamentState;
+    if (filamentBackpack.active) filamentBackpack.begin(operation);
     filamentPanel.dataset.filamentState = operation === 'feed' ? 'feeding' : 'retracting';
     renderFilamentPanel();
     foStart(operation);
+    if (filamentBackpack.active) renderFilamentPanel();
   }
   foOpenScreen();
   return true;
@@ -1834,6 +1842,7 @@ function foAbort() {
   devicePage.inert = false;
   document.body.classList.remove('operation-open');
   filamentPanel.dataset.filamentState = foState.panelStateBefore || 'idle';
+  if (filamentBackpack.active) filamentBackpack.abort();
   foState.operation = null;
   renderFilamentPanel();
   showToast(operation === 'feed' ? '已取消进料' : '已取消退料');
@@ -1856,6 +1865,7 @@ function foFinish() {
 
 /* 点击入口不校验耗材；传感器校验位于安装引导的进料动作中。 */
 loadFilamentButton.addEventListener('click', () => {
+  if (filamentBackpack.active && !filamentBackpack.canOperate('feed')) return;
   if (filamentPanel.dataset.filamentState === 'feeding') {
     foEnter('feed');
     return;
@@ -1865,6 +1875,7 @@ loadFilamentButton.addEventListener('click', () => {
 
 /* 退料同样不依赖耗材选择。 */
 unloadFilamentButton.addEventListener('click', () => {
+  if (filamentBackpack.active && !filamentBackpack.canOperate('retract')) return;
   if (filamentPanel.dataset.filamentState === 'retracting') {
     foEnter('retract');
     return;
@@ -2674,6 +2685,10 @@ document.querySelector('#filament-guide-back').addEventListener('click', () => {
   returnToPrintPreparation();
 });
 document.querySelector('#filament-guide-start').addEventListener('click', () => {
+  if (filamentBackpack.active && !filamentBackpack.canOperate(filamentGuideOperation)) {
+    showToast('请先选择可操作的料盘');
+    return;
+  }
   /* 原型由控制台模拟打印机断料传感器信号，与料盘选中状态无关。 */
   if (filamentGuideOperation === 'feed' && filamentPanel.dataset.filamentSensor !== 'present') {
     document.querySelector('#filament-not-detected-dialog').showModal();
