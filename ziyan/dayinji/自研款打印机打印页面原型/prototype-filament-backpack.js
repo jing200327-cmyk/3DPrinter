@@ -5,7 +5,13 @@ const filamentBackpack = {
   operationSlot: null,
   previousPhase: null,
   rack: null,
-  slots: Array.from({ length: 4 }, () => ({ present: false, phase: 'ready' })),
+  slots: ['blue', 'yellow', 'green', 'pink'].map(color => ({ present: false, phase: 'ready', color })),
+  palette: {
+    blue: { name: '蓝色', hex: '#5796f3' }, yellow: { name: '黄色', hex: '#ecb657' },
+    green: { name: '绿色', hex: '#75b8a2' }, pink: { name: '粉色', hex: '#ed96ad' },
+    indigo: { name: '蓝紫色', hex: '#5868ce' }, red: { name: '红色', hex: '#e96969' },
+    white: { name: '白色', hex: '#f1f2f4' }, black: { name: '黑色', hex: '#343b43' }
+  },
   labels: { ready: '待进料', feeding: '进料中', loaded: '进料完成', retracting: '退料中', retracted: '退料完成' },
   colors: ['#5796f3', '#ecb657', '#75b8a2', '#ed96ad'],
   canOperate(operation) {
@@ -39,6 +45,7 @@ const filamentBackpack = {
       button.setAttribute('aria-label', `${index + 1}号料盘，${slot.present ? this.labels[slot.phase] : '空'}${selected ? '，已选中' : ''}`);
       button.classList.toggle('is-selected', selected);
       button.classList.toggle('has-material', slot.present);
+      button.parentElement.style.setProperty('--spool-color', this.palette[slot.color].hex);
       button.parentElement.querySelector('.bp-slot-label').textContent = slot.present ? 'PLA' : '空';
     });
     const slot = this.slots[this.selected];
@@ -63,7 +70,8 @@ const filamentBackpack = {
     }
     const next = source === 'backpack';
     if (next === this.active) return;
-    closeReuseScreens();
+    const keepPreparation = ['preparePrint', 'prepareState'].includes(reuseStack.at(-1));
+    if (!keepPreparation) closeReuseScreens();
     if (next) {
       this.rack = { ...filamentPanel.dataset };
       this.selected = null;
@@ -81,23 +89,24 @@ const filamentBackpack = {
     filamentPanel.classList.toggle('is-backpack', next);
     document.querySelector('#backpack-panel').hidden = !next;
     document.querySelector('#simulation-backpack-slot-control').hidden = !next;
+    document.querySelector('#simulation-backpack-color-control').hidden = !next;
     document.querySelector('#simulation-filament-sensor').value = filamentPanel.dataset.filamentSensor;
     document.querySelector('#simulation-filament-fed').value = filamentPanel.dataset.filamentFed;
     this.updateSimulationStatus();
     renderFilamentPanel();
-    filamentPanel.scrollIntoView({ block: 'center', behavior: 'instant' });
+    if (!keepPreparation) filamentPanel.scrollIntoView({ block: 'center', behavior: 'instant' });
   },
   simulatePresence(present) {
     if (foState.running) return showToast('请完成或取消当前操作后再修改料槽');
     const index = Number(document.querySelector('#simulation-backpack-slot').value);
-    this.slots[index] = { present, phase: 'ready' };
+    this.slots[index] = { present, phase: 'ready', color: this.slots[index].color };
     this.selected = null;
     filamentPanel.dataset.filamentSensor = present ? 'present' : 'absent';
     document.querySelector('#simulation-filament-sensor').value = filamentPanel.dataset.filamentSensor;
     setFilamentFed(false);
     this.updateSimulationStatus();
     renderFilamentPanel();
-    filamentPanel.scrollIntoView({ block: 'center', behavior: 'instant' });
+    if (!reuseStack.length) filamentPanel.scrollIntoView({ block: 'center', behavior: 'instant' });
   },
   updateSimulationStatus() {
     document.querySelector('#simulation-filament-status').textContent = this.active
@@ -124,3 +133,16 @@ document.querySelectorAll('.bp-edit').forEach(button => button.addEventListener(
   renderFilamentPanel();
   openReuseScreen('materialSettings');
 }));
+
+document.querySelector('#simulation-backpack-slot').addEventListener('change', event => {
+  document.querySelector('#simulation-backpack-color').value = filamentBackpack.slots[Number(event.target.value)].color;
+});
+document.querySelector('#simulation-backpack-color').addEventListener('change', event => {
+  const index = Number(document.querySelector('#simulation-backpack-slot').value);
+  if (foState.running) {
+    event.target.value = filamentBackpack.slots[index].color;
+    return showToast('耗材操作中，请完成后再修改颜色');
+  }
+  filamentBackpack.slots[index].color = event.target.value;
+  renderFilamentPanel();
+});

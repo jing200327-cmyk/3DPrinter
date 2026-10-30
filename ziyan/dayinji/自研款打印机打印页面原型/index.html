@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="styles-simulation.css?v=r003">
   <link rel="stylesheet" href="styles-filament-guide.css?v=1">
   <link rel="stylesheet" href="styles-filament-backpack.css?v=1">
+  <link rel="stylesheet" href="styles-prepare-backpack.css?v=1">
   <link rel="stylesheet" href="styles-device-control.css?v=2">
   <link rel="stylesheet" href="styles-calibration.css?v=1">
   <link rel="stylesheet" href="styles-family-queue.css?v=2">
@@ -1035,6 +1036,9 @@
       <label id="simulation-backpack-slot-control" class="simulation-sensor-control" for="simulation-backpack-slot" hidden>模拟料槽
         <select id="simulation-backpack-slot"><option value="0">1号料槽</option><option value="1">2号料槽</option><option value="2">3号料槽</option><option value="3">4号料槽</option></select>
       </label>
+      <label id="simulation-backpack-color-control" class="simulation-sensor-control" for="simulation-backpack-color" hidden>料槽耗材颜色
+        <select id="simulation-backpack-color"><option value="blue">蓝色</option><option value="yellow">黄色</option><option value="green">绿色</option><option value="pink">粉色</option><option value="indigo">蓝紫色</option><option value="red">红色</option><option value="white">白色</option><option value="black">黑色</option></select>
+      </label>
       <p id="simulation-filament-status" class="simulation-filament-status" role="status">当前：已有耗材</p>
       <div class="simulation-options simulation-actions" role="group" aria-label="耗材状态模拟">
         <button id="simulate-filament-empty" type="button">首次安装耗材（无料）</button>
@@ -1145,8 +1149,9 @@
       </div>
     </form>
   </dialog>
-  <script src="prototype-filament-backpack.js?v=1"></script>
-  <script src="prototype.js?v=r034"></script>
+  <script src="prototype-filament-backpack.js?v=2"></script>
+  <script src="prototype-prepare-backpack.js?v=1"></script>
+  <script src="prototype.js?v=r035"></script>
   <script src="prototype-device-control.js?v=2"></script>
   <script src="prototype-calibration.js?v=1"></script>
   <script src="prototype-family-queue.js?v=2"></script>
