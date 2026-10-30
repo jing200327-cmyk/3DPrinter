@@ -4,6 +4,7 @@
   const query = new URLSearchParams(location.search);
   const offline = document.body.dataset.connectionPage === 'offline';
   const state = {
+    offlineVersion: query.get('offlineVersion') === 'new' ? 'new' : 'classic',
     account: query.get('connectionAccount') === 'restricted' ? 'restricted' : 'owner',
     result: query.get('reconnectResult') === 'success' ? 'success' : 'timeout',
     ownerName: query.get('ownerName')?.trim().slice(0, 24) || '家长',
@@ -31,6 +32,11 @@
   const controls = document.createElement('section');
   controls.id = 'connection-console';
   controls.innerHTML = `
+    ${offline ? `<h3 class="simulation-section-title">离线页版本</h3>
+    <div class="simulation-options" role="radiogroup" aria-label="离线页版本">
+      <button type="button" role="radio" data-offline-version="classic">现有版</button>
+      <button type="button" role="radio" data-offline-version="new">新版</button>
+    </div>` : ''}
     <h3 class="simulation-section-title">账号与离线重连</h3>
     <div class="simulation-options" role="radiogroup" aria-label="重连账号类型">
       <button type="button" role="radio" data-connection-account="owner">超管账号</button>
@@ -64,6 +70,7 @@
   const dialog = document.querySelector('#reconnect-timeout-dialog');
   const reconfigure = document.querySelector('#reconnect-reconfigure');
   const toast = document.querySelector('#toast');
+  const originalOfflineCopy = document.querySelector('.offline-notice-copy')?.textContent;
 
   function updateChoices() {
     controls.querySelectorAll('[data-connection-account]').forEach(button => button.setAttribute('aria-checked', String(button.dataset.connectionAccount === state.account)));
@@ -72,6 +79,15 @@
     if (help) help.textContent = state.account === 'owner'
       ? '请检查打印机是否开机、网络是否正常。网络正常仍无法连接时，请重启打印机后重新配网；依然无效请联系售后。'
       : '请检查打印机是否开机、网络是否正常。仍无法连接时，请联系打印机超管处理；依然无效请联系售后。';
+    if (offline) {
+      const modern = state.offlineVersion === 'new';
+      document.body.dataset.offlineLayout = state.offlineVersion;
+      controls.querySelectorAll('[data-offline-version]').forEach(button => button.setAttribute('aria-checked', String(button.dataset.offlineVersion === state.offlineVersion)));
+      document.querySelector('.offline-notice-copy').textContent = modern ? '无法进行打印，请确保设备正常开机和联网' : originalOfflineCopy;
+      reconnect.hidden = modern;
+      help.hidden = modern;
+      refresh.setAttribute('aria-label', modern ? '刷新打印机连接状态' : '重新连接打印机');
+    }
   }
   function showToast(copy) {
     toast.textContent = copy; toast.classList.add('is-visible');
@@ -82,7 +98,7 @@
     clearTimeout(deadlineTimer); clearTimeout(successTimer); clearInterval(heartbeatTimer);
   }
   function lockConfig(locked) {
-    controls.querySelectorAll('[data-connection-account], [data-reconnect-result], input, select, #simulate-connection-offline').forEach(el => { el.disabled = locked; });
+    controls.querySelectorAll('[data-offline-version], [data-connection-account], [data-reconnect-result], input, select, #simulate-connection-offline').forEach(el => { el.disabled = locked; });
   }
   function renderConnection(value) {
     if (!offline) {
@@ -110,6 +126,7 @@
     lockConfig(loading);
   }
   function withProfile(url) {
+    if (state.offlineVersion === 'new') url.searchParams.set('offlineVersion', 'new');
     url.searchParams.set('connectionAccount', state.account);
     url.searchParams.set('reconnectResult', state.result);
     url.searchParams.set('ownerName', state.ownerName);
@@ -173,6 +190,16 @@
       if (state.missed >= 3) enterOffline('heartbeat');
     }, timings.heartbeat);
   }
+  controls.querySelectorAll('[data-offline-version]').forEach(button => button.addEventListener('click', () => {
+    if (state.checking) return;
+    state.offlineVersion = button.dataset.offlineVersion;
+    const url = new URL(location.href);
+    if (state.offlineVersion === 'new') url.searchParams.set('offlineVersion', 'new');
+    else url.searchParams.delete('offlineVersion');
+    history.replaceState(null, '', url);
+    updateChoices();
+    status.textContent = state.offlineVersion === 'new' ? '新版离线页：点击顶部蓝色刷新按钮检测连接状态。' : '现有离线页：可通过重新连接按钮或顶部刷新检测连接状态。';
+  }));
   controls.querySelectorAll('[data-connection-account]').forEach(button => button.addEventListener('click', () => {
     state.account = button.dataset.connectionAccount; updateChoices();
   }));
@@ -191,7 +218,7 @@
     status.textContent = '已重置，当前打印机离线，可重新选择账号和重连结果。';
   });
   updateChoices();
-  status.textContent = offline ? '当前打印机离线；点击重新连接或顶部刷新，按选定结果演示。' : '当前已连接，可模拟离线触发与自动恢复。';
+  status.textContent = offline ? (state.offlineVersion === 'new' ? '新版离线页：点击顶部蓝色刷新按钮检测连接状态。' : '当前打印机离线；点击重新连接或顶部刷新，按选定结果演示。') : '当前已连接，可模拟离线触发与自动恢复。';
 
   if (offline) {
     reconnect.addEventListener('click', beginReconnect);
