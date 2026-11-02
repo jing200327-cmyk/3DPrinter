@@ -494,7 +494,6 @@ const demoState = {
      v2 = 群组判断逻辑（家长授权 → 群组内 Toast / 群组外个人二维码页） */
   startVersion: 'v1',
   /* v2 家长授权判断用：当前儿童账号是否已在家庭群组内 */
-  offlinePrint: false,
   inFamilyGroup: false
 };
 
@@ -566,13 +565,6 @@ function renderStartAccount() {
     button.hidden = true;
     button.setAttribute('aria-hidden', 'true');
   });
-  document.querySelectorAll('[data-start-action="offline"]').forEach((button) => {
-    button.hidden = !demoState.offlinePrint;
-  });
-  document.querySelector('#demo-offline-toggle').setAttribute('aria-checked', String(demoState.offlinePrint));
-  document.querySelector('#demo-offline-status').textContent = demoState.offlinePrint
-    ? '已开启 · 两个账号的首页均显示此入口'
-    : '已关闭 · 两个账号的首页均隐藏此入口';
   positionStartOverlay();
 }
 
@@ -829,8 +821,6 @@ function handleStartAction(action, trigger) {
   if (action === 'add') {
     showScreen('printer-select');
     locationDialog.showModal();
-  } else if (action === 'offline') {
-    showScreen('offline-guide');
   } else {
     showToast('购买打印机入口（原型演示）');
   }
@@ -841,12 +831,8 @@ for (const suffix of ['', '-v2']) {
   document.querySelector(`#start-cta-auth${suffix}`).addEventListener('click', (event) => handleStartAction('add', event.currentTarget));
   document.querySelector(`#start-cta-authorize${suffix}`).addEventListener('click', (event) => handleStartAction('buy', event.currentTarget));
 }
-document.querySelectorAll('[data-start-action="offline"]').forEach((button) => {
-  button.addEventListener('click', (event) => handleStartAction('offline', event.currentTarget));
-});
-document.querySelector('#demo-offline-toggle').addEventListener('click', () => {
-  demoState.offlinePrint = !demoState.offlinePrint;
-  renderStartAccount();
+document.querySelector('#demo-open-offline-workbench').addEventListener('click', () => {
+  location.href = new URL('../../dayinji/自研款打印机打印页面原型/index-offline.html', location.href).href;
 });
 
 document.querySelector('#auth-todo-back').addEventListener('click', () => showScreen('start'));

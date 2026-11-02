@@ -93,6 +93,12 @@
 
 /* 新版独立切换：仅保留离线说明和顶部刷新入口。 */
 body[data-offline-layout="new"] :is(.offline-reconnect, .offline-troubleshooting)[hidden] { display: none !important; }
+.offline-print-card {margin-top:14px;padding:22px 20px;border-radius:16px;background:#fff;box-shadow:0 2px 10px rgb(50 55 72 / 4%);}
+.offline-print-card h2 {margin:0 0 10px;color:#293348;font-size:17px;font-weight:650;}
+.offline-print-card p {margin:0 0 20px;color:#838b9b;font-size:13px;line-height:1.8;}
+.offline-print-card a {display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:24px;background:linear-gradient(105deg,#9a67f5,#4b85f9);color:#fff;font-size:15px;font-weight:600;text-decoration:none;}
+.offline-print-card a:focus-visible {outline:2px solid #7663ee;outline-offset:4px;}
+.offline-print-card a:active {filter:brightness(.96);}
 body[data-offline-layout="new"] .offline-notice { padding-bottom: 28px; }
 body[data-offline-layout="new"] .printer-connection-state[data-connection-status="connecting"] #printer-connection-state-label { color: #e8a03e; }
 body[data-offline-layout="new"] .printer-connection-state[data-connection-status="connecting"] #printer-connection-state-label::before { border: 2px dotted #dfc34c; }

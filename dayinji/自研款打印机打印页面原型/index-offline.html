@@ -8,7 +8,7 @@
   <!-- 复用在线工作台的设备框 / 头部 / 摄像头裁切 / 底部导航 / Toast / 复用整图页样式（只引用，不修改）；
        离线态专属规则全部收在 styles-offline.css 的专属类名作用域内 -->
   <link rel="stylesheet" href="styles.css?v=r017">
-  <link rel="stylesheet" href="styles-offline.css?v=r003">
+  <link rel="stylesheet" href="styles-offline.css?v=r004">
   <link rel="stylesheet" href="styles-simulation.css?v=r003">
   <link rel="stylesheet" href="styles-connection.css?v=1">
 </head>
@@ -55,6 +55,11 @@
         <p class="offline-notice-copy">当前打印机处于离线状态，请重新连接打印机。</p>
         <button id="reconnect-button" class="offline-reconnect" type="button">重新连接</button>
         <p id="offline-troubleshooting" class="offline-troubleshooting"></p>
+      </section>
+      <section id="offline-print-card" class="offline-print-card" aria-labelledby="offline-print-card-title">
+        <h2 id="offline-print-card-title">无网打印</h2>
+        <p>如果打印机已开机但无网络，可使用无网打印</p>
+        <a id="open-offline-print" href="../../lianjiepeiwnag/打印机首次配网连接流程原型/index.html?flow=offline-guide">无网打印</a>
       </section>
     </div>
 
@@ -106,6 +111,6 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="prototype-connection.js?v=3"></script>
+  <script src="prototype-connection.js?v=4"></script>
 </body>
 </html>

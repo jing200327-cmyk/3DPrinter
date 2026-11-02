@@ -66,7 +66,6 @@
       <div id="start-account-overlay" class="start-overlay">
         <button id="start-cta-auth" class="start-cta-pill" type="button">添加打印机</button>
         <button id="start-cta-authorize" class="start-cta-link" type="button"><span>购买打印机</span></button>
-        <button class="start-cta-offline" type="button" data-start-action="offline" hidden>无网打印</button>
       </div>
     </section>
 
@@ -80,7 +79,6 @@
       <div id="start-account-overlay-v2" class="start-overlay">
         <button id="start-cta-auth-v2" class="start-cta-pill" type="button">添加打印机</button>
         <button id="start-cta-authorize-v2" class="start-cta-link" type="button"><span>购买打印机</span></button>
-        <button class="start-cta-offline" type="button" data-start-action="offline" hidden>无网打印</button>
       </div>
     </section>
 
@@ -260,15 +258,14 @@
       </div>
 
       <div class="demo-group" role="group" aria-labelledby="demo-offline-title">
-        <p class="demo-group__title" id="demo-offline-title">无网打印入口<small>默认关闭</small></p>
-        <button id="demo-offline-toggle" class="demo-option" type="button" role="switch" aria-checked="false">
-          <span class="demo-option__tick" aria-hidden="true"></span>
-          <span class="demo-option__main"><strong>显示无网打印入口</strong><span id="demo-offline-status">已关闭 · 两个账号的首页均隐藏此入口</span></span>
+        <p class="demo-group__title" id="demo-offline-title">无网打印入口</p>
+        <button id="demo-open-offline-workbench" class="demo-option" type="button">
+          <span class="demo-option__main"><strong>查看打印机离线工作台</strong><span>无网打印入口位于离线提示卡片下方</span></span>
         </button>
       </div>
 
       <button id="demo-enter" class="jo-primary" type="button">进入演示（起始页）</button>
-      <p class="demo-note">无网打印开关对两个账号同时生效，切换账号时保留当前开关状态。</p>
+      <p class="demo-note">无打印机工作台不展示无网打印入口。</p>
     </div>
   </section>
 
@@ -494,7 +491,7 @@
   </section>
 
     <section id="screen-offline-guide" class="app-screen offline-screen" data-screen="offline-guide" hidden aria-labelledby="offline-guide-title">
-      <header class="flow-header"><button id="offline-guide-back" type="button" aria-label="返回连接配网首页">‹</button><h1 id="offline-guide-title" tabindex="-1">连接打印机热点页</h1><span></span></header>
+      <header class="flow-header"><button id="offline-guide-back" type="button" aria-label="返回打印机离线工作台">‹</button><h1 id="offline-guide-title" tabindex="-1">连接打印机热点页</h1><span></span></header>
       <div class="offline-body">
         <p class="offline-intro">连接打印机热点后，即可将文件传给打印机。</p>
         <section class="offline-step">
@@ -673,7 +670,7 @@
   <dialog id="offline-timeout" class="offline-modal" aria-labelledby="offline-timeout-title"><span class="offline-error-icon" aria-hidden="true">!</span><h2 id="offline-timeout-title">连接超时</h2><p>未能连接到打印机热点。<br>请确认打印机已开机，并长按蓝色按钮开启热点后重试。</p><button id="offline-retry" class="primary-button hotspot-gradient" type="button">重试</button><button id="offline-timeout-back" class="secondary-button" type="button">返回检查</button></dialog>
   <dialog id="offline-upload" class="offline-modal" aria-labelledby="offline-upload-title" aria-describedby="offline-upload-copy"><span class="offline-upload-mark" aria-hidden="true">↑</span><h2 id="offline-upload-title">上传中</h2><p id="offline-upload-copy">正在将模型上传云端完成切片</p><progress id="offline-upload-progress" class="offline-upload-progress" max="100" value="0" aria-label="上传进度"></progress><p id="offline-upload-percent" class="offline-upload-percent">0%</p><p id="offline-upload-filename" class="offline-upload-filename"></p></dialog>
 
-  <script src="prototype.js?v=20261029"></script>
-  <script src="offline-print.js?v=1"></script>
+  <script src="prototype.js?v=20261102-offline-entry"></script>
+  <script src="offline-print.js?v=2"></script>
 </body>
 </html>

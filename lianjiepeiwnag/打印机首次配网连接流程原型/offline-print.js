@@ -20,7 +20,6 @@
     { name: '模型预览.png', size: 1.2 }
   ];
   let source = 'ai';
-  let origin = 'start';
   let selectedFile = null;
   let connectionTimer;
   let successTimer;
@@ -32,17 +31,13 @@
     showScreen(name);
   }
 
-  function positionEntries() {
-    document.querySelectorAll('.offline-start-entry').forEach(button => {
-      const image = button.parentElement.querySelector('.full-reference');
-      const rect = image.getBoundingClientRect();
-      if (!rect.width) return;
-      const scale = Math.max(rect.width / 686, rect.height / 1530);
-      button.style.left = `${image.offsetLeft + rect.width / 2}px`;
-      button.style.top = `${image.offsetTop + 1140 * scale}px`;
-      button.style.height = `${Math.max(44, 65 * scale)}px`;
-      button.style.fontSize = `${26 * scale}px`;
-    });
+  function offlineWorkbenchUrl() {
+    const url = new URL('../../dayinji/自研款打印机打印页面原型/index-offline.html', location.href);
+    const query = new URLSearchParams(location.search);
+    for (const key of ['offlineVersion', 'connectionAccount', 'ownerName', 'reconnectResult', 'serverStatus']) {
+      if (query.has(key)) url.searchParams.set(key, query.get(key));
+    }
+    return url;
   }
 
   function renderModels() {
@@ -187,14 +182,7 @@
     }, 100);
   }
 
-  document.querySelectorAll('.offline-start-entry').forEach(button => {
-    button.addEventListener('click', () => {
-      origin = button.parentElement.dataset.screen;
-      navigate('offline-guide');
-    });
-    button.parentElement.querySelector('img').addEventListener('load', positionEntries);
-  });
-  $('#offline-guide-back').addEventListener('click', () => navigate(origin));
+  $('#offline-guide-back').addEventListener('click', () => { location.href = offlineWorkbenchUrl().href; });
   $('#offline-connect').addEventListener('click', startConnection);
   $('#offline-retry').addEventListener('click', startConnection);
   $('#offline-demo-success').addEventListener('click', () => finishConnection('success'));
@@ -210,9 +198,9 @@
     if (selectedFile !== null) startUpload(files[selectedFile].name, 'local');
   });
   upload.addEventListener('cancel', event => event.preventDefault());
-  document.addEventListener('prototype:screenchange', positionEntries);
-  window.addEventListener('resize', positionEntries);
   renderModels();
   renderFiles();
-  positionEntries();
+  const flow = new URLSearchParams(location.search).get('flow');
+  if (flow === 'offline') location.replace(offlineWorkbenchUrl().href);
+  else if (flow === 'offline-guide') navigate('offline-guide');
 })();
