@@ -22,24 +22,15 @@ const assert=require('node:assert/strict');
   assert.equal(await page.locator('#reconnect-timeout-dialog').isVisible(),true);await page.locator('#reconnect-dismiss').click();assert.equal(await page.locator('#offline-print-card').isVisible(),true);
   for(const account of ['owner','restricted']){
    await page.goto(workbench+'?connectionAccount='+account+'&offlineVersion=classic&ownerName=家长');
-   await page.locator('#open-offline-print').click();await page.waitForURL('**/index.html?**');
-   assert.equal(await page.locator('#screen-offline-guide').isVisible(),true);
-   await page.locator('#offline-guide-back').click();await page.waitForURL('**/index-offline.html?**');
+   await page.locator('#open-offline-print').click();await page.waitForURL('**/model-import/prototype_v1.1.html?**');
+   assert.equal(await page.locator('#screen-offline-guide').getAttribute('class'),'screen is-active');
+   await page.locator('#btnGuideBack').click();await page.waitForURL('**/index-offline.html?**');
    assert.equal(new URL(page.url()).searchParams.get('connectionAccount'),account);assert.equal(new URL(page.url()).searchParams.get('offlineVersion'),'classic');
   }
   await page.goto(pairing);assert.equal(await page.locator('[data-start-action="offline"],.offline-start-entry').count(),0);
   assert.equal(await page.locator('#screen-start').isVisible(),true);
   await page.goto(pairing+'?flow=offline');await page.waitForURL('**/index-offline.html*');assert.equal(await page.locator('#offline-print-card').isVisible(),true);
-  await page.locator('#open-offline-print').click();await page.locator('#offline-connect').click();
-  assert.equal(await page.locator('#offline-connecting').isVisible(),true);await page.locator('#offline-cancel-connect').click();assert.equal(await page.locator('#screen-offline-guide').isVisible(),true);
-  await page.locator('#offline-connect').click();await page.locator('#offline-demo-timeout').click();assert.equal(await page.locator('#offline-timeout').isVisible(),true);
-  await page.locator('#offline-retry').click();await page.clock.runFor(6500);
-  assert.equal(await page.locator('#screen-offline-library').isVisible(),true);assert.equal(await page.locator('.offline-model').count(),9);
-  await page.locator('#offline-tab-slices').click();await page.locator('.offline-model').first().click();assert.equal(await page.locator('#offline-upload').isVisible(),true);await page.clock.runFor(4000);
-  assert.equal(await page.locator('#offline-upload').isVisible(),false);
-  await page.locator('#offline-import-local').click();assert.equal(await page.locator('#screen-offline-files').isVisible(),true);
-  await page.locator('[data-offline-file="2"]').click({force:true});assert.equal(await page.locator('#offline-print-local').isDisabled(),true);
-  await page.locator('[data-offline-file="0"]').click();await page.locator('#offline-print-local').click();assert.equal(await page.locator('#offline-upload').isVisible(),true);await page.clock.runFor(4000);assert.equal(await page.locator('#screen-offline-library').isVisible(),true);
-  assert.deepEqual(errors,[]);console.log('PASS relocated card, specified copy, both role/version return paths, removed empty-workbench entry, old link migration, responsive layout, original guide/cancel/connect/library/upload/local-file flows.');
+  await page.locator('#open-offline-print').click();assert.match(page.url(),/model-import/);assert.equal(await page.locator('#screen-offline-guide').getAttribute('class'),'screen is-active');
+  assert.deepEqual(errors,[]);console.log('PASS relocated card, specified copy, both role/version return paths, removed empty-workbench entry, old link migration, responsive layout, shared reference-guide routing.');
  }finally{await browser.close();server.kill();}
 })().catch(e=>{console.error(e);process.exit(1)});

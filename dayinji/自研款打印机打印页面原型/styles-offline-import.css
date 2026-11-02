@@ -1,0 +1,4 @@
+.phone-network-banner {position:sticky;top:0;z-index:12;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;background:#fff4dc;color:#8e6a24;font-size:12px;line-height:1.6;}
+.phone-network-banner[hidden] {display:none!important;}
+.phone-network-banner a {flex-shrink:0;color:#6658da;text-decoration:none;font-weight:650;}
+#phone-network-go {display:grid;place-items:center;min-height:42px;flex:1;border-radius:10px;background:linear-gradient(105deg,#9a67f5,#4b85f9);color:white;text-decoration:none;font-size:14px;font-weight:600;}

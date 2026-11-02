@@ -202,5 +202,10 @@
   renderFiles();
   const flow = new URLSearchParams(location.search).get('flow');
   if (flow === 'offline') location.replace(offlineWorkbenchUrl().href);
-  else if (flow === 'offline-guide') navigate('offline-guide');
+  else if (flow === 'offline-guide') {
+    const url = new URL('../../model-import/prototype_v1.1.html', location.href);
+    const query = new URLSearchParams(location.search);
+    for (const key of ['offlineVersion','connectionAccount','ownerName','reconnectResult','serverStatus']) if (query.has(key)) url.searchParams.set(key,query.get(key));
+    url.searchParams.set('origin','offline-workbench');url.hash = 'offline-guide';location.replace(url.href);
+  }
 })();

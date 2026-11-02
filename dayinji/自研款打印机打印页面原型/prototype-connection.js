@@ -89,8 +89,8 @@
       refresh.setAttribute('aria-label', modern ? '刷新打印机连接状态' : '重新连接打印机');
       const offlinePrint = document.querySelector('#open-offline-print');
       if (offlinePrint) {
-        const url = withProfile(new URL('../../lianjiepeiwnag/打印机首次配网连接流程原型/index.html', location.href));
-        url.searchParams.set('flow', 'offline-guide');
+        const url = withProfile(new URL('../../model-import/prototype_v1.1.html', location.href));
+        url.searchParams.set('origin', 'offline-workbench');url.hash = 'offline-guide';
         offlinePrint.href = url.href;
       }
     }
