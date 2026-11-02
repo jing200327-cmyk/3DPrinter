@@ -1,39 +1,15 @@
-.calibration-page { font-family: Arial, "Microsoft YaHei", sans-serif; }
-#calibration-clean-stage, #calibration-points-stage { position: absolute; inset: 0; }
-.calibration-page .dc-nav { z-index: 1; }
-.calibration-progress { position: absolute; top: 13.7%; left: 17%; display: flex; width: 66%; height: 2.5%; align-items: center; gap: calc(7 * var(--dc-scale)); }
-.calibration-progress-first, .calibration-progress-second { flex: none; width: calc(20 * var(--dc-scale)); height: calc(20 * var(--dc-scale)); border: calc(5 * var(--dc-scale)) solid #f59a23; border-radius: 50%; }
-.calibration-progress-second { border-color: #c5c5c7; }
-.calibration-progress-line { flex: 1; border-top: calc(2 * var(--dc-scale)) dashed #ddd; }
-[data-stage="points"] .calibration-progress-first { position: relative; background: #f59a23; }
-[data-stage="points"] .calibration-progress-first::after { position: absolute; top: -1px; left: -1px; width: calc(10 * var(--dc-scale)); height: calc(6 * var(--dc-scale)); border: solid #fff; border-width: 0 0 3px 3px; transform: rotate(-45deg); content: ""; }
-[data-stage="points"] .calibration-progress-line { border-top-style: solid; border-color: #f59a23; }
-[data-stage="points"] .calibration-progress-second { border-color: #f59a23; }
-.calibration-clean-title, .calibration-count { position: absolute; top: 19.5%; left: 0; width: 100%; margin: 0; text-align: center; font-size: calc(19 * var(--dc-scale)); font-weight: 700; line-height: 1.5; }
-.calibration-clean-copy, .calibration-guidance { position: absolute; top: 23.8%; left: 10.5%; width: 79%; margin: 0; color: #60686a; text-align: center; font-size: calc(14 * var(--dc-scale)); line-height: 1.6; }
-.calibration-clean-copy { left: 4.3%; width: 91.4%; font-size: calc(13.5 * var(--dc-scale)); letter-spacing: calc(.3 * var(--dc-scale)); }
-.calibration-clean-photo { position: absolute; top: 28.2%; left: 4.3%; width: 91.4%; height: 23.1%; overflow: hidden; border-radius: calc(16 * var(--dc-scale)); }
-/* 直接复用参考图中的喷头照片，使用容器裁切，保留原始图片文件。 */
-.calibration-clean-photo img { position: absolute; top: -122.5%; left: -4.7%; width: 109.4%; max-width: none; height: auto; }
-.calibration-continue, .calibration-actions { position: absolute; top: 89.05%; left: 4.3%; width: 91.4%; height: 6.4%; }
-.calibration-count { top: 19.4%; font-weight: 500; font-size: calc(20 * var(--dc-scale)); }
-.calibration-count span { color: #25bf5e; }
-.calibration-grid { position: absolute; top: 36.55%; left: 20.7%; width: 58.6%; height: 17.2%; }
-.calibration-grid-outline { position: absolute; inset: 0; border: 1px dashed #bfc0c3; }
-.calibration-point { position: absolute; top: calc(var(--point-row) * 50%); left: calc(var(--point-column) * 50%); display: grid; width: calc(28 * var(--dc-scale)); height: calc(28 * var(--dc-scale)); place-items: center; border-radius: 50%; background: #bfc0c4; transform: translate(-50%, -50%); }
-.calibration-point::after { width: 76%; height: 76%; border: calc(2 * var(--dc-scale)) solid #fff; border-radius: 50%; content: ""; }
-.calibration-point[data-state="current"], .calibration-point[data-state="complete"] { background: #1cbe57; }
-.calibration-point[data-state="complete"]::after { width: 45%; height: 26%; margin-top: -10%; border-width: 0 0 calc(3 * var(--dc-scale)) calc(3 * var(--dc-scale)); border-radius: 0; transform: rotate(-45deg); }
-.calibration-offset-card { position: absolute; top: 58.45%; left: 4.3%; width: 91.4%; height: 18.1%; border-radius: calc(25 * var(--dc-scale)); background: #f6f6fa; }
-.calibration-offset-label { position: absolute; top: 17%; left: 10.9%; font-size: calc(13 * var(--dc-scale)); }
-#calibration-offset { position: absolute; top: 34%; left: 10.9%; color: #08121d; font-size: calc(29 * var(--dc-scale)); font-weight: 600; letter-spacing: -1px; }
-.calibration-offset-card small { position: absolute; top: 72%; left: 10.9%; color: #999; font-size: calc(10.5 * var(--dc-scale)); }
-.calibration-offset-card .dc-axis-arrow { position: absolute; right: 11.2%; }
-#calibration-up { top: 12%; }
-#calibration-down { top: 55.2%; }
-.calibration-offset-card .dc-axis-arrow[aria-pressed="true"] { color: #fff; background: #f59a23; }
-.calibration-actions { display: flex; justify-content: space-between; }
-.calibration-actions > button { width: 46.5%; font-size: calc(15 * var(--dc-scale)); font-weight: 650; }
-.calibration-outline-button { border: calc(1.5 * var(--dc-scale)) solid #eb9b2b; border-radius: 99px; color: #eb9b2b; background: #fff; }
-.calibration-processing-dialog { max-width: calc(100vw - 32px); padding: 0; border: 0; border-radius: 24px; background: transparent; overflow: visible; }
-.calibration-processing-dialog::backdrop { background: rgb(28 32 44 / 38%); backdrop-filter: blur(2px); }
+.calibration-page{position:relative;min-height:var(--frame-height);padding:0 20px 18px;background:#f6f7fb;color:#202b3e;font-family:Arial,"Microsoft YaHei",sans-serif}
+.cal-status{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;color:#111;font-size:15px;font-weight:650}.cal-status span:last-child{font-size:12px}
+.cal-nav{height:56px;display:flex;align-items:center;justify-content:center;position:relative}.cal-nav h2{font-size:18px;font-weight:650;margin:0}.cal-nav button{position:absolute;left:-12px;top:5px;width:44px;height:44px;padding:0;border:0;background:transparent;font-size:34px;color:#263248;cursor:pointer}
+.cal-illustration{margin:12px 0 22px;padding:10px 16px 15px;background:linear-gradient(145deg,#ede9ff,#eaf2ff);border-radius:20px;text-align:center}.cal-illustration svg{display:block;width:100%;height:140px}.cal-illustration figcaption{color:#7d86a3;font-size:12px;margin-top:6px}
+.cal-section-heading{display:flex;align-items:center;justify-content:space-between;margin:0 1px 14px}.cal-section-heading h3{font-size:17px;margin:0}.cal-section-heading>span{font-size:12px;color:#8a91a1}
+.cal-projects{display:grid;gap:12px}.cal-project{display:flex;align-items:flex-start;gap:12px;padding:17px 15px;border:1px solid #e5e8f2;border-radius:15px;background:#fff;cursor:pointer}.cal-project:has(input:checked){border-color:#8e8cf0;box-shadow:0 0 0 1px #8e8cf026}.cal-project input{width:20px;height:20px;margin:1px 0 0;accent-color:#7663ee;flex-shrink:0}
+.cal-project-copy{flex:1;min-width:0;font-size:12px;line-height:1.7;color:#8690a3}.cal-project-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}.cal-project-heading strong{font-size:16px;color:#28334a;font-weight:650}.cal-project-heading small{font-size:12px;color:#8a91a3;white-space:nowrap}
+.cal-preparation{margin:15px 2px 0;color:#9a91a4;font-size:12px;line-height:1.8}.cal-footer{padding:24px 0 14px;text-align:center}.cal-footer p{margin:0 0 6px;font-size:15px;color:#4e586e;font-weight:600}.cal-footer>small{font-size:11px;color:#929aad}
+.cal-footer button{display:block;width:100%;height:49px;margin-top:18px;border:0;border-radius:25px;background:linear-gradient(105deg,#9a67f5,#4b85f9);color:#fff;font:600 16px Arial,"Microsoft YaHei",sans-serif;cursor:pointer}.cal-footer button:disabled{opacity:.4;cursor:not-allowed}.cal-footer button.cal-secondary{border:1px solid #c5c5ed;color:#7868ca;background:#fff}
+.cal-home-indicator{width:130px;height:4px;margin:8px auto 0;border-radius:99px;background:#bdc2cc}.cal-wait-illustration{margin-top:24px;padding:25px 18px}#calibration-state-title{margin:26px 0 12px;font-size:24px;text-align:center}#calibration-current-project{margin:0 0 32px;text-align:center;font-size:13px;color:#8c94a6;line-height:1.7}
+.cal-progress-info{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#7c869b}.cal-progress-info strong{font-size:21px;color:#7b69df}.cal-progress-bar{height:9px;overflow:hidden;margin:12px 0 25px;border-radius:99px;background:#e4e7f0}.cal-progress-bar>span{display:block;height:100%;width:0;background:linear-gradient(90deg,#a575ef,#5798f6);border-radius:inherit}
+.cal-project-status{display:flex;justify-content:space-between;padding:17px 15px;margin-bottom:8px;background:#fff;border-radius:12px;font-size:14px}.cal-project-status strong{font-size:12px;font-weight:500;color:#adb4c4}.cal-project-status strong[data-state="running"]{color:#7c6ce0}.cal-project-status strong[data-state="done"]{color:#27a77e}.cal-leave-hint{margin:22px 0 0;text-align:center;font-size:12px;line-height:1.9;color:#959db0}
+#calibration-workbench-status{width:100%;padding:15px 12px;margin:0 0 12px;border:1px solid #e2dcff;border-radius:13px;background:#f2efff;color:#7561c4;text-align:left;font-size:13px;cursor:pointer}#calibration-workbench-status[hidden]{display:none!important}.cal-device-locked{opacity:.4!important;cursor:not-allowed!important}
+.calibration-page button:focus-visible,.cal-project input:focus-visible{outline:2px solid #7663ee;outline-offset:3px}
+@media(max-width:350px){.calibration-page{padding-left:14px;padding-right:14px}.cal-project{padding:14px 11px;gap:9px}.cal-project-heading strong{font-size:15px}.cal-project-heading small{font-size:11px}.cal-illustration svg{height:125px}}

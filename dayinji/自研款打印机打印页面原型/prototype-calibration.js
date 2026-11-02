@@ -1,130 +1,112 @@
-/* 九点调平演示：数值以 0.1 mm 的整数倍保存，不向真实打印机发送指令。 */
+/* 调平校准演示：进度以20倍速度播放，不向真实打印机发送指令。 */
 (() => {
   reuseScreenNames.calibration = '#calibration-screen';
   const screen = document.querySelector('#calibration-screen');
   const $ = selector => screen.querySelector(selector);
-  // 从左下角向右开始，按逐行 S 形顺序经过九点。
-  const path = [6, 7, 8, 5, 4, 3, 0, 1, 2];
-  const initialOffsets = [-3, 2, 0, 0, 0, 0, 0, -1, 0];
-  let offsets = [...initialOffsets];
-  let current = 0;
-  let selectedDirection = null;
-  let busy = false;
-  const arrow = direction => `<svg viewBox="0 0 32 32" aria-hidden="true"><g class="dc-arrow-${direction}"><path d="M16 25V7m-8 8 8-8 8 8"/></g></svg>`;
-  screen.innerHTML = `<div class="reuse-screen-frame"><div class="dc-page calibration-page">
-    <div class="dc-status" aria-hidden="true"><span>09:25</span><span class="dc-status-icons"><svg viewBox="0 0 24 20"><path d="M2 19h3v-5H2zm5 0h3v-9H7zm5 0h3V6h-3zm5 0h3V2h-3z"/></svg><svg viewBox="0 0 24 20"><path d="M1 6a17 17 0 0 1 22 0l-2 3a13 13 0 0 0-18 0zm4 5a11 11 0 0 1 14 0l-2 3a7 7 0 0 0-10 0zm4 5a4 4 0 0 1 6 0l-3 4z"/></svg><span class="dc-battery">39</span></span></div>
-    <header class="dc-nav"><button id="calibration-exit" class="dc-back" type="button" aria-label="退出调平校准"><svg viewBox="0 0 20 28" aria-hidden="true"><path d="m14 4-9 10 9 10"/></svg></button><h2>调平</h2></header>
-    <div class="calibration-progress" aria-label="第一步：清洁喷头；第二步：九点调平"><span class="calibration-progress-first"></span><span class="calibration-progress-line"></span><span class="calibration-progress-second"></span></div>
-    <div id="calibration-clean-stage">
-      <h3 class="calibration-clean-title">清洁喷头</h3>
-      <p class="calibration-clean-copy">调平前，请保持喷头整洁，以保证调平效果</p>
-      <div class="calibration-clean-photo" role="img" aria-label="清洁打印机喷头示意图"><img src="assets/calibration-clean-reference.jpg" alt=""></div>
-      <button id="calibration-continue" class="calibration-continue dc-gradient-button" type="button">继续</button>
+  const storageKey = 'funbox-calibration-7022782816D8AB-v2';
+  const projects = [
+    {id:'bed',name:'打印板调平',minutes:5,copy:'自动检测打印板各位置的高度差，补偿首层间距，让模型平稳贴合打印板。'},
+    {id:'tuning',name:'校准',minutes:3,copy:'自动检查并校准设备运行参数，提升打印稳定性与成型一致性。'},
+  ];
+  const diagram = `<svg viewBox="0 0 320 180" role="img" aria-label="打印板与喷头调平校准示意图"><path d="M67 33h186v99H67z" fill="none" stroke="#c5cddd" stroke-width="7" stroke-linejoin="round"/><path d="M67 63h186" stroke="#acb8d0" stroke-width="6"/><path d="M160 57v23" stroke="#6276a4" stroke-width="12"/><path d="M147 78h26v17l-13 10-13-10z" fill="#6577b9"/><path d="m43 137 117-35 117 35-117 34z" fill="#dcdfff" stroke="#8093d4" stroke-width="2"/><path d="m80 137 80-24 80 24-80 23z" fill="none" stroke="#a5b5e0" stroke-dasharray="4 5"/><g fill="#6a76dc"><circle cx="80" cy="137" r="4"/><circle cx="160" cy="113" r="4"/><circle cx="240" cy="137" r="4"/><circle cx="160" cy="160" r="4"/><circle cx="160" cy="137" r="5"/></g><path d="M160 108v21m-7-5 7 7 7-7" fill="none" stroke="#8d7ce0" stroke-width="2"/><circle cx="258" cy="44" r="16" fill="#e9f2ff"/><path d="m250 44 6 6 10-12" fill="none" stroke="#5584df" stroke-width="3" stroke-linecap="round"/></svg>`;
+  screen.innerHTML = `<div class="reuse-screen-frame"><div class="calibration-page">
+    <div class="cal-status" aria-hidden="true"><span>9:41</span><span>▂▄▆　◉　▰</span></div>
+    <header class="cal-nav"><button id="calibration-exit" type="button" aria-label="返回">‹</button><h2>调平校准</h2></header>
+    <div id="calibration-selection">
+      <figure class="cal-illustration">${diagram}<figcaption>自动调平校准示意图</figcaption></figure>
+      <div class="cal-section-heading"><h3>选择校准项目</h3><span>可多选</span></div>
+      <div class="cal-projects">${projects.map(p=>`<label class="cal-project"><input id="calibration-${p.id}" type="checkbox" value="${p.id}" checked><span class="cal-project-copy"><span class="cal-project-heading"><strong>${p.name}</strong><small>约 ${p.minutes} 分钟</small></span><span>${p.copy}</span></span></label>`).join('')}</div>
+      <p class="cal-preparation">开始前请清空打印板，并保持喷头清洁。执行期间请勿触碰打印板与喷头。</p>
+      <footer class="cal-footer"><p id="calibration-estimate" aria-live="polite"></p><small>预计时长仅供参考，以设备实际执行为准</small><button id="calibration-start" type="button">开始调平校准</button></footer>
     </div>
-    <div id="calibration-points-stage" hidden>
-      <h3 class="calibration-count" aria-live="polite"><span id="calibration-step">1</span>/9</h3>
-      <p class="calibration-guidance">使用↑或↓功能，使喷头刚好能接触到打印底板上，即可完成</p>
-      <div class="calibration-grid" role="img" aria-label="九点校准位置"><span class="calibration-grid-outline" aria-hidden="true"></span>${Array.from({ length: 9 }, (_, position) => `<span class="calibration-point" data-position="${position}" data-state="pending" style="--point-column:${position % 3};--point-row:${Math.floor(position / 3)}"></span>`).join('')}</div>
-      <div class="calibration-offset-card">
-        <span class="calibration-offset-label">Z 轴偏移</span><output id="calibration-offset" aria-live="polite">-0.3 mm</output>
-        <small>*每轻触一次，喷嘴移动 0.1 毫米。</small>
-        <button id="calibration-up" class="dc-axis-arrow" type="button" aria-label="Z轴偏移增加0.1毫米" aria-pressed="false">${arrow('up')}</button>
-        <button id="calibration-down" class="dc-axis-arrow" type="button" aria-label="Z轴偏移减少0.1毫米" aria-pressed="false">${arrow('down')}</button>
-      </div>
-      <div class="calibration-actions"><button id="calibration-retry" class="calibration-outline-button" type="button">重试</button><button id="calibration-next" class="dc-gradient-button" type="button">下一步</button></div>
-    </div>
-    <div class="dc-home-indicator" aria-hidden="true"></div>
+    <div id="calibration-running" hidden>
+      <figure class="cal-illustration cal-wait-illustration">${diagram}</figure>
+      <h3 id="calibration-state-title">调平校准中</h3><p id="calibration-current-project"></p>
+      <div class="cal-progress-info"><span>总体进度</span><strong id="calibration-percent">0%</strong></div>
+      <div id="calibration-progress-bar" class="cal-progress-bar" role="progressbar" aria-label="调平校准进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+      <div id="calibration-project-statuses"></div>
+      <p id="calibration-leave-hint" class="cal-leave-hint">可离开此页面，校准会继续进行。<br>校准期间，工作台设备控制功能暂不可用。</p>
+      <footer class="cal-footer"><button id="calibration-leave" class="cal-secondary" type="button">返回工作台</button><button id="calibration-confirm" type="button" hidden>确定</button></footer>
+    </div><div class="cal-home-indicator" aria-hidden="true"></div>
   </div></div>`;
-  document.body.insertAdjacentHTML('beforeend', `
-    <dialog id="calibration-processing-dialog" class="calibration-processing-dialog" aria-labelledby="calibration-processing-label" aria-busy="true">
-      <div class="transition-card"><img class="transition-mascot" src="assets/任务处理中-完整人物.png" alt="完整的红色与蓝色卡通伙伴插画"><p id="calibration-processing-label" class="transition-label">任务处理中...</p></div>
-    </dialog>
-    <dialog id="calibration-exit-dialog" class="app-dialog" aria-labelledby="calibration-exit-title">
-      <form method="dialog"><h2 id="calibration-exit-title">退出设置的参数将全部丢失</h2><div class="dialog-actions"><button id="calibration-exit-cancel" value="cancel">取消</button><button id="calibration-exit-confirm" type="button" data-tone="primary">确定</button></div></form>
-    </dialog>`);
-  const processing = document.querySelector('#calibration-processing-dialog');
-  const exitDialog = document.querySelector('#calibration-exit-dialog');
-  const points = [...screen.querySelectorAll('.calibration-point')];
-
-  function render() {
-    $('#calibration-step').textContent = current + 1;
-    $('#calibration-offset').textContent = `${(offsets[current] / 10).toFixed(1)} mm`;
-    $('#calibration-next').textContent = current === 8 ? '完成' : '下一步';
-    $('#calibration-up').setAttribute('aria-pressed', String(selectedDirection === 1));
-    $('#calibration-down').setAttribute('aria-pressed', String(selectedDirection === -1));
-    points.forEach((point, position) => {
-      const step = path.indexOf(position);
-      point.dataset.state = step < current ? 'complete' : step === current ? 'current' : 'pending';
+  const banner = document.createElement('button');
+  banner.id='calibration-workbench-status';banner.type='button';banner.hidden=true;
+  document.querySelector('#task-panel').before(banner);
+  const note=document.createElement('p');note.className='simulation-filament-status';
+  note.textContent='调平校准：原型进度以20倍速度演示，不发送真实设备指令。';
+  document.querySelector('#simulation-console .simulation-content').append(note);
+  let job=null, timer=null;
+  const lockSelector=['#printer-switch','#camera-toggle','#camera-view-limit','#pause-print','#cancel-print','#restart-print','#next-plate','#finish-now','#firmware-banner','#load-filament','#unload-filament','#open-material-settings','#filament-spool','.bp-slot','.bp-edit','#start-print','#prepare-state-start','#open-device-control','#open-print-options','#open-firmware-version','#open-remove-printer','#filament-guide-start','.di-model-print','#family-submit','#family-start-print'].join(',');
+  const lockedControls=new Map();
+  const selectedProjects=()=>projects.filter(p=>$(`#calibration-${p.id}`).checked);
+  const isRunning=()=>Boolean(job && Date.now()<job.endsAt);
+  function updateSelection(){
+    const minutes=selectedProjects().reduce((sum,p)=>sum+p.minutes,0);
+    $('#calibration-start').disabled=minutes===0;
+    $('#calibration-estimate').textContent=minutes?`预计时长：约 ${minutes} 分钟`:'请至少选择一个项目';
+  }
+  function syncLock(){
+    if(isRunning()) document.querySelectorAll(lockSelector).forEach(button=>{
+      if(!lockedControls.has(button))lockedControls.set(button,button.getAttribute('aria-disabled'));
+      button.setAttribute('aria-disabled','true');button.classList.add('cal-device-locked');
     });
-    $('.calibration-grid').setAttribute('aria-label', `九点校准，第${current + 1}点，已完成${current}点`);
-  }
-  function reset() {
-    current = 0;
-    offsets = [...initialOffsets];
-    selectedDirection = null;
-    render();
-  }
-  function setStage(stage) {
-    screen.dataset.stage = stage;
-    $('#calibration-clean-stage').hidden = stage !== 'clean';
-    $('#calibration-points-stage').hidden = stage !== 'points';
-  }
-  // 原生模态弹窗阻止鼠标、触摸及键盘操作背景；Esc 也不能跳过等待。
-  function execute(action) {
-    if (busy) return;
-    busy = true;
-    screen.inert = true;
-    screen.setAttribute('aria-busy', 'true');
-    processing.showModal();
-    setTimeout(() => {
-      processing.close();
-      screen.inert = false;
-      screen.removeAttribute('aria-busy');
-      busy = false;
-      action();
-    }, 3000);
-  }
-  processing.addEventListener('cancel', event => event.preventDefault());
-  document.querySelector('#open-level-calibration').addEventListener('click', () => {
-    reset();
-    setStage('clean');
-    openReuseScreen('calibration');
-  });
-  $('#calibration-continue').addEventListener('click', () => execute(() => {
-    setStage('points');
-    screen.focus({ preventScroll: true });
-  }));
-  function adjust(direction) {
-    if (busy) return;
-    selectedDirection = direction;
-    render();
-    execute(() => { offsets[current] += direction; render(); });
-  }
-  $('#calibration-up').addEventListener('click', () => adjust(1));
-  $('#calibration-down').addEventListener('click', () => adjust(-1));
-  $('#calibration-retry').addEventListener('click', () => execute(reset));
-  $('#calibration-next').addEventListener('click', () => execute(() => {
-    if (current === 8) {
-      // 仅作为本次演示的完成记录，退出确认时不保留未完成的草稿。
-      screen.dataset.completedOffsets = JSON.stringify(offsets.map(value => value / 10));
-      returnToReuseScreen('deviceControl');
-      reset();
-      setStage('clean');
-      showToast('调平校准已完成');
-      return;
+    else{
+      lockedControls.forEach((previous,button)=>{
+        if(previous===null)button.removeAttribute('aria-disabled');else button.setAttribute('aria-disabled',previous);
+        button.classList.remove('cal-device-locked');
+      });lockedControls.clear();
     }
-    current += 1;
-    selectedDirection = null;
-    render();
-  }));
-  $('#calibration-exit').addEventListener('click', () => { if (!busy) exitDialog.showModal(); });
-  document.querySelector('#calibration-exit-confirm').addEventListener('click', () => {
-    exitDialog.close();
-    execute(() => {
-      reset();
-      setStage('clean');
-      returnToReuseScreen('deviceControl');
-    });
+  }
+  function persist(){
+    try{if(job)sessionStorage.setItem(storageKey,JSON.stringify(job));else sessionStorage.removeItem(storageKey);}
+    catch{/* 禁止存储时，当前页面仍继续校准。 */}
+  }
+  function render(){
+    $('#calibration-selection').hidden=Boolean(job);$('#calibration-running').hidden=!job;banner.hidden=!job;
+    if(!job){syncLock();return;}
+    const running=isRunning(), progress=running?Math.min(99,Math.floor((Date.now()-job.startedAt)/(job.endsAt-job.startedAt)*100)):100;
+    const chosen=projects.filter(p=>job.projects.includes(p.id)), elapsed=Math.max(0,(Date.now()-job.startedAt)*20/60000);
+    let cumulative=0,currentName='';
+    $('#calibration-project-statuses').replaceChildren(...chosen.map(project=>{
+      const started=elapsed>=cumulative;cumulative+=project.minutes;
+      const done=!running||elapsed>=cumulative;
+      if(started&&!done)currentName=project.name;
+      const row=document.createElement('div');row.className='cal-project-status';
+      const name=document.createElement('span');name.textContent=project.name;
+      const state=document.createElement('strong');state.textContent=done?'已完成':started?'进行中':'等待中';state.dataset.state=done?'done':started?'running':'pending';
+      row.append(name,state);return row;
+    }));
+    $('#calibration-state-title').textContent=running?'调平校准中':'调平校准完成';
+    $('#calibration-current-project').textContent=running?`正在进行：${currentName}`:'所选项目已全部完成，可以开始使用打印机';
+    $('#calibration-percent').textContent=`${progress}%`;
+    $('#calibration-progress-bar').setAttribute('aria-valuenow',String(progress));$('#calibration-progress-bar span').style.width=`${progress}%`;
+    $('#calibration-leave-hint').hidden=!running;$('#calibration-confirm').hidden=running;$('#calibration-leave').hidden=!running;
+    screen.dataset.stage=running?'running':'complete';
+    banner.textContent=running?`调平校准中 · ${progress}%　查看进度 ›`:'调平校准已完成　查看结果 ›';
+    syncLock();if(!running){window.clearInterval(timer);timer=null;}
+  }
+  function startTimer(){window.clearInterval(timer);render();if(isRunning())timer=window.setInterval(render,250);}
+  function openCalibration(){render();if(reuseStack.at(-1)!=='calibration')openReuseScreen('calibration');}
+  function leave(){if(job)closeReuseScreens();else goBackInReuseScreens();}
+  document.querySelector('#open-level-calibration').addEventListener('click',openCalibration);banner.addEventListener('click',openCalibration);
+  projects.forEach(p=>$(`#calibration-${p.id}`).addEventListener('change',updateSelection));
+  $('#calibration-start').addEventListener('click',()=>{
+    if(job||!selectedProjects().length)return;
+    const selected=selectedProjects(),startedAt=Date.now();
+    job={projects:selected.map(p=>p.id),startedAt,endsAt:startedAt+selected.reduce((sum,p)=>sum+p.minutes,0)*60000/20};
+    persist();startTimer();
   });
-  render();
+  $('#calibration-exit').addEventListener('click',leave);$('#calibration-leave').addEventListener('click',leave);
+  $('#calibration-confirm').addEventListener('click',()=>{if(isRunning())return;job=null;persist();render();closeReuseScreens();updateSelection();});
+  // 捕获鼠标、触摸和键盘生成的 click，阻止设备操作，保留只读查看和返回。
+  document.addEventListener('click',event=>{
+    if(!isRunning()||!event.target.closest(lockSelector))return;
+    event.preventDefault();event.stopImmediatePropagation();showToast('调平校准中，设备控制暂不可用');
+  },true);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)render();});
+  try{
+    const stored=JSON.parse(sessionStorage.getItem(storageKey));
+    if(stored&&Array.isArray(stored.projects)&&stored.projects.length&&new Set(stored.projects).size===stored.projects.length&&stored.projects.every(id=>projects.some(p=>p.id===id))&&Number.isFinite(stored.startedAt)&&Number.isFinite(stored.endsAt)&&stored.endsAt>stored.startedAt)job=stored;
+  }catch{/* 无有效演示任务时从项目选择开始。 */}
+  updateSelection();startTimer();
 })();
