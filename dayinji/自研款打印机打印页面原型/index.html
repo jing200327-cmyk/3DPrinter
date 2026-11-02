@@ -19,7 +19,7 @@
   <link rel="stylesheet" href="styles-family-queue.css?v=2">
   <link rel="stylesheet" href="styles-connection.css?v=1">
   <link rel="stylesheet" href="styles-completion.css?v=2">
-  <link rel="stylesheet" href="styles-device-info.css?v=1">
+  <link rel="stylesheet" href="styles-device-info.css?v=2">
 </head>
 <body>
   <main id="device-page" class="phone-shell" aria-label="自研款 3D 打印机设备页">
@@ -1035,6 +1035,13 @@
         <button id="simulate-multi" type="button" role="radio" aria-checked="true" data-simulation-mode="multi">多盘模型模拟</button>
         <button id="simulate-family" type="button" role="radio" aria-checked="false" data-simulation-mode="family">多账号下的多盘模型模拟</button>
       </div>
+      <section aria-labelledby="simulation-device-account-title">
+        <h3 id="simulation-device-account-title" class="simulation-section-title">设备信息 · 账号分支</h3>
+        <div class="simulation-options" role="radiogroup" aria-label="设备信息账号分支">
+          <button id="simulate-device-parent" type="button" role="radio" aria-checked="true" data-device-account="parent">家长／超管账号（机主）</button>
+          <button id="simulate-device-child" type="button" role="radio" aria-checked="false" data-device-account="child">儿童账号（已授权）</button>
+        </div>
+      </section>
       <h3 class="simulation-section-title">耗材状态模拟</h3>
       <label class="simulation-sensor-control" for="simulation-filament-source">耗材来源
         <select id="simulation-filament-source"><option value="rack">料架</option><option value="backpack">小书包</option></select>
@@ -1191,6 +1198,6 @@
   <script src="prototype-connection.js?v=3"></script>
   <script src="prototype-completion.js?v=2"></script>
   <script src="prototype-save-slice.js?v=1"></script>
-  <script src="prototype-device-info.js?v=1"></script>
+  <script src="prototype-device-info.js?v=2"></script>
 </body>
 </html>

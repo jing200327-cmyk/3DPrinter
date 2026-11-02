@@ -5,10 +5,56 @@
   const header = (title, id, parent) => `<div class="di-status" aria-hidden="true"><span>18:04</span><span>▂▄▆　◉　▰</span></div><header class="di-nav"><button class="di-back" id="${id}" type="button" aria-label="返回${parent}"><svg viewBox="0 0 20 28" aria-hidden="true"><path d="m14 4-9 10 9 10"/></svg></button><h2>${title}</h2></header>`;
   const wrap = content => `<div class="reuse-screen-frame di-page">${content}<div class="di-home" aria-hidden="true"></div></div>`;
   const row = (label, value) => `<div class="di-detail-row"><span>${label}</span><span class="di-detail-value">${value}</span></div>`;
+  const copyIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h3"/></svg>';
+  const copyValue = (label, value) => `${value}<button type="button" class="di-copy" data-copy="${value}" aria-label="复制 ${label}">${copyIcon}</button>`;
   $('#device-info-screen').innerHTML = wrap(`${header('设备信息', 'device-info-back', '设备设置')}<div class="di-content">
-    <section class="di-card di-identity"><img src="assets/分享打印机-打印机.png" alt="Ugee Funbox 打印机实物图"><div><div class="di-device-title"><span class="di-owner">机主</span><strong>ugee funbox</strong></div><p>成型尺寸：180 × 180 × 180mm</p></div></section>
+    <section class="di-card di-identity"><img src="assets/分享打印机-打印机.png" alt="Ugee Funbox 打印机实物图"><div><div class="di-device-title"><span id="device-account-badge" class="di-owner">机主</span><strong id="device-display-name">ugee funbox</strong><button id="edit-device-name" type="button" aria-label="修改打印机名称" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15z"/></svg></button></div><p>成型尺寸：180 × 180 × 180mm</p></div></section>
     <section class="di-card di-detail-list" aria-label="设备规格">${row('机型型号', 'Ugee Funbox')}${row('固件版本', '2.01_7.0.9')}<button id="open-storage-management" class="di-detail-row" type="button"><span>存储空间</span><span class="di-detail-value"><span id="device-storage-value"></span><span class="di-chevron" aria-hidden="true">›</span></span></button></section>
-    <section class="di-card di-detail-list" aria-label="设备标识">${row('ID', '7022782816D8AB<button class="di-copy" data-copy="7022782816D8AB" aria-label="复制 ID">▢</button>')}${row('SN', 'FB202610300001<button class="di-copy" data-copy="FB202610300001" aria-label="复制 SN">▢</button>')}${row('IP', '192.168.1.105<button class="di-copy" data-copy="192.168.1.105" aria-label="复制 IP">▢</button>')}${row('Mac地址', 'FC:EE:28:16:D8:AB')}</section></div>`);
+    <section class="di-card di-detail-list" aria-label="设备标识">${row('ID', copyValue('ID', '7022782816D8AB'))}${row('SN', copyValue('SN', 'FB202610300001'))}${row('IP', copyValue('IP', '192.168.1.105'))}${row('Mac地址', 'FC:EE:28:16:D8:AB')}</section></div>`);
+  document.body.insertAdjacentHTML('beforeend', `<dialog id="device-name-dialog" class="di-dialog" aria-labelledby="device-name-title"><form id="device-name-form" novalidate><h2 id="device-name-title">修改打印机名称</h2><label for="device-name-input">打印机名称</label><input id="device-name-input" maxlength="40" autocomplete="off" aria-describedby="device-name-hint device-name-error"><p id="device-name-hint">最多40个字符</p><p id="device-name-error" class="di-error" role="status"></p><div class="di-dialog-actions"><button id="device-name-cancel" type="button">取消</button><button id="device-name-save" class="di-primary" type="submit">保存</button></div></form></dialog>`);
+  const nameStorageKey = 'funbox-device-name-7022782816D8AB';
+  const deviceName = $('#device-display-name');
+  const nameInput = $('#device-name-input');
+  const nameDialog = $('#device-name-dialog');
+  try {
+    const stored = localStorage.getItem(nameStorageKey);
+    if (stored && stored.trim() && stored.length <= 40) deviceName.textContent = stored.trim();
+  } catch { /* 无法访问本地存储时继续展示默认名称。 */ }
+  function validateDeviceName() {
+    const error = !nameInput.value.trim() ? '打印机名称不能为空' : nameInput.value.trim().length > 40 ? '打印机名称最多40个字符' : '';
+    $('#device-name-error').textContent = error;
+    $('#device-name-save').disabled = Boolean(error);
+    nameInput.setAttribute('aria-invalid', String(Boolean(error)));
+    return !error;
+  }
+  $('#edit-device-name').addEventListener('click', () => {
+    nameInput.value = deviceName.textContent;
+    validateDeviceName();nameDialog.showModal();nameInput.focus();nameInput.select();
+  });
+  nameInput.addEventListener('input', validateDeviceName);
+  $('#device-name-cancel').addEventListener('click', () => nameDialog.close());
+  nameDialog.addEventListener('close', () => $('#edit-device-name').focus({preventScroll:true}));
+  $('#device-name-form').addEventListener('submit', event => {
+    event.preventDefault();if (!validateDeviceName()) return;
+    deviceName.textContent = nameInput.value.trim();deviceName.title = deviceName.textContent;
+    let saved = true;
+    try { localStorage.setItem(nameStorageKey, deviceName.textContent); } catch { saved = false; }
+    nameDialog.close();showToast(saved ? '打印机名称已修改' : '名称已修改，当前浏览器无法保存，刷新后将恢复');
+  });
+  const accountButtons = [...document.querySelectorAll('[data-device-account]')];
+  function setDeviceAccount(account, openPage = false) {
+    const child = account === 'child';
+    $('#device-account-badge').textContent = child ? '已授权' : '机主';
+    $('#device-account-badge').classList.toggle('di-authorized', child);
+    accountButtons.forEach(button => button.setAttribute('aria-checked', String(button.dataset.deviceAccount === (child ? 'child' : 'parent'))));
+    if (!openPage) return;
+    const next = new URL(location.href);next.searchParams.set('deviceAccount', child ? 'child' : 'parent');history.replaceState(null, '', next);
+    if (nameDialog.open) nameDialog.close();
+    if (reuseStack.at(-1) !== 'deviceInfo') { openReuseScreen('deviceSettings');openReuseScreen('deviceInfo'); }
+    if (!window.matchMedia('(min-width: 961px)').matches) $('#simulation-console').open = false;
+  }
+  accountButtons.forEach(button => button.addEventListener('click', () => setDeviceAccount(button.dataset.deviceAccount, true)));
+  setDeviceAccount(new URL(location.href).searchParams.get('deviceAccount'));
   $('#storage-management-screen').innerHTML = wrap(`${header('存储管理', 'storage-management-back', '设备信息')}<div class="di-content">
     <section class="di-card di-capacity" aria-label="存储空间概览"><div class="di-ring"><svg viewBox="0 0 160 160" aria-hidden="true"><circle cx="80" cy="80" r="69"/><circle id="storage-arc" cx="80" cy="80" r="69" pathLength="100"/></svg><div class="di-ring-label"><span>可用空间</span><span id="storage-free"></span></div></div><div class="di-capacity-summary"><span>总空间: 7.30G</span><span>已使用: <span id="storage-used"></span></span></div></section>
     <section class="di-card di-file-type"><header><div><h3>gcode文件</h3><div class="di-file-size" id="storage-gcode-size"></div></div><button id="manage-gcode" class="di-primary" type="button">去管理</button></header><p>包括设备中的gcode模型文件，可在设备模型页重命名或删除。</p></section>
