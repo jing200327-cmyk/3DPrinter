@@ -8,6 +8,8 @@
   <!-- 复用在线工作台的设备框 / 头部 / 摄像头裁切 / 底部导航 / Toast / 复用整图页样式（只引用，不修改）；
        离线态专属规则全部收在 styles-offline.css 的专属类名作用域内 -->
   <link rel="stylesheet" href="styles.css?v=r017">
+  <link rel="stylesheet" href="styles-device-control.css?v=2">
+  <link rel="stylesheet" href="styles-device-info.css?v=2">
   <link rel="stylesheet" href="styles-offline.css?v=r004">
   <link rel="stylesheet" href="styles-simulation.css?v=r003">
   <link rel="stylesheet" href="styles-connection.css?v=1">
@@ -83,20 +85,62 @@
     <button id="add-printer-back" class="reuse-screen-back" type="button" aria-label="返回离线工作台"></button>
   </section>
 
-  <!-- 设备设置页（复用 设备设置页.png）：由顶部「设备设置」入口打开。
-       页内四行（固件版本 / 打印选项 / 延时摄影 / 移除打印机）都需要与打印机通信，
-       离线态暂不可用，点击给出 Toast 说明；左上角热区返回离线工作台。 -->
+  <!-- 与在线设置复用布局；通信操作由离线控制器统一拦截。 -->
   <section id="device-settings-screen" class="reuse-screen" hidden tabindex="-1" aria-label="设备设置">
     <div class="reuse-screen-frame">
       <div class="reuse-stage" style="--reuse-ratio: 376 / 809">
-        <img src="../../原型修改复用图片资源/设备设置页.png" alt="设备设置页，包含设备名称、固件版本、打印选项与延时摄影">
+        <img src="../../原型修改复用图片资源/设备设置页.png" alt="设备设置页，包含设备信息、固件版本、打印选项与延时摄影">
+        <button id="open-device-info" type="button">设备信息<span aria-hidden="true">›</span></button>
         <button id="open-firmware-version" class="reuse-hotspot reuse-hotspot--firmware-version" type="button" aria-label="固件版本"></button>
+        <span id="firmware-status-badge" class="firmware-status-badge" hidden>新的固件版本可用</span>
         <button id="open-print-options" class="reuse-hotspot reuse-hotspot--print-options" type="button" aria-label="打印选项"></button>
-        <button id="open-timelapse-settings" class="reuse-hotspot reuse-hotspot--timelapse-setting" type="button" aria-label="延时摄影"></button>
+        <div class="settings-control-extension">
+          <button id="open-device-control" class="settings-control-entry" type="button">设备控制<span aria-hidden="true">›</span></button>
+          <button id="open-timelapse-settings" class="settings-timelapse-entry" type="button">延时摄影<span aria-hidden="true">›</span></button>
+        </div>
         <button id="open-remove-printer" class="reuse-hotspot reuse-hotspot--remove-printer" type="button" aria-label="移除打印机"></button>
       </div>
     </div>
     <button id="device-settings-back" class="reuse-screen-back" type="button" aria-label="返回离线工作台"></button>
+  </section>
+
+  <section id="device-info-screen" class="reuse-screen di-screen" hidden tabindex="-1" aria-label="设备信息"></section>
+
+  <section id="storage-management-screen" class="reuse-screen di-screen" hidden tabindex="-1" aria-label="存储管理"></section>
+
+  <section id="device-models-screen" class="reuse-screen di-screen" hidden tabindex="-1" aria-label="设备模型"></section>
+
+  <section id="remove-printer-screen" class="reuse-screen" hidden tabindex="-1" aria-label="是否确认移除当前打印机">
+    <div class="reuse-screen-frame">
+      <div class="reuse-stage" style="--reuse-ratio: 411 / 879">
+        <img src="../../原型修改复用图片资源/移除打印机弹窗.png" alt="是否确认移除当前打印机，含取消与确认按钮">
+        <button id="remove-printer-cancel" class="reuse-hotspot reuse-hotspot--remove-cancel" type="button" aria-label="取消，返回设备设置"></button>
+        <button id="remove-printer-confirm" class="reuse-hotspot reuse-hotspot--remove-confirm" type="button" aria-label="确认移除当前打印机"></button>
+      </div>
+    </div>
+    <!-- 左上角回退按钮：这一页是弹窗，遮罩把原图烘焙的返回箭头压得太暗，
+         这里在箭头原位盖一个自绘的可见返回按钮（点击仍走原来的 goBackInReuseScreens） -->
+    <button id="remove-printer-back" class="reuse-screen-back remove-dialog-back" type="button" aria-label="返回设备设置">
+      <span class="remove-dialog-back__icon" aria-hidden="true"></span>
+    </button>
+  </section>
+
+  <section id="logic-demo-screen" class="reuse-screen reuse-screen--logic" hidden tabindex="-1" aria-label="移除打印机跳转逻辑">
+    <div class="reuse-screen-frame logic-demo">
+      <div class="logic-demo-card">
+        <h2 class="logic-demo-title">确认移除后，App 往哪里走？</h2>
+        <p class="logic-demo-copy">点击「确认」后需要先判断：当前账号是否还连接着其他打印机。</p>
+        <div class="logic-demo-rule">
+          <p><b>IF</b><span>已有其他打印机</span><em>直接回到打印页，自动连接「我的打印机」列表里的第一台（Ugee Funbox）</em></p>
+          <p><b>ELSE</b><span>没有其他打印机</span><em>跳转到「打印机首次配网连接流程」原型首页，重新开始配网</em></p>
+        </div>
+        <div class="logic-demo-actions">
+          <button id="logic-demo-existing" type="button"><strong>已有其他打印机</strong><span>跳到打印页原型</span></button>
+          <button id="logic-demo-none" type="button"><strong>没有其他打印机</strong><span>跳到配网流程首页</span></button>
+        </div>
+        <button id="logic-demo-back" class="logic-demo-back" type="button">返回设备设置</button>
+      </div>
+    </div>
   </section>
 
   <dialog id="reconnect-timeout-dialog" class="app-dialog" aria-labelledby="reconnect-timeout-title" aria-describedby="reconnect-timeout-copy">
@@ -112,7 +156,9 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="prototype-connection.js?v=5"></script>
+  <script src="prototype-connection.js?v=6"></script>
+  <script src="prototype-offline-settings.js?v=1"></script>
+  <script src="prototype-device-info.js?v=2"></script>
   <script src="prototype-offline-import.js?v=1"></script>
 </body>
 </html>

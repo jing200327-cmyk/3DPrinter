@@ -234,15 +234,19 @@
       location.href = new URL('../../lianjiepeiwnag/打印机首次配网连接流程原型/index.html?screen=printer-select&account=parent', location.href).href;
     });
     const screens = [...document.querySelectorAll('.reuse-screen')];
+    let screenTrigger;
     const closeScreens = () => {
       screens.forEach(screen => { screen.hidden = true; }); device.inert = false;
       document.body.classList.remove('operation-open');
+      screenTrigger?.focus({ preventScroll: true });
     };
     const openScreen = id => {
+      if (!device.inert) screenTrigger = document.activeElement;
       screens.forEach(screen => { screen.hidden = screen.id !== id; });
       device.inert = true; document.body.classList.add('operation-open');
       document.getElementById(id).focus({ preventScroll: true });
     };
+    window.__OFFLINE_SCREENS = { openScreen, closeScreens, showToast };
     document.querySelector('#printer-switch').addEventListener('click', () => openScreen('add-printer-screen'));
     document.querySelector('#printer-settings').addEventListener('click', () => openScreen('device-settings-screen'));
     document.querySelector('#add-printer-back').addEventListener('click', closeScreens);
@@ -252,8 +256,8 @@
       if (state.account !== 'owner') { showToast('仅超管可修改打印机网络，请联系超管'); return; }
       location.href = new URL('../../lianjiepeiwnag/打印机首次配网连接流程原型/index.html?screen=printer-select&account=parent', location.href).href;
     });
-    ['#open-firmware-version', '#open-print-options', '#open-timelapse-settings', '#open-remove-printer'].forEach(selector => {
-      document.querySelector(selector).addEventListener('click', () => showToast('打印机离线，该功能暂不可用'));
+    ['#open-firmware-version', '#open-print-options', '#open-timelapse-settings', '#open-device-control'].forEach(selector => {
+      document.querySelector(selector).addEventListener('click', () => showToast('当前打印机离线'));
     });
     if (query.get('autoRetry') === '1') beginReconnect();
   } else if (query.get('connection') === 'offline') {
