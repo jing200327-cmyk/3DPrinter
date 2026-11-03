@@ -14,6 +14,7 @@
     screen.querySelector('#configure-new-printer').hidden = account === 'child';
     screen.querySelector('#open-share-printer').hidden = account !== 'parent';
     controls.querySelectorAll('[data-add-printer-account]').forEach(button => button.setAttribute('aria-checked', String(button.dataset.addPrinterAccount === account)));
+    window.dispatchEvent(new CustomEvent('printer-account-change', { detail: { account } }));
   }
   controls.querySelectorAll('[data-add-printer-account]').forEach(button => button.addEventListener('click', () => {
     render(button.dataset.addPrinterAccount);
