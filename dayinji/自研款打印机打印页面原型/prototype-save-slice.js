@@ -1,6 +1,7 @@
 /* M15 保存切片：仅模拟交互与保存进度，不接入本地或云端落库。 */
 (() => {
   const saveButton = document.querySelector('#save-slice');
+  let activeSaveButton = saveButton;
   const nameDialog = document.querySelector('#slice-name-dialog');
   const savingDialog = document.querySelector('#slice-saving-dialog');
   const successDialog = document.querySelector('#slice-success-dialog');
@@ -9,10 +10,10 @@
   const error = document.querySelector('#slice-name-error');
   const progress = document.querySelector('#slice-save-progress');
   const percentLabel = document.querySelector('#slice-save-percent');
-  const calibration = document.querySelector('#leveling-toggle');
-
-  calibration.addEventListener('click', () => {
-    calibration.setAttribute('aria-checked', String(calibration.getAttribute('aria-checked') !== 'true'));
+  document.querySelectorAll('#leveling-toggle, #family-leveling-toggle').forEach(calibration => {
+    calibration.addEventListener('click', () => {
+      calibration.setAttribute('aria-checked', String(calibration.getAttribute('aria-checked') !== 'true'));
+    });
   });
 
   function validateName() {
@@ -24,13 +25,14 @@
     return !empty;
   }
 
-  saveButton.addEventListener('click', () => {
-    const modelName = document.querySelector('#prepare-plate-list [aria-selected="true"] .prepare-model-name');
+  document.querySelectorAll('#save-slice, #family-save-slice').forEach(button => button.addEventListener('click', () => {
+    activeSaveButton = button;
+    const modelName = button.closest('.prepare-page').querySelector('.plate-list [aria-selected="true"] .prepare-model-name');
     input.value = (modelName?.textContent.trim() || '').slice(0, 40);
     validateName();
     nameDialog.showModal();
     input.select();
-  });
+  }));
   input.addEventListener('input', validateName);
   document.querySelector('#slice-name-cancel').addEventListener('click', () => nameDialog.close());
   savingDialog.addEventListener('cancel', event => event.preventDefault());
@@ -63,7 +65,7 @@
   });
 
   successDialog.addEventListener('close', () => {
-    saveButton.focus();
+    activeSaveButton.focus();
     if (successDialog.returnValue === 'view') {
       showToast('「我的 - 我的切片」页面不在本期原型范围内');
     }

@@ -15,9 +15,9 @@
     <div class="prepare-printer"><img src="assets/准备打印-打印机.png" alt="Ugee Funbox 打印机"><div><strong>Ugee Funbox</strong><span class="prepare-idle"><i aria-hidden="true"></i>忙碌</span></div><button id="family-switch-printer" class="prepare-switch" type="button">切换</button></div>
     <h2 class="prepare-section-title">选择要打印的盘（共 2 盘）</h2>
     <div id="family-plate-list" class="plate-list" role="listbox" aria-label="两盘模型及打印顺序" aria-describedby="family-prepare-summary"></div>
-    <div class="prepare-options"><h2>打印选项</h2><div class="prepare-timelapse"><span>延时摄影</span><button id="family-timelapse-toggle" class="timelapse-check" type="button" role="checkbox" aria-checked="true" aria-label="延时摄影"><span class="timelapse-check-box" aria-hidden="true"></span></button></div></div>
+    <div class="prepare-options"><h2>打印选项</h2><div class="prepare-option-list"><div class="prepare-timelapse"><span>延时摄影</span><button id="family-timelapse-toggle" class="timelapse-check" type="button" role="checkbox" aria-checked="true" aria-label="延时摄影"><span class="timelapse-check-box" aria-hidden="true"></span></button></div><div class="prepare-timelapse"><span>调平校准</span><button id="family-leveling-toggle" class="timelapse-check" type="button" role="checkbox" aria-checked="false" aria-label="调平校准"><span class="timelapse-check-box" aria-hidden="true"></span></button></div></div></div>
     <p id="family-prepare-summary" class="family-prepare-summary"></p>
-    <button id="family-submit" class="prepare-start" type="button">加入打印队列</button>
+    <div class="prepare-footer"><button id="family-save-slice" class="prepare-save" type="button">保存</button><button id="family-submit" class="prepare-start" type="button">加入打印队列</button></div>
   </div></div>`;
   const rows = tasks.map((task, index) => {
     const row = document.querySelector('#prepare-plate-list .plate-row').cloneNode(true);
@@ -93,6 +93,7 @@
     $('#family-submit').textContent = readonly ? '开始打印' : '加入打印队列';
     $('#family-submit').setAttribute('aria-label', readonly ? '开始打印（已加入队列，等待按序打印）' : '将两盘模型加入打印队列');
     $('#family-timelapse-toggle').disabled = readonly;
+    $('#family-leveling-toggle').disabled = readonly;
     $('#family-switch-printer').disabled = readonly;
     $('#family-prepare-summary').hidden = readonly;
     $('#family-prepare-summary').textContent = readonly ? '' : '本次提交 2 盘，将按上方排序加入打印队列。';
