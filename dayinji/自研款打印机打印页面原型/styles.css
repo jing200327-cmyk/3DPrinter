@@ -594,3 +594,7 @@ body.operation-open { overflow: hidden; }
 #prepare-stage .prepare-idle[data-printer-state="busy"] i { background: #ef4b53; }
 #prepare-stage .prepare-idle[data-printer-state="connecting"] i { background: #efab36; }
 #prepare-stage .prepare-start:disabled { opacity: .48; cursor: default; }
+
+/* 儿童添加设备仅保留我的打印机；白色目录延伸覆盖底图的配置按钮。 */
+#add-printer-screen [hidden] { display: none !important; }
+#add-printer-screen[data-account="child"] .add-printer-catalog { bottom: 0; }
