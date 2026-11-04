@@ -387,8 +387,9 @@ function clearConnectingTimers() {
   connectingTicker = null;
 }
 
-/* 打开【连接等待】页并启动计时；正常分支 3s 后自动成功（真实阈值 60s，演示压缩） */
-function openConnectingSheet() {
+/* 非空密码统一等待 3s，再按原有模拟凭据给出连接结果。 */
+function openConnectingSheet(validConnection) {
+  clearConnectingTimers();
   connectingSeconds = 0;
   document.querySelector('#connecting-seconds').textContent = '0';
   connectingDialog.showModal();
@@ -397,7 +398,17 @@ function openConnectingSheet() {
     document.querySelector('#connecting-seconds').textContent = String(connectingSeconds);
     if (connectingSeconds >= CONNECTING_TIMEOUT_SECONDS) finishConnectingAsTimeout();
   }, 1000);
-  connectionTimer = window.setTimeout(finishConnectingAsSuccess, CONNECTING_SUCCESS_DELAY);
+  connectionTimer = window.setTimeout(() => {
+    if (validConnection) {
+      finishConnectingAsSuccess();
+    } else {
+      clearConnectingTimers();
+      connectingDialog.close();
+      wifiError.hidden = false;
+      wifiPassword.setAttribute('aria-invalid', 'true');
+      showNotice(WIFI_CONNECTION_ERROR, wifiPassword);
+    }
+  }, CONNECTING_SUCCESS_DELAY);
 }
 
 /* 正常分支：连接成功 → 【打印前准备】 */
@@ -431,17 +442,17 @@ document.querySelector('#connecting-done').addEventListener('click', finishConne
 document.querySelector('#connecting-timeout').addEventListener('click', finishConnectingAsTimeout);
 
 document.querySelector('#connect-home-wifi').addEventListener('click', () => {
-  const validCredentials = document.querySelector('#home-wifi-name').value === 'Home_5G' && wifiPassword.value === EXPECTED_HOME_WIFI_PASSWORD;
-  if (!validCredentials || !printerHotspotConnected) {
-    wifiError.hidden = false;
+  if (!wifiPassword.value) {
+    wifiError.hidden = true;
     wifiPassword.setAttribute('aria-invalid', 'true');
-    showNotice(WIFI_CONNECTION_ERROR, wifiPassword);
+    showNotice('当前密码为空', wifiPassword);
     return;
   }
 
   wifiError.hidden = true;
   wifiPassword.removeAttribute('aria-invalid');
-  openConnectingSheet();
+  const validCredentials = document.querySelector('#home-wifi-name').value === 'Home_5G' && wifiPassword.value === EXPECTED_HOME_WIFI_PASSWORD;
+  openConnectingSheet(validCredentials && printerHotspotConnected);
 });
 
 wifiPassword.addEventListener('input', () => {
@@ -987,37 +998,26 @@ if (requestedScreen === 'help') {
   window.setTimeout(openFaqDialog, 0);
 }
 
-/* Second hotspot proposal; system WLAN continues to use the original handler. */
+/* 热点页固定使用方案二：一键连接，成功后自动进入网络配置。 */
 function renderHotspotConnection() {
-  const automatic = document.querySelector('#hotspot-plan').value === 'auto';
   const button = document.querySelector('#connect-hotspot');
-  button.hidden = !automatic;
   button.disabled = hotspotConnecting;
   button.textContent = hotspotConnecting ? '连接中…' : '一键连接打印机热点';
   button.setAttribute('aria-busy', String(hotspotConnecting));
-  document.querySelector('#open-wlan').hidden = automatic;
-  document.querySelector('#hotspot-plan').disabled = hotspotConnecting;
-  document.querySelector('#hotspot-result').disabled = hotspotConnecting;
-  document.querySelector('#hotspot-result-label').hidden = !automatic;
-  document.querySelector('#wifi-example-placeholder').hidden = automatic;
-  document.querySelector('#hotspot-copy-title').textContent = automatic ? '连接打印机热点' : '设置 WiFi';
-  document.querySelector('#hotspot-copy').textContent = automatic ? '请保持打印机开启，并确认打印机指示灯为黄色配网状态。点击下方按钮，一键连接打印机热点 ugee Funbot。' : '点击下方按钮跳转至 WiFi 设置界面，点击连接打印机 WiFi 热点。热点名称应该为“Ugee XXX”，例如下方图片：';
-  document.querySelector('#hotspot-return-hint').textContent = automatic ? '连接成功后，将自动进入网络配置' : '设置好后返回，将自动进入网络配置';
+  document.querySelector('#open-wlan').hidden = true;
+  document.querySelector('#wifi-example-placeholder').hidden = true;
+  document.querySelector('#hotspot-copy-title').textContent = '连接打印机热点';
+  document.querySelector('#hotspot-copy').textContent = '请保持打印机开启，并确认打印机指示灯为黄色配网状态。点击下方按钮，一键连接打印机热点 ugee Funbot。';
+  document.querySelector('#hotspot-return-hint').textContent = '连接成功后，将自动进入网络配置';
 }
-document.querySelector('#hotspot-plan').addEventListener('change', renderHotspotConnection);
 document.querySelector('#connect-hotspot').addEventListener('click', () => {
   if (hotspotConnecting) return;
-  const outcome = document.querySelector('#hotspot-result').value;
   hotspotConnecting = true;
   renderHotspotConnection();
   hotspotTimer = window.setTimeout(() => {
     hotspotConnecting = false;
     renderHotspotConnection();
     if (noticeDialog.open) noticeDialog.close();
-    if (outcome === 'timeout') {
-      document.querySelector('#hotspot-timeout-dialog').showModal();
-      return;
-    }
     printerHotspotConnected = true;
     selectedWlan = PRINTER_WLAN;
     renderWlanNetworks();
@@ -1030,3 +1030,21 @@ document.querySelector('#hotspot-timeout-settings').addEventListener('click', ()
   openSystemSettings('wlan', 'hotspot');
 });
 renderHotspotConnection();
+
+/* 尺寸文案跟随 object-fit: cover 的实际绘制区域，兼容不同屏幕比例。 */
+const printerReference = document.querySelector('#screen-printer-select .full-reference');
+function positionPrinterSize() {
+  const label = document.querySelector('#printer-size');
+  const width = printerReference.naturalWidth;
+  const height = printerReference.naturalHeight;
+  if (!width || !height || !printerReference.clientWidth) return;
+  const scale = Math.max(printerReference.clientWidth / width, printerReference.clientHeight / height);
+  label.style.left = `${(printerReference.clientWidth - width * scale) / 2 + 435 * scale}px`;
+  label.style.top = `${755 * scale}px`;
+  label.style.width = `${365 * scale}px`;
+  label.style.height = `${55 * scale}px`;
+  label.style.fontSize = `${40 * scale}px`;
+}
+new ResizeObserver(positionPrinterSize).observe(printerReference);
+printerReference.addEventListener('load', positionPrinterSize);
+positionPrinterSize();
