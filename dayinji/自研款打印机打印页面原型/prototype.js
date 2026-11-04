@@ -1418,7 +1418,6 @@ document.querySelector('#start-print').addEventListener('click', () => {
 /* 准备页设备状态独立于工作台当前执行任务；切换演示状态不改写执行任务。 */
 const PREPARE_PRINTER_LABELS = { idle: '空闲', offline: '离线', busy: '忙碌', connecting: '连接中' };
 let preparePrinterStatus = Object.hasOwn(PREPARE_PRINTER_LABELS, params.get('preparePrinter')) ? params.get('preparePrinter') : 'idle';
-let prepareBatchSubmitted = params.get('prepareSubmitted') === 'yes';
 const preparePrinterControl = document.querySelector('#simulation-prepare-printer');
 function renderPreparePrinterState() {
   const label = prepareStage.querySelector('.prepare-idle');
@@ -1426,8 +1425,8 @@ function renderPreparePrinterState() {
   label.innerHTML = `<i aria-hidden="true"></i>${PREPARE_PRINTER_LABELS[preparePrinterStatus]}`;
   preparePrinterControl.value = preparePrinterStatus;
   const start = document.querySelector('#start-print');
-  start.disabled = prepareBatchSubmitted;
-  start.setAttribute('aria-label', prepareBatchSubmitted ? '开始打印（本次任务已加入队列）' : '开始打印');
+  start.disabled = false;
+  start.setAttribute('aria-label', '开始打印');
 }
 preparePrinterControl.addEventListener('change', event => {
   preparePrinterStatus = event.target.value;
@@ -1443,19 +1442,7 @@ function handlePreparePrinterState() {
     return false;
   }
   if (preparePrinterStatus !== 'busy') return true;
-  const order = [selectedPlate, ...plateOrder.filter(plate => plate !== selectedPlate)].filter(plate => modelPlateIds.includes(plate));
-  const tasks = order.map(plate => preparedTaskCatalog[`prepared-${plate}`]);
-  if (tasks.some(task => familyQueueTasks.some(queued => queued.id === task.id) || task.id === activeTaskId || taskResults.has(task.id))) return false;
-  familyQueueTasks.push(...tasks);
-  prepareBatchSubmitted = true;
-  renderPlateTaskAndQueue();
-  renderPreparePrinterState();
-  const next = taskSessionUrl();
-  next.searchParams.set('screen', 'prepare-print');
-  next.searchParams.set('preparePrinter', 'busy');
-  next.searchParams.set('prepareSubmitted', 'yes');
-  history.replaceState(null, '', next);
-  showToast('打印机正忙碌，打印任务已添加至打印队列', 'prepare');
+  showToast('打印机正忙碌', 'prepare');
   return false;
 }
 renderPreparePrinterState();
