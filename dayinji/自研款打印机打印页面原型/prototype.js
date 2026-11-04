@@ -1188,6 +1188,12 @@ timelapseActionButton.addEventListener('click', () => openReuseScreen('timelapse
 /* ---------- 添加打印机 → 配置新的打印机 ---------- */
 /* 仅为当前页面的发现/绑定演示数据；已有 Owner 的设备必须通过分享使用。 */
 const myPrintersList = document.querySelector('#my-printers-list');
+/* 首次发现设备的独立演示场景：保留发现、分享与配置入口，我的打印机固定为空。 */
+const emptyMyPrintersDemo = params.get('myPrinters') === 'empty';
+if (emptyMyPrintersDemo) {
+  myPrintersList.replaceChildren();
+  document.querySelector('#my-printers-empty').hidden = false;
+}
 const printerBoundDialog = document.querySelector('#printer-bound-dialog');
 document.querySelector('#printer-ug01').addEventListener('click', () => printerBoundDialog.showModal());
 myPrintersList.addEventListener('click', (event) => {
@@ -1197,6 +1203,10 @@ myPrintersList.addEventListener('click', (event) => {
 });
 document.querySelector('#printer-ug02').addEventListener('click', (event) => {
   const card = event.currentTarget;
+  if (emptyMyPrintersDemo) {
+    showToast('UG-02 已连接');
+    return;
+  }
   if (card.parentElement === myPrintersList) return;
   const status = document.createElement('span');
   status.className = 'printer-status';
@@ -1206,7 +1216,13 @@ document.querySelector('#printer-ug02').addEventListener('click', (event) => {
   myPrintersList.querySelectorAll('.printer-card').forEach(item => item.setAttribute('aria-pressed', String(item === card)));
   document.querySelector('#printer-add-announcement').textContent = 'UG-02 已连接，已加入我的打印机。';
 });
-document.querySelector('#add-printer-back').addEventListener('click', goBackInReuseScreens);
+document.querySelector('#add-printer-back').addEventListener('click', () => {
+  if (params.get('from') === 'pairing-start' && reuseStack.length === 1) {
+    window.location.href = `${PAIRING_FLOW_PATH}?nearby=available`;
+    return;
+  }
+  goBackInReuseScreens();
+});
 document.querySelector('#configure-new-printer').addEventListener('click', () => {
   /* 真实跳转到首次配网连接流程原型的第二页「选择要设置的打印机」 */
   window.location.href = `${PAIRING_FLOW_PATH}?screen=printer-select`;

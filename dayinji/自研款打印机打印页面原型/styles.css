@@ -496,6 +496,7 @@ body.operation-open { overflow: hidden; }
 }
 .add-printer-catalog section + section { margin-top: calc(32 * var(--printer-unit)); }
 .add-printer-catalog h2 { margin: 0 0 calc(16 * var(--printer-unit)); font-size: calc(34 * var(--printer-unit)); font-weight: 600; line-height: calc(42 * var(--printer-unit)); color: #18191d; }
+.my-printers-empty { margin: 0; padding: calc(60 * var(--printer-unit)) 0; color: #828793; text-align: center; font-size: calc(30 * var(--printer-unit)); }
 .printer-list { display: grid; gap: calc(25 * var(--printer-unit)); }
 .printer-card { position: relative; display: flex; align-items: center; gap: calc(24 * var(--printer-unit)); width: 100%; height: calc(190 * var(--printer-unit)); padding: calc(24 * var(--printer-unit)); border: 1px solid #e4e7ed; border-radius: calc(20 * var(--printer-unit)); background: #f6f7fb; text-align: left; cursor: pointer; }
 .printer-card[aria-pressed="true"] { border-color: #a28cff; box-shadow: inset 0 0 0 .5px #a28cff; }

@@ -256,6 +256,18 @@
         </button>
       </div>
 
+      <div class="demo-group" role="group" aria-labelledby="demo-nearby-title">
+        <p class="demo-group__title" id="demo-nearby-title">首页添加打印机<small>基础账号分支</small></p>
+        <button class="demo-option" type="button" data-nearby="none" aria-pressed="true">
+          <span class="demo-option__tick" aria-hidden="true"></span>
+          <span class="demo-option__main"><strong>附近无配网打印机</strong><span>沿用原有流程，进入选择型号页。</span></span>
+        </button>
+        <button class="demo-option" type="button" data-nearby="available" aria-pressed="false">
+          <span class="demo-option__tick" aria-hidden="true"></span>
+          <span class="demo-option__main"><strong>附近有配网打印机</strong><span>进入添加打印机页，我的打印机保持空态，其它按钮逻辑一致。</span></span>
+        </button>
+      </div>
+
       <div class="demo-group" role="group" aria-labelledby="demo-offline-title">
         <p class="demo-group__title" id="demo-offline-title">无网打印入口</p>
         <button id="demo-open-offline-workbench" class="demo-option" type="button">
@@ -669,7 +681,7 @@
   <dialog id="offline-timeout" class="offline-modal" aria-labelledby="offline-timeout-title"><span class="offline-error-icon" aria-hidden="true">!</span><h2 id="offline-timeout-title">连接超时</h2><p>未能连接到打印机热点。<br>请确认打印机已开机，并长按蓝色按钮开启热点后重试。</p><button id="offline-retry" class="primary-button hotspot-gradient" type="button">重试</button><button id="offline-timeout-back" class="secondary-button" type="button">返回检查</button></dialog>
   <dialog id="offline-upload" class="offline-modal" aria-labelledby="offline-upload-title" aria-describedby="offline-upload-copy"><span class="offline-upload-mark" aria-hidden="true">↑</span><h2 id="offline-upload-title">上传中</h2><p id="offline-upload-copy">正在将模型上传云端完成切片</p><progress id="offline-upload-progress" class="offline-upload-progress" max="100" value="0" aria-label="上传进度"></progress><p id="offline-upload-percent" class="offline-upload-percent">0%</p><p id="offline-upload-filename" class="offline-upload-filename"></p></dialog>
 
-  <script src="prototype.js?v=20261104-pairing-flow"></script>
+  <script src="prototype.js?v=20261104-nearby"></script>
   <script src="offline-print.js?v=3"></script>
 </body>
 </html>

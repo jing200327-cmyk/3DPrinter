@@ -209,16 +209,10 @@ function openSystemSettings(mode, returnTarget) {
   showScreen('system-settings');
 }
 
-document.querySelector('#add-printer').addEventListener('click', () => {
-  showScreen('printer-select');
-  locationDialog.showModal();
-});
+document.querySelector('#add-printer').addEventListener('click', (event) => handleStartAction('add', event.currentTarget));
 
 /* 起始页v2 的「添加打印机」与 v1 同路（家长账号视角） */
-document.querySelector('#add-printer-v2').addEventListener('click', () => {
-  showScreen('printer-select');
-  locationDialog.showModal();
-});
+document.querySelector('#add-printer-v2').addEventListener('click', (event) => handleStartAction('add', event.currentTarget));
 
 /* ==========================================================================
    「帮助」→ 连接配网常见问题解决方案弹窗
@@ -497,6 +491,7 @@ const FAMILY_AUTH_TOAST = '已向小明妈妈发起打印机授权申请';
 
 const demoState = {
   account: 'parent',
+  nearby: 'none',
   invite: 'valid',
   device: 'online',
   cameraAsked: false,
@@ -542,6 +537,9 @@ function renderDemoChrome() {
 }
 
 function renderDemoOptions() {
+  document.querySelectorAll('[data-nearby]').forEach((option) => {
+    option.setAttribute('aria-pressed', String(option.dataset.nearby === demoState.nearby));
+  });
   document.querySelectorAll('[data-account]').forEach((option) => {
     option.setAttribute('aria-pressed', String(option.dataset.account === demoState.account));
   });
@@ -813,6 +811,13 @@ document.querySelectorAll('[data-family]').forEach((option) => {
   });
 });
 
+document.querySelectorAll('[data-nearby]').forEach((option) => {
+  option.addEventListener('click', () => {
+    demoState.nearby = option.dataset.nearby;
+    renderDemoOptions();
+  });
+});
+
 demoChip.addEventListener('click', () => showScreen('demo'));
 document.querySelector('#demo-enter').addEventListener('click', () => {
   clearJoinErrors();
@@ -830,6 +835,10 @@ function handleStartAction(action, trigger) {
     return;
   }
   if (action === 'add') {
+    if (demoState.nearby === 'available') {
+      window.location.href = `${PRINTER_HOME_PATH}?screen=add-printer&myPrinters=empty&from=pairing-start`;
+      return;
+    }
     showScreen('printer-select');
     locationDialog.showModal();
   } else {
@@ -930,6 +939,7 @@ startReference.addEventListener('load', positionStartOverlay);
 startReferenceV2?.addEventListener('load', positionStartOverlay);
 
 const joinDemoParams = new URLSearchParams(window.location.search);
+if (joinDemoParams.get('nearby') === 'available') demoState.nearby = 'available';
 const requestedAccount = joinDemoParams.get('account');
 if (requestedAccount === 'parent' || requestedAccount === 'child') demoState.account = requestedAccount;
 const requestedInvite = joinDemoParams.get('invite');
