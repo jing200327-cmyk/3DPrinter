@@ -3,6 +3,8 @@ const locationDialog = document.querySelector('#location-dialog');
 const connectingDialog = document.querySelector('#connecting-dialog');
 const faqDialog = document.querySelector('#faq-dialog');
 const connectionSuccess = document.querySelector('#connection-success');
+const wifiName = document.querySelector('#home-wifi-name');
+const wifiNameError = document.querySelector('#wifi-name-error');
 const wifiPassword = document.querySelector('#home-wifi-password');
 const wifiError = document.querySelector('#wifi-error');
 const toast = document.querySelector('#toast');
@@ -336,6 +338,9 @@ function resetPairingFlowState() {
   if (noticeDialog.open) noticeDialog.close();
   connectionSuccess.hidden = true;
   selectedWlan = 'Home_5G';
+  wifiName.value = 'Home_5G';
+  wifiName.removeAttribute('aria-invalid');
+  wifiNameError.hidden = true;
   printerHotspotConnected = false;
   renderWlanNetworks();
   wifiPassword.value = '';
@@ -437,13 +442,33 @@ function finishConnectingAsTimeout() {
   showNotice(WIFI_TIMEOUT_ERROR, document.querySelector('#connect-hotspot'), returnToHotspotAfterFailure);
 }
 
-document.querySelector('#connect-home-wifi').addEventListener('click', () => {
+function connectHomeWifi() {
+  const ssid = wifiName.value;
+  const ssidError = !ssid.trim() ? '请选择或输入 WiFi 名称（SSID）' :
+    new TextEncoder().encode(ssid).length > 32 ? 'WiFi 名称（SSID）不能超过 32 字节' : '';
+  wifiNameError.textContent = ssidError;
+  wifiNameError.hidden = !ssidError;
+  if (ssidError) {
+    wifiName.setAttribute('aria-invalid', 'true');
+    wifiName.focus();
+    return;
+  }
+  wifiName.removeAttribute('aria-invalid');
   wifiError.hidden = true;
   wifiPassword.removeAttribute('aria-invalid');
   const password = wifiPassword.value;
-  const validCredentials = document.querySelector('#home-wifi-name').value === 'Home_5G' &&
-    (password === '' || password === EXPECTED_HOME_WIFI_PASSWORD);
+  // 原型模拟：任意有效 SSID 均可演示连接，实际网络结果由设备返回。
+  const validCredentials = password === '' || password === EXPECTED_HOME_WIFI_PASSWORD;
   openConnectingSheet(validCredentials && printerHotspotConnected);
+}
+document.querySelector('#connect-home-wifi').addEventListener('click', connectHomeWifi);
+document.querySelector('#home-wifi-form').addEventListener('submit', event => {
+  event.preventDefault();
+  connectHomeWifi();
+});
+wifiName.addEventListener('input', () => {
+  wifiName.removeAttribute('aria-invalid');
+  wifiNameError.hidden = true;
 });
 
 wifiPassword.addEventListener('input', () => {

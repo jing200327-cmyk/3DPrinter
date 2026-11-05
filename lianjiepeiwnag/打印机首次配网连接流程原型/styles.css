@@ -79,7 +79,7 @@ h1[tabindex="-1"]:focus { outline: none; }
 #home-wifi-form { display: grid; gap: 8px; padding: 18px; border-radius: 18px; background: white; }
 #home-wifi-form label { margin-top: 4px; font-size: 14px; font-weight: 700; }
 .select-wrap, .password-wrap { position: relative; }
-.select-wrap select, .password-wrap input { width: 100%; min-height: 52px; padding: 0 46px 0 14px; border: 1px solid #daddE3; border-radius: 13px; background: white; }
+.ssid-wrap input, .select-wrap select, .password-wrap input { width: 100%; min-height: 52px; padding: 0 46px 0 14px; border: 1px solid #daddE3; border-radius: 13px; background: white; }
 .select-wrap::after { position: absolute; top: 15px; right: 17px; content: "⌄"; color: var(--muted); pointer-events: none; }
 .password-wrap button { position: absolute; top: 4px; right: 4px; width: 44px; height: 44px; border: 0; background: transparent; color: #707681; cursor: pointer; }
 .field-help, .field-error { margin: 0; font-size: 12px; line-height: 1.5; }.field-help { color: var(--muted); }.field-error { color: var(--danger); }
@@ -149,3 +149,7 @@ h1[tabindex="-1"]:focus { outline: none; }
   .primary-button, .secondary-button { font-size: 14px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+#home-wifi-form .field-hint { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.ssid-wrap input { padding-right: 14px; }
+.ssid-wrap input[aria-invalid="true"] { border-color: #c53535; }
