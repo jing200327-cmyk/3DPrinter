@@ -37,3 +37,5 @@ body:has(.magic-home.is-active) #demo-chip { display: none !important; }
 
 .magic-home .magic-child-content { display: contents; }
 .magic-permission h2, .magic-permission p { text-wrap: balance; }
+
+.magic-brand-logo { display: block; width: 32px; height: 32px; object-fit: contain; flex-shrink: 0; }
