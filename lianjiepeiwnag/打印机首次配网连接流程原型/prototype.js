@@ -926,7 +926,7 @@ function handleStartAction(action, trigger) {
   }
   if (action === 'add') {
     if (demoState.nearby === 'available') {
-      window.location.href = `${PRINTER_HOME_PATH}?screen=add-printer&myPrinters=empty&from=pairing-start`;
+      window.location.href = `${PRINTER_HOME_PATH}?screen=add-printer&myPrinters=empty&from=pairing-start&addPrinterAccount=base`;
       return;
     }
     showScreen('printer-select');
