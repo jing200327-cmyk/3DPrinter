@@ -27,12 +27,13 @@
 .magic-permission p strong { font-weight: 500; color: var(--magic-ink); }
 .magic-footnote { margin: 16px 0 20px; text-align: center; font-size: 10px; color: var(--magic-muted); letter-spacing: 1px; }
 .magic-footnote span { color: #a46e29; margin-right: 4px; }
-.magic-nav { display: flex; justify-content: space-around; padding: 12px 12px max(14px, env(safe-area-inset-bottom)); border-top: 1px solid #eeeae1; background: #fffefa; }
-.magic-tab { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 10px; color: #737c78; min-width: 44px; }
-.magic-tab svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-.magic-tab.is-selected { color: var(--magic-green); font-weight: 700; }
-.magic-tab.is-selected svg { fill: #d7ebdf; }
+/* Bottom navigation follows the supplied four-tab reference. */
+.magic-nav { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; align-items: center; gap: 2px; margin: 0 5px max(4px, env(safe-area-inset-bottom)); padding: 4px; min-height: 62px; border: 1px solid #e8e7ed; border-radius: 34px; background: #f0eff6; box-shadow: inset 0 1px 4px #fff, 0 -2px 12px rgb(80 74 105 / 4%); }
+.magic-tab { display: flex; min-height: 52px; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 11px; line-height: 1.3; color: #666765; border-radius: 28px; }
+.magic-tab svg { display: block; width: 22px; height: 22px; fill: currentColor; }
+.magic-tab.is-selected { color: #8062ff; background: #dedee5; font-weight: 600; }
 body:has(.magic-home.is-active) #demo-chip { display: none !important; }
 @media (max-width: 359px) { .magic-header { padding-inline: 18px; } .magic-content { padding-inline: 18px; } .magic-intro h1 { font-size: 26px; } .magic-header-note { font-size: 9px; } .magic-permission { padding-inline: 10px; gap: 8px; } .magic-permission h2 { font-size: 13px; } }
 
 .magic-home .magic-child-content { display: contents; }
+.magic-permission h2, .magic-permission p { text-wrap: balance; }
