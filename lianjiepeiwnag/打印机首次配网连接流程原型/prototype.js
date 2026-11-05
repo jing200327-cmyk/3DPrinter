@@ -3,8 +3,9 @@ const locationDialog = document.querySelector('#location-dialog');
 const connectingDialog = document.querySelector('#connecting-dialog');
 const faqDialog = document.querySelector('#faq-dialog');
 const connectionSuccess = document.querySelector('#connection-success');
-const wifiSelect = document.querySelector('#home-wifi-select');
-const manualWifiField = document.querySelector('#manual-wifi-field');
+const wifiPicker = document.querySelector('#home-wifi-picker');
+const wifiOptions = document.querySelector('#home-wifi-options');
+const wifiDropdownToggle = document.querySelector('#wifi-dropdown-toggle');
 const wifiName = document.querySelector('#home-wifi-name');
 const wifiNameError = document.querySelector('#wifi-name-error');
 const wifiPassword = document.querySelector('#home-wifi-password');
@@ -340,9 +341,9 @@ function resetPairingFlowState() {
   if (noticeDialog.open) noticeDialog.close();
   connectionSuccess.hidden = true;
   selectedWlan = 'Home_5G';
-  wifiSelect.value = 'Home_5G';
-  wifiName.value = '';
-  updateWifiInputMode();
+  wifiName.value = 'Home_5G';
+  wifiName.readOnly = true;
+  setWifiOptionsOpen(false);
   wifiName.removeAttribute('aria-invalid');
   wifiNameError.hidden = true;
   printerHotspotConnected = false;
@@ -447,7 +448,7 @@ function finishConnectingAsTimeout() {
 }
 
 function connectHomeWifi() {
-  const ssid = wifiSelect.value === '__manual__' ? wifiName.value : wifiSelect.value;
+  const ssid = wifiName.value;
   const ssidError = !ssid.trim() ? '请选择或输入 WiFi 名称（SSID）' :
     new TextEncoder().encode(ssid).length > 32 ? 'WiFi 名称（SSID）不能超过 32 字节' : '';
   wifiNameError.textContent = ssidError;
@@ -470,16 +471,58 @@ document.querySelector('#home-wifi-form').addEventListener('submit', event => {
   event.preventDefault();
   connectHomeWifi();
 });
-function updateWifiInputMode() {
-  const manual = wifiSelect.value === '__manual__';
-  manualWifiField.hidden = !manual;
-  wifiName.disabled = !manual;
-  wifiName.removeAttribute('aria-invalid');
-  wifiNameError.hidden = true;
+function setWifiOptionsOpen(open) {
+  wifiOptions.hidden = !open;
+  wifiName.setAttribute('aria-expanded', String(open));
+  wifiDropdownToggle.setAttribute('aria-expanded', String(open));
+  wifiOptions.querySelectorAll('[data-home-wifi]').forEach(option => {
+    option.setAttribute('aria-selected', String(option.dataset.homeWifi === wifiName.value));
+  });
 }
-wifiSelect.addEventListener('change', () => {
-  updateWifiInputMode();
-  if (!manualWifiField.hidden) wifiName.focus();
+function editWifiName() {
+  setWifiOptionsOpen(false);
+  wifiName.readOnly = false;
+  wifiName.focus();
+  wifiName.select();
+}
+wifiName.addEventListener('click', () => {
+  if (wifiName.readOnly) setWifiOptionsOpen(wifiOptions.hidden);
+});
+wifiName.addEventListener('dblclick', editWifiName);
+document.querySelector('#home-wifi-label').addEventListener('dblclick', editWifiName);
+wifiDropdownToggle.addEventListener('click', () => setWifiOptionsOpen(wifiOptions.hidden));
+wifiOptions.querySelectorAll('[data-home-wifi]').forEach(option => {
+  option.addEventListener('click', () => {
+    wifiName.value = option.dataset.homeWifi;
+    wifiName.readOnly = true;
+    wifiName.removeAttribute('aria-invalid');
+    wifiNameError.hidden = true;
+    setWifiOptionsOpen(false);
+    wifiName.focus();
+  });
+});
+wifiPicker.addEventListener('keydown', event => {
+  const options = [...wifiOptions.querySelectorAll('[data-home-wifi]')];
+  if (event.key === 'Escape') {
+    setWifiOptionsOpen(false);
+    wifiName.focus();
+  } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    event.preventDefault();
+    setWifiOptionsOpen(true);
+    const index = options.indexOf(document.activeElement);
+    const next = index < 0 ? (event.key === 'ArrowDown' ? 0 : options.length - 1) :
+      (index + (event.key === 'ArrowDown' ? 1 : -1) + options.length) % options.length;
+    options[next].focus();
+  } else if (event.target === wifiName && (event.key === 'F2' || (event.key === 'Enter' && wifiName.readOnly))) {
+    event.preventDefault();
+    editWifiName();
+  }
+});
+document.addEventListener('click', event => {
+  if (!wifiPicker.contains(event.target)) setWifiOptionsOpen(false);
+});
+wifiPicker.addEventListener('focusout', event => {
+  if (!wifiPicker.contains(event.relatedTarget)) setWifiOptionsOpen(false);
 });
 wifiName.addEventListener('input', () => {
   wifiName.removeAttribute('aria-invalid');

@@ -154,5 +154,11 @@ h1[tabindex="-1"]:focus { outline: none; }
 .ssid-wrap input { padding-right: 14px; }
 .ssid-wrap input[aria-invalid="true"] { border-color: #c53535; }
 
-#manual-wifi-field:not([hidden]) { display: grid; gap: 8px; }
-#home-wifi-select { appearance: none; }
+.wifi-picker { position: relative; }
+.wifi-picker-row { position: relative; }
+.wifi-picker-row input { padding-right: 48px; }
+.wifi-picker-row input[readonly] { cursor: pointer; }
+#wifi-dropdown-toggle { position: absolute; right: 2px; top: 2px; width: 44px; height: 48px; border: 0; border-radius: 11px; background: transparent; color: var(--muted); }
+.wifi-options { position: absolute; z-index: 20; top: calc(100% + 4px); left: 0; right: 0; padding: 4px; border: 1px solid #dadde3; border-radius: 13px; background: white; box-shadow: 0 6px 18px #00000014; }
+.wifi-options button { display: block; width: 100%; min-height: 44px; padding: 10px; border: 0; border-radius: 9px; background: white; text-align: left; }
+.wifi-options button:hover, .wifi-options button:focus-visible, .wifi-options button[aria-selected="true"] { background: #f1efff; }
