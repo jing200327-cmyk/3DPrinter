@@ -648,6 +648,16 @@ function renderDeviceCards() {
 }
 
 function renderStartAccount() {
+  const child = demoState.account === 'child';
+  // The creative introduction belongs to child accounts only.
+  ['start', 'start-v2'].forEach((name) => {
+    const screen = screens.find((item) => item.dataset.screen === name);
+    screen.classList.toggle('magic-home', child);
+    screen.querySelector('.magic-child-content').hidden = !child;
+    const original = screen.querySelector('.magic-original');
+    original.hidden = child;
+    original.inert = child;
+  });
   startOverlay.hidden = false;
   startOverlayV2.hidden = false;
   [addPrinterButton, addPrinterButtonV2].forEach((button) => {

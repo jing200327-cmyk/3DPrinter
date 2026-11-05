@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="styles-pairing-help.css">
   <link rel="stylesheet" href="styles-hotspot-auto.css?v=20261105">
   <link rel="stylesheet" href="offline-print.css?v=1">
+  <link rel="stylesheet" href="styles-child-home.css?v=child-20261105">
 </head>
 <body>
   <!-- 家庭共享插画（页面一 / 页面二共用） -->
@@ -57,6 +58,17 @@
   </svg>
   <main class="phone-shell" aria-label="打印机首次配网连接流程">
     <section id="screen-start" class="app-screen app-screen--reference is-active" data-screen="start" aria-label="添加打印机起始页">
+<div class="magic-child-content" hidden>
+      <header class="magic-header"><span class="magic-brand"><span class="magic-brand-mark" aria-hidden="true">✦</span> 趣打印</span><span class="magic-header-note">小小创想家，大大创造力</span></header>
+      <div class="magic-content">
+        <div class="magic-intro"><p class="magic-eyebrow">叮！你的想象，即将成真</p><h1>把奇思妙想，<br>变成<span>手心里的宝藏</span><i aria-hidden="true">✧</i></h1><p class="magic-subtitle">一只小恐龙，一场从想象出发的奇妙冒险。</p></div>
+        <figure class="magic-photo"><img src="assets/print-magic.png" width="1122" height="1402" alt="打印机透明舱门已打开，家长正取出薄荷绿小恐龙打印作品，桌上摆着火箭和小兔作品。"><span class="magic-sticker" aria-hidden="true">哇！真的<br>做出来啦！</span><figcaption><span class="magic-success"><span aria-hidden="true">✓</span> 打印完成</span><strong>让喜欢的小伙伴，来到你身边</strong></figcaption></figure>
+        <aside class="magic-permission"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 2 8 3v6c0 5-5 8-8 10-3-2-8-5-8-10V5z" stroke="currentColor" stroke-width="1.7"/><path d="m8 11 3 3 5-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><div><h2>先邀请爸爸妈妈，一起开启吧</h2><p><strong>家长授权后，才可以体验打印流程。</strong><br>和爸爸妈妈一起，让创意变成小惊喜！</p></div></aside>
+        <p class="magic-footnote"><span aria-hidden="true">✦</span> 每一个小想法，都值得被创造</p>
+      </div>
+      <nav class="magic-nav" aria-label="应用导航示意"><span class="magic-tab " ><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="11" ry="4" transform="rotate(-35 12 12)"/><circle cx="12" cy="12" r="7"/></svg>探索</span><span class="magic-tab is-selected" aria-current=page><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="17" rx="4"/><path d="M9 4V2h6v2M8 9h8v8H8zM10 21v1m4-1v1"/></svg>设备</span><span class="magic-tab " ><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7a3 3 0 1 1 3-4m4 0a3 3 0 1 1 3 4M6 12a6 6 0 1 1 12 0v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4z"/><path d="M9 12h.01M15 12h.01M10 16q2 2 4 0"/></svg>玩具</span><span class="magic-tab " ><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 16C0 9 7 2 12 2s12 7 4 14l-1 2H9zM9 21h6M12 7v6m-3-3h6"/></svg>创造</span><span class="magic-tab " ><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 10h.01M16 10h.01M8 14q4 6 8 0"/></svg>我的</span></nav>
+</div>
+<div class="magic-original">
       <img id="start-reference" class="full-reference" src="../../src/lianjiepeiwnag/起始页.png" alt="趣打印设备起始页">
       <button id="add-printer" class="image-hotspot image-hotspot--add" type="button">添加打印机</button>
       <!-- 右上角「帮助」：整图上已烘焙「帮助」二字，这里叠透明热区放大到 ≥44px 可点范围 -->
@@ -67,12 +79,24 @@
         <button id="start-cta-auth" class="start-cta-pill" type="button">添加打印机</button>
         <button id="start-cta-authorize" class="start-cta-link" type="button"><span>购买打印机</span></button>
       </div>
-    </section>
+    </div>
+</section>
 
     <!-- 儿童受限账号起始页v2：首页内容与 v1 完全相同（同一张起始页整图 + 同一组改写按钮），
          仅「家长授权」逻辑不同：先判断当前儿童账号是否在家庭群组内，
          群组内弹 Toast「已向小明妈妈发起打印机授权申请」，群组外跳转儿童账号个人二维码页。 -->
     <section id="screen-start-v2" class="app-screen app-screen--reference" data-screen="start-v2" hidden aria-label="儿童受限账号起始页v2">
+<div class="magic-child-content" hidden>
+      <header class="magic-header"><span class="magic-brand"><span class="magic-brand-mark" aria-hidden="true">✦</span> 趣打印</span><span class="magic-header-note">小小创想家，大大创造力</span></header>
+      <div class="magic-content">
+        <div class="magic-intro"><p class="magic-eyebrow">叮！你的想象，即将成真</p><h1>把奇思妙想，<br>变成<span>手心里的宝藏</span><i aria-hidden="true">✧</i></h1><p class="magic-subtitle">一只小恐龙，一场从想象出发的奇妙冒险。</p></div>
+        <figure class="magic-photo"><img src="assets/print-magic.png" width="1122" height="1402" alt="打印机透明舱门已打开，家长正取出薄荷绿小恐龙打印作品，桌上摆着火箭和小兔作品。"><span class="magic-sticker" aria-hidden="true">哇！真的<br>做出来啦！</span><figcaption><span class="magic-success"><span aria-hidden="true">✓</span> 打印完成</span><strong>让喜欢的小伙伴，来到你身边</strong></figcaption></figure>
+        <aside class="magic-permission"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 2 8 3v6c0 5-5 8-8 10-3-2-8-5-8-10V5z" stroke="currentColor" stroke-width="1.7"/><path d="m8 11 3 3 5-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><div><h2>先邀请爸爸妈妈，一起开启吧</h2><p><strong>家长授权后，才可以体验打印流程。</strong><br>和爸爸妈妈一起，让创意变成小惊喜！</p></div></aside>
+        <p class="magic-footnote"><span aria-hidden="true">✦</span> 每一个小想法，都值得被创造</p>
+      </div>
+      <nav class="magic-nav" aria-label="应用导航示意"><span class="magic-tab " ><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="11" ry="4" transform="rotate(-35 12 12)"/><circle cx="12" cy="12" r="7"/></svg>探索</span><span class="magic-tab is-selected" aria-current=page><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="17" rx="4"/><path d="M9 4V2h6v2M8 9h8v8H8zM10 21v1m4-1v1"/></svg>设备</span><span class="magic-tab " ><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7a3 3 0 1 1 3-4m4 0a3 3 0 1 1 3 4M6 12a6 6 0 1 1 12 0v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4z"/><path d="M9 12h.01M15 12h.01M10 16q2 2 4 0"/></svg>玩具</span><span class="magic-tab " ><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 16C0 9 7 2 12 2s12 7 4 14l-1 2H9zM9 21h6M12 7v6m-3-3h6"/></svg>创造</span><span class="magic-tab " ><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 10h.01M16 10h.01M8 14q4 6 8 0"/></svg>我的</span></nav>
+</div>
+<div class="magic-original">
       <img id="start-reference-v2" class="full-reference" src="../../src/lianjiepeiwnag/起始页.png" alt="趣打印设备起始页（儿童受限账号 v2）">
       <button id="add-printer-v2" class="image-hotspot image-hotspot--add" type="button">添加打印机</button>
       <button id="start-help-v2" class="hotspot-help" type="button" aria-label="帮助，查看连接配网常见问题">帮助</button>
@@ -80,7 +104,8 @@
         <button id="start-cta-auth-v2" class="start-cta-pill" type="button">添加打印机</button>
         <button id="start-cta-authorize-v2" class="start-cta-link" type="button"><span>购买打印机</span></button>
       </div>
-    </section>
+    </div>
+</section>
 
     <section id="screen-printer-select" class="app-screen app-screen--reference" data-screen="printer-select" hidden aria-labelledby="printer-select-title">
       <img class="full-reference" src="../../src/lianjiepeiwnag/选择打印机类型.jpg" alt="选择要设置的打印机，Ugee Funbox">
@@ -641,7 +666,7 @@
   <dialog id="offline-timeout" class="offline-modal" aria-labelledby="offline-timeout-title"><span class="offline-error-icon" aria-hidden="true">!</span><h2 id="offline-timeout-title">连接超时</h2><p>未能连接到打印机热点。<br>请确认打印机已开机，并长按蓝色按钮开启热点后重试。</p><button id="offline-retry" class="primary-button hotspot-gradient" type="button">重试</button><button id="offline-timeout-back" class="secondary-button" type="button">返回检查</button></dialog>
   <dialog id="offline-upload" class="offline-modal" aria-labelledby="offline-upload-title" aria-describedby="offline-upload-copy"><span class="offline-upload-mark" aria-hidden="true">↑</span><h2 id="offline-upload-title">上传中</h2><p id="offline-upload-copy">正在将模型上传云端完成切片</p><progress id="offline-upload-progress" class="offline-upload-progress" max="100" value="0" aria-label="上传进度"></progress><p id="offline-upload-percent" class="offline-upload-percent">0%</p><p id="offline-upload-filename" class="offline-upload-filename"></p></dialog>
 
-  <script src="prototype.js?v=ssid-doubleclick-20261105-20261105"></script>
+  <script src="prototype.js?v=child-home-20261105"></script>
   <script src="offline-print.js?v=3"></script>
 </body>
 </html>
