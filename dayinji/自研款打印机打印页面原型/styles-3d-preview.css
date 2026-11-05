@@ -306,3 +306,11 @@
   backdrop-filter: blur(6px);
 }
 .pv3d-tip[hidden] { display: none; }
+
+/* Show the original model and platform when a device cannot create a WebGL context. */
+.pv3d-static .pv3d-view {
+  background: #f5f7fc url("assets/preview-model.png") center / contain no-repeat;
+}
+.pv3d-static #pv3d-gl,
+.pv3d-static .pv3d-zoom,
+.pv3d-static .pv3d-tip { visibility: hidden; }

@@ -297,8 +297,10 @@
     loadDeps().then(function () {
       if (inited) return;
       boot3d();
+      screen.classList.remove('pv3d-static');
       glSize = { w: 0, h: 0 };
     }).catch(function (error) {
+      screen.classList.add('pv3d-static');
       if (window.console && console.warn) console.warn(error);
     });
   }

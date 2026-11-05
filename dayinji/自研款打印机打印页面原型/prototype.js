@@ -2805,4 +2805,9 @@ document.querySelector('#filament-guide-video').addEventListener('click', () => 
 document.querySelector('#filament-video-close').addEventListener('click', () => filamentVideo.close());
 if (params.get('screen') === 'install-filament') openFilamentGuide('feed');
 if (params.get('screen') === 'remove-filament') openFilamentGuide('retract');
-if (params.get('screen') === 'prepare-print') openReuseScreen('preparePrint');
+if (['prepare-print', 'preview-3d'].includes(params.get('screen'))) {
+  openReuseScreen('preparePrint');
+  if (params.get('screen') === 'preview-3d') {
+    document.querySelector('#prepare-plate-list .plate-3d-btn').click();
+  }
+}
