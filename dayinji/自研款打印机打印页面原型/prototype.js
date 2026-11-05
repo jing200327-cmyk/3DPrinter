@@ -1206,35 +1206,43 @@ timelapseActionButton.addEventListener('click', () => openReuseScreen('timelapse
 
 
 /* ---------- 添加打印机 → 配置新的打印机 ---------- */
-/* 仅为当前页面的发现/绑定演示数据；已有 Owner 的设备必须通过分享使用。 */
+/* 仅为当前页面的发现/绑定演示数据；其它打印机仅显示已确认无 Owner 的设备。 */
 const myPrintersList = document.querySelector('#my-printers-list');
-/* 首次发现设备的独立演示场景：保留发现、分享与配置入口，我的打印机固定为空。 */
+/* 首次发现设备的独立演示场景：我的打印机初始为空。 */
 const emptyMyPrintersDemo = params.get('myPrinters') === 'empty';
 if (emptyMyPrintersDemo) {
   myPrintersList.replaceChildren();
   document.querySelector('#my-printers-empty').hidden = false;
 }
 const printerBoundDialog = document.querySelector('#printer-bound-dialog');
-document.querySelector('#printer-ug01').addEventListener('click', () => printerBoundDialog.showModal());
+const otherPrintersList = document.querySelector('#other-printers-list');
+for (const card of otherPrintersList.children) {
+  card.hidden = card.dataset.ownerStatus !== 'unowned';
+}
 myPrintersList.addEventListener('click', (event) => {
   const card = event.target.closest('.printer-card');
   if (!card) return;
   myPrintersList.querySelectorAll('.printer-card').forEach(item => item.setAttribute('aria-pressed', String(item === card)));
 });
-document.querySelector('#printer-ug02').addEventListener('click', (event) => {
-  const card = event.currentTarget;
-  if (emptyMyPrintersDemo) {
-    showToast('UG-02 已连接');
+otherPrintersList.addEventListener('click', (event) => {
+  const card = event.target.closest('.printer-card');
+  if (!card || card.hidden) return;
+  // 演示提交认领时，设备刚被其他家庭绑定的竞态。
+  if (params.get('claimConflict') === card.id || card.dataset.ownerStatus !== 'unowned') {
+    card.remove();
+    printerBoundDialog.showModal();
     return;
   }
-  if (card.parentElement === myPrintersList) return;
+  card.dataset.ownerStatus = 'family';
+  const name = card.querySelector('.printer-name').textContent;
+  document.querySelector('#my-printers-empty').hidden = true;
   const status = document.createElement('span');
   status.className = 'printer-status';
   status.textContent = '已连接';
   card.querySelector('.printer-card-copy').append(status);
   myPrintersList.append(card);
   myPrintersList.querySelectorAll('.printer-card').forEach(item => item.setAttribute('aria-pressed', String(item === card)));
-  document.querySelector('#printer-add-announcement').textContent = 'UG-02 已连接，已加入我的打印机。';
+  document.querySelector('#printer-add-announcement').textContent = `${name} 已连接，已加入我的打印机。`;
 });
 document.querySelector('#add-printer-back').addEventListener('click', () => {
   if (params.get('from') === 'pairing-start' && reuseStack.length === 1) {
@@ -2568,7 +2576,7 @@ function applyShareScenario(key) {
 }
 
 /* ---------- 事件绑定 ---------- */
-/* 入口：添加打印机页顶部右侧「分享打印机」 */
+/* 入口：添加打印机页顶部右侧「分配打印机」 */
 document.querySelector('#open-share-printer').addEventListener('click', () => {
   openReuseScreen('sharePrinter');
   shareScreen.scrollTop = 0;
