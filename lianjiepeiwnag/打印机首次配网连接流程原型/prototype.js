@@ -3,6 +3,8 @@ const locationDialog = document.querySelector('#location-dialog');
 const connectingDialog = document.querySelector('#connecting-dialog');
 const faqDialog = document.querySelector('#faq-dialog');
 const connectionSuccess = document.querySelector('#connection-success');
+const wifiSelect = document.querySelector('#home-wifi-select');
+const manualWifiField = document.querySelector('#manual-wifi-field');
 const wifiName = document.querySelector('#home-wifi-name');
 const wifiNameError = document.querySelector('#wifi-name-error');
 const wifiPassword = document.querySelector('#home-wifi-password');
@@ -338,7 +340,9 @@ function resetPairingFlowState() {
   if (noticeDialog.open) noticeDialog.close();
   connectionSuccess.hidden = true;
   selectedWlan = 'Home_5G';
-  wifiName.value = 'Home_5G';
+  wifiSelect.value = 'Home_5G';
+  wifiName.value = '';
+  updateWifiInputMode();
   wifiName.removeAttribute('aria-invalid');
   wifiNameError.hidden = true;
   printerHotspotConnected = false;
@@ -443,7 +447,7 @@ function finishConnectingAsTimeout() {
 }
 
 function connectHomeWifi() {
-  const ssid = wifiName.value;
+  const ssid = wifiSelect.value === '__manual__' ? wifiName.value : wifiSelect.value;
   const ssidError = !ssid.trim() ? '请选择或输入 WiFi 名称（SSID）' :
     new TextEncoder().encode(ssid).length > 32 ? 'WiFi 名称（SSID）不能超过 32 字节' : '';
   wifiNameError.textContent = ssidError;
@@ -465,6 +469,17 @@ document.querySelector('#connect-home-wifi').addEventListener('click', connectHo
 document.querySelector('#home-wifi-form').addEventListener('submit', event => {
   event.preventDefault();
   connectHomeWifi();
+});
+function updateWifiInputMode() {
+  const manual = wifiSelect.value === '__manual__';
+  manualWifiField.hidden = !manual;
+  wifiName.disabled = !manual;
+  wifiName.removeAttribute('aria-invalid');
+  wifiNameError.hidden = true;
+}
+wifiSelect.addEventListener('change', () => {
+  updateWifiInputMode();
+  if (!manualWifiField.hidden) wifiName.focus();
 });
 wifiName.addEventListener('input', () => {
   wifiName.removeAttribute('aria-invalid');
