@@ -28,7 +28,7 @@
 .magic-footnote { margin: 16px 0 20px; text-align: center; font-size: 10px; color: var(--magic-muted); letter-spacing: 1px; }
 .magic-footnote span { color: #a46e29; margin-right: 4px; }
 /* Bottom navigation follows the supplied four-tab reference. */
-.magic-nav { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; align-items: center; gap: 2px; margin: 0 5px max(4px, env(safe-area-inset-bottom)); padding: 4px; min-height: 62px; border: 1px solid #e8e7ed; border-radius: 34px; background: #f0eff6; box-shadow: inset 0 1px 4px #fff, 0 -2px 12px rgb(80 74 105 / 4%); }
+.magic-nav { display: grid; grid-template-columns: 1fr 1.2fr 1fr 1fr; align-items: center; gap: 2px; margin: 0 5px max(4px, env(safe-area-inset-bottom)); padding: 4px; min-height: 62px; border: 1px solid #e8e7ed; border-radius: 34px; background: #f0eff6; box-shadow: inset 0 1px 4px #fff, 0 -2px 12px rgb(80 74 105 / 4%); }
 .magic-tab { display: flex; min-height: 52px; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 11px; line-height: 1.3; color: #666765; border-radius: 28px; }
 .magic-tab svg { display: block; width: 22px; height: 22px; fill: currentColor; }
 .magic-tab.is-selected { color: #8062ff; background: #dedee5; font-weight: 600; }
