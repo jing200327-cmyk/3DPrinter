@@ -119,11 +119,25 @@ const girlTaskCatalog = {
   'girl-1': { id: 'girl-1', owner: 'girl', journey: 'v3', task: 'girl-1', taskAsset: '../../src/dayinjirenwukongzhi/女孩的打印任务_1.jpg', queueAsset: '../../src/dayinjirenwukongzhi/女孩的待打印任务__1.jpg', title: '骨架沧龙_01_011409', duration: '5 h 37 min', grams: 40, seconds: 5 * 60 * 60 + 37 * 60 },
   'girl-2': { id: 'girl-2', owner: 'girl', journey: 'v3', task: 'girl-2', taskAsset: '../../src/dayinjirenwukongzhi/女孩的打印任务_2.jpg', queueAsset: '../../src/dayinjirenwukongzhi/女孩的待打印任务_2.jpg', title: '骨架沧龙_02_011405', duration: '48 min', grams: 5, seconds: 48 * 60 }
 };
-/* 新模型在设备忙碌时作为独立批次排队，不能复用当前正在执行的任务 ID。 */
+/* 每次提交生成独立模型批次；URL 保留批次及配置以恢复队列。 */
+const preparedBatches = [];
+try {
+  const saved = JSON.parse(params.get('preparedBatches') || '[]');
+  if (Array.isArray(saved)) for (const batch of saved.slice(0, 100)) {
+    if (!batch || !/^[a-z0-9-]{1,50}$/.test(batch.id) || !Array.isArray(batch.plates) || preparedBatches.some(item => item.id === batch.id)) continue;
+    const plates = [...new Set(batch.plates)].filter(id => plateIds.includes(id));
+    if (plates.length) preparedBatches.push({ id: batch.id, plates, timelapse: batch.timelapse === true, leveling: batch.leveling === true });
+  }
+} catch { /* 无效批次参数不创建任务。 */ }
+function tasksForPreparedBatch(batch) {
+  return batch.plates.map(plate => ({ id: `batch-${batch.id}-plate-${plate}`, owner: 'boy', submission: `batch-${batch.id}`, prepared: true, plate, ...plateCatalog[plate] }));
+}
+/* 兼容旧演示链接中的 prepared-1 等任务。 */
 const preparedTaskCatalog = Object.fromEntries(modelPlateIds.map(plate => {
   const id = `prepared-${plate}`;
-  return [id, { id, owner: 'boy', submission: 'prepared-model', plate, ...plateCatalog[plate] }];
+  return [id, { id, owner: 'boy', submission: 'prepared-model', prepared: true, plate, ...plateCatalog[plate] }];
 }));
+for (const batch of preparedBatches) for (const task of tasksForPreparedBatch(batch)) preparedTaskCatalog[task.id] = task;
 const activePreparedTaskId = Object.hasOwn(preparedTaskCatalog, params.get('activeTask')) ? params.get('activeTask') : null;
 const activeGirlTaskId = Object.hasOwn(girlTaskCatalog, params.get('activeTask')) ? params.get('activeTask') : null;
 const activeTask = activeGirlTaskId ? girlTaskCatalog[activeGirlTaskId] : activePreparedTaskId ? preparedTaskCatalog[activePreparedTaskId] : plateCatalog[activePlate];
@@ -141,7 +155,7 @@ try {
     if (Object.hasOwn(taskCatalog, id) && ['completed', 'cancelled'].includes(result)) taskResults.set(id, result);
   }
 } catch { /* 无效的演示链接按未保存状态加载。 */ }
-const initialQueueIds = params.has('queue') ? params.get('queue').split(',') : Object.keys(taskCatalog).filter(id => taskCatalog[id].submission !== 'prepared-model' && (taskCatalog[id].owner === 'boy' || (isFamilyQueue && !isSinglePlateModel)));
+const initialQueueIds = params.has('queue') ? params.get('queue').split(',') : Object.keys(taskCatalog).filter(id => !taskCatalog[id].prepared && (taskCatalog[id].owner === 'boy' || (isFamilyQueue && !isSinglePlateModel)));
 let familyQueueTasks = [...new Set(initialQueueIds)].filter(id => Object.hasOwn(taskCatalog, id) && id !== activeTaskId && !taskResults.has(id)).map(id => taskCatalog[id]);
 const TOTAL_SECONDS = activeTask.seconds;
 const PREPARATION_DURATION_SECONDS = 26;
@@ -285,6 +299,7 @@ function taskSessionUrl(status = currentStatus) {
   next.searchParams.set('status', status);
   next.searchParams.set('queue', familyQueueTasks.map(task => task.id).join(','));
   next.searchParams.set('results', JSON.stringify(Object.fromEntries(taskResults)));
+  if (preparedBatches.length) next.searchParams.set('preparedBatches', JSON.stringify(preparedBatches));
   const completed = plateIds.filter(plate => taskResults.get(`plate-${plate}`) === 'completed');
   if (completed.length) next.searchParams.set('completed', completed.join(','));
   else next.searchParams.delete('completed');
@@ -542,7 +557,7 @@ function setTaskStatus(status) {
   completedMyModelsButton.hidden = status !== 'completed' || !allCompleted;
   completionActions.classList.remove('is-single');
   const showEmpty = shouldShowEmptyQueue(status);
-  queueToggle.hidden = (isReady && !familyQueueTasks.some(task => task.submission === 'prepared-model')) || isPreparing || (familyQueueTasks.length === 0 && !showEmpty);
+  queueToggle.hidden = (isReady && !familyQueueTasks.some(task => task.prepared)) || isPreparing || (familyQueueTasks.length === 0 && !showEmpty);
   if (isCancelled && !queueToggle.hidden) {
     queueToggle.setAttribute('aria-expanded', 'true');
     printQueue.hidden = false;
@@ -641,7 +656,7 @@ function resolvePrepareStateKey() {
 
 function selectStateRow(plate) {
   const candidate = String(plate);
-  const available = stateRows.filter(row => row.getAttribute('aria-disabled') !== 'true').map(row => row.dataset.row);
+  const available = stateRows.filter(row => !row.hidden && row.getAttribute('aria-disabled') !== 'true').map(row => row.dataset.row);
   selectedStateRow = available.includes(candidate) ? candidate : available[0];
   prepareStateStage.querySelectorAll('.state-row[role="option"]').forEach((row) => {
     row.setAttribute('aria-selected', String(row.dataset.row === selectedStateRow));
@@ -654,8 +669,13 @@ function renderStateRows() {
   stateStampImage.hidden = true;
   stateRows.forEach((row) => {
     const plate = row.dataset.row;
-    const prepared = taskCatalog[prepareQueueTaskId]?.submission === 'prepared-model';
-    const result = taskResults.get(`${prepared ? 'prepared' : 'plate'}-${plate}`) || (plate === stampedPlate ? resolvePrepareStateKey() : null);
+    const opened = taskCatalog[prepareQueueTaskId];
+    const batchTasks = opened?.prepared ? Object.values(taskCatalog).filter(task => task.submission === opened.submission) : modelPlateIds.map(id => taskCatalog[`plate-${id}`]);
+    const rowTask = batchTasks.find(task => task.plate === plate);
+    row.hidden = !rowTask;
+    if (!rowTask) return;
+    row.style.top = `${[28.148, 45.926, 63.852][batchTasks.indexOf(rowTask)]}%`;
+    const result = taskResults.get(rowTask.id) || (rowTask.id === activeTaskId && plate === stampedPlate ? resolvePrepareStateKey() : null);
     const stamped = Boolean(result);
     row.classList.toggle('is-stamped', stamped);
     row.setAttribute('aria-disabled', String(stamped));
@@ -694,8 +714,8 @@ function openPrepareStateScreen(preferredPlate, queueTaskId) {
   const key = resolvePrepareStateKey();
   prepareStateStage.dataset.state = key;
   /* 男孩任务：当前任务盘盖戳；女孩任务：三个盘都可复用，不盖戳 */
-  const prepared = taskCatalog[queueTaskId]?.submission === 'prepared-model';
-  stampedPlate = activeGirlTaskId || (prepared && !activePreparedTaskId) ? null : String(activePlate);
+  const sameBatch = taskCatalog[queueTaskId]?.submission === taskCatalog[activeTaskId]?.submission;
+  stampedPlate = sameBatch ? String(activePreparedTaskId ? activeTask.plate : activePlate) : null;
   /* 打印中 / 暂停中打印机忙碌，其余状态空闲（与底图一致，补丁隐藏） */
   printerBusyPatch.hidden = key !== 'printing';
   renderStateRows();
@@ -738,7 +758,7 @@ function startQueuedTask(nextTask, status) {
     next.searchParams.delete('plate');
   } else {
     next.searchParams.set('plate', nextTask.plate);
-    if (nextTask.submission === 'prepared-model') next.searchParams.set('activeTask', nextTask.id);
+    if (nextTask.prepared) next.searchParams.set('activeTask', nextTask.id);
     else next.searchParams.delete('activeTask');
   }
   window.location.href = next.href;
@@ -1265,6 +1285,7 @@ document.querySelector('#material-color-anywhere').addEventListener('click', goB
 document.querySelector('#explore-toys-anywhere').addEventListener('click', () => openReuseScreen('modelDetail'));
 document.querySelector('#explore-toys-back').addEventListener('click', closeReuseScreens);
 document.querySelector('#open-prepare-print').addEventListener('click', () => {
+  if (preparedBatches.some(batch => batch.id === prepareDraft)) { prepareDraft = crypto.randomUUID(); persistPrepareSelection(); }
   openReuseScreen('preparePrint');
 });
 /* HTML 盘行保留原来的槽位几何，拖动直接更新整张 DOM 卡片的位置。 */
@@ -1276,9 +1297,11 @@ const savedPlateOrder = [...new Set((params.get('prepareOrder') || '').split(','
 plateOrder = [...savedPlateOrder, ...plateOrder.filter(id => !savedPlateOrder.includes(id))];
 const checkedPlates = new Set(params.has('checkedPlates') ? params.get('checkedPlates').split(',').filter(id => modelPlateIds.includes(id)) : modelPlateIds);
 const selectAllPlates = document.querySelector('#prepare-select-all');
+let prepareDraft = /^[a-z0-9-]{1,50}$/.test(params.get('prepareDraft') || '') ? params.get('prepareDraft') : crypto.randomUUID();
 function selectedPrintOrder() { return plateOrder.filter(id => checkedPlates.has(id)); }
 function persistPrepareSelection() {
   const next = new URL(location.href);
+  next.searchParams.set('prepareDraft', prepareDraft);
   next.searchParams.set('prepareOrder', plateOrder.join(','));
   next.searchParams.set('checkedPlates', selectedPrintOrder().join(','));
   history.replaceState(null, '', next);
@@ -1290,7 +1313,9 @@ function renderPlateSelection() {
   selectAllPlates.indeterminate = checkedPlates.size > 0 && !selectAllPlates.checked;
   const start = document.querySelector('#start-print');
   start.disabled = checkedPlates.size === 0;
-  start.setAttribute('aria-label', checkedPlates.size ? '开始打印' : '开始打印（请先勾选打印盘）');
+  const busy = (prepareStage.querySelector('.prepare-idle').dataset.printerState || params.get('preparePrinter')) === 'busy';
+  start.textContent = busy ? '加入打印队列' : '开始打印';
+  start.setAttribute('aria-label', start.textContent + (checkedPlates.size ? '' : '（请先勾选打印盘）'));
 }
 
 function applyPlateOrder(order) {
@@ -1405,7 +1430,7 @@ function goToPrinterState(plate, status) {
   completedPlates.clear();
   familyQueueTasks = [
     ...submittedOrder.filter(item => item !== plate).map(item => taskCatalog[`plate-${item}`]),
-    ...familyQueueTasks.filter(task => task.owner === 'girl')
+    ...familyQueueTasks.filter(task => task.owner === 'girl' || task.prepared)
   ];
   const next = taskSessionUrl(status);
   next.searchParams.set('plate', plate);
@@ -1460,6 +1485,9 @@ bindTimelapseToggle(document.querySelector('#prepare-state-toggle'));
 /* 底部“开始打印”：首个勾选盘取得执行权，其余勾选盘按顺序入队。 */
 document.querySelector('#start-print').addEventListener('click', () => {
   if (document.querySelector('#start-print').disabled || !handlePreparePrinterState()) return;
+  if (preparedBatches.some(batch => batch.id === prepareDraft)) { showToast('本次模型已加入打印队列', 'prepare'); return; }
+  if (preparePrinterStatus === 'busy') { enqueuePreparedSelection(); return; }
+  if (ownedPendingBatchCount('boy') >= 2) { showToast('每人最多保留 2 个未完成模型任务，请先完成或取消已有任务', 'prepare'); return; }
   if (!validatePrintFilament()) return;
   goToPrinterState(selectedPrintOrder()[0], 'preparing');
 });
@@ -1473,7 +1501,6 @@ function renderPreparePrinterState() {
   label.dataset.printerState = preparePrinterStatus;
   label.innerHTML = `<i aria-hidden="true"></i>${PREPARE_PRINTER_LABELS[preparePrinterStatus]}`;
   preparePrinterControl.value = preparePrinterStatus;
-  const start = document.querySelector('#start-print');
   renderPlateSelection();
 }
 preparePrinterControl.addEventListener('change', event => {
@@ -1489,11 +1516,38 @@ function handlePreparePrinterState() {
     showToast(preparePrinterStatus === 'offline' ? '打印机已离线' : '打印机连接中', 'prepare');
     return false;
   }
-  if (preparePrinterStatus !== 'busy') return true;
-  showToast('打印机正忙碌', 'prepare');
-  return false;
+  return true;
 }
 renderPreparePrinterState();
+
+/* 名额按提交批次计数，同批次多盘只占一个；终态不占名额。 */
+function ownedPendingBatchCount(owner) {
+  const pending = familyQueueTasks.filter(task => !taskResults.has(task.id));
+  const active = taskCatalog[activeTaskId];
+  if (active && !taskResults.has(activeTaskId) && (['preparing', 'printing', 'paused'].includes(currentStatus) || (currentStatus === 'ready' && preparePrinterStatus === 'busy'))) pending.push(active);
+  return new Set(pending.filter(task => task.owner === owner).map(task => task.submission)).size;
+}
+function enqueuePreparedSelection() {
+  const plates = selectedPrintOrder();
+  if (!plates.length) return;
+  if (preparedBatches.some(batch => batch.id === prepareDraft)) { showToast('本次模型已加入打印队列', 'prepare'); return; }
+  if (ownedPendingBatchCount('boy') >= 2) { showToast('每人最多保留 2 个未完成模型任务，请先完成或取消已有任务', 'prepare'); return; }
+  const batch = { id: prepareDraft, plates, timelapse: document.querySelector('#timelapse-toggle').getAttribute('aria-checked') === 'true', leveling: document.querySelector('#leveling-toggle').getAttribute('aria-checked') === 'true' };
+  const tasks = tasksForPreparedBatch(batch);
+  preparedBatches.push(batch);
+  for (const task of tasks) taskCatalog[task.id] = task;
+  familyQueueTasks.push(...tasks);
+  const next = taskSessionUrl();
+  next.searchParams.delete('screen');
+  history.replaceState(null, '', next);
+  renderPlateTaskAndQueue();
+  queueToggle.hidden = false;
+  queueToggle.setAttribute('aria-expanded', 'true');
+  printQueue.hidden = false;
+  closeReuseScreens();
+  taskPanel.scrollIntoView({ block: 'start', behavior: 'instant' });
+  showToast(`已将 1 个模型（${plates.length} 盘）加入打印队列`);
+}
 
 function setFilamentFed(fed) {
   filamentPanel.dataset.filamentFed = fed ? 'yes' : 'no';

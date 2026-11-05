@@ -155,6 +155,7 @@
   bindTimelapseToggle($('#family-timelapse-toggle'));
   $('#family-submit').addEventListener('click', () => {
     if (readonly || tasks.some(task => familyQueueTasks.some(queued => queued.id === task.id) || taskResults.has(task.id) || task.id === activeTaskId)) return;
+    if (ownedPendingBatchCount('girl') >= 2) { showToast('每人最多保留 2 个未完成模型任务，请先完成或取消已有任务'); return; }
     familyQueueTasks.push(...order.map(id => taskCatalog[id]));
     rememberPage(null);
     renderPlateTaskAndQueue();
