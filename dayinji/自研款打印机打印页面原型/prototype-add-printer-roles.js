@@ -2,7 +2,8 @@
 (() => {
   const screen = document.querySelector('#add-printer-screen');
   const query = new URLSearchParams(location.search);
-  const inferred = query.get('deviceAccount') === 'child' || query.get('connectionAccount') === 'restricted' ? 'child' : 'parent';
+  const defaultAccount = query.get('from') === 'pairing-start' ? 'base' : 'parent';
+  const inferred = query.get('deviceAccount') === 'child' || query.get('connectionAccount') === 'restricted' ? 'child' : defaultAccount;
   let account = query.get('addPrinterAccount') || inferred;
   const controls = document.createElement('section');
   controls.innerHTML = '<h3 class="simulation-section-title">添加设备账号</h3><div class="simulation-options" role="radiogroup" aria-label="添加设备账号"><button type="button" role="radio" data-add-printer-account="parent">家长账号</button><button type="button" role="radio" data-add-printer-account="base">基础账号</button><button type="button" role="radio" data-add-printer-account="child">儿童账号</button></div>';
