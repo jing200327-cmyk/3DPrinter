@@ -27,7 +27,9 @@
 
   document.querySelectorAll('#save-slice, #family-save-slice').forEach(button => button.addEventListener('click', () => {
     activeSaveButton = button;
-    const modelName = button.closest('.prepare-page').querySelector('.plate-list [aria-selected="true"] .prepare-model-name');
+    const page = button.closest('.prepare-page');
+    const row = button === saveButton ? plateRows.find(row => row.dataset.plate === (selectedPrintOrder()[0] || plateOrder[0])) : page.querySelector('.plate-list [aria-selected="true"]');
+    const modelName = row?.querySelector('.prepare-model-name');
     input.value = (modelName?.textContent.trim() || '').slice(0, 40);
     validateName();
     nameDialog.showModal();

@@ -1272,25 +1272,44 @@ const plateSlotCenters = [0.28148, 0.45926, 0.63852].map(top => top + 0.08);
 const plateRows = [...plateList.querySelectorAll('.plate-row')];
 let plateOrder = plateRows.filter(row => modelPlateIds.includes(row.dataset.plate)).map(row => row.dataset.plate);
 plateRows.forEach(row => { row.hidden = !modelPlateIds.includes(row.dataset.plate); });
-let selectedPlate = '1';
+const savedPlateOrder = [...new Set((params.get('prepareOrder') || '').split(','))].filter(id => modelPlateIds.includes(id));
+plateOrder = [...savedPlateOrder, ...plateOrder.filter(id => !savedPlateOrder.includes(id))];
+const checkedPlates = new Set(params.has('checkedPlates') ? params.get('checkedPlates').split(',').filter(id => modelPlateIds.includes(id)) : modelPlateIds);
+const selectAllPlates = document.querySelector('#prepare-select-all');
+function selectedPrintOrder() { return plateOrder.filter(id => checkedPlates.has(id)); }
+function persistPrepareSelection() {
+  const next = new URL(location.href);
+  next.searchParams.set('prepareOrder', plateOrder.join(','));
+  next.searchParams.set('checkedPlates', selectedPrintOrder().join(','));
+  history.replaceState(null, '', next);
+}
 let plateDrag = null;
-let suppressPlateClick = false;
 function renderPlateSelection() {
-  plateRows.forEach((row) => row.setAttribute('aria-selected', String(row.dataset.plate === selectedPlate)));
+  plateRows.forEach(row => { row.querySelector('.prepare-plate-check').checked = checkedPlates.has(row.dataset.plate); });
+  selectAllPlates.checked = checkedPlates.size === modelPlateIds.length;
+  selectAllPlates.indeterminate = checkedPlates.size > 0 && !selectAllPlates.checked;
+  const start = document.querySelector('#start-print');
+  start.disabled = checkedPlates.size === 0;
+  start.setAttribute('aria-label', checkedPlates.size ? '开始打印' : '开始打印（请先勾选打印盘）');
 }
 
 function applyPlateOrder(order) {
   plateOrder = order;
   plateOrder.forEach((plate, slot) => {
     const row = plateRows.find((item) => item.dataset.plate === plate);
-    if (row) row.dataset.slot = String(slot);
+    if (row) {
+      row.dataset.slot = String(slot);
+      plateList.append(row);
+    }
   });
+  persistPrepareSelection();
 }
-
-function selectPlate(plate) {
-  selectedPlate = plate;
+selectAllPlates.addEventListener('change', () => {
+  checkedPlates.clear();
+  if (selectAllPlates.checked) modelPlateIds.forEach(id => checkedPlates.add(id));
   renderPlateSelection();
-}
+  persistPrepareSelection();
+});
 
 function startPlateDrag(event, row) {
   if (event.button !== undefined && event.button !== 0) return;
@@ -1340,15 +1359,26 @@ function endPlateDrag() {
   row.classList.remove('is-dragging');
   row.style.transform = '';
   if (moved) applyPlateOrder(previewOrder);
-  suppressPlateClick = moved;
   plateDrag = null;
 }
 
 plateRows.forEach((row) => {
   row.querySelector('.plate-row-hit').addEventListener('pointerdown', (event) => startPlateDrag(event, row));
-  row.querySelector('.plate-row-hit').addEventListener('click', () => {
-    if (suppressPlateClick) { suppressPlateClick = false; return; }
-    selectPlate(row.dataset.plate);
+  row.querySelector('.prepare-plate-check').addEventListener('change', event => {
+    if (event.target.checked) checkedPlates.add(row.dataset.plate);
+    else checkedPlates.delete(row.dataset.plate);
+    renderPlateSelection();
+    persistPrepareSelection();
+  });
+  row.querySelector('.plate-row-hit').addEventListener('keydown', event => {
+    if (!['ArrowUp', 'ArrowDown'].includes(event.key)) return;
+    event.preventDefault();
+    const order = [...plateOrder];
+    const from = order.indexOf(row.dataset.plate);
+    const to = Math.max(0, Math.min(order.length - 1, from + (event.key === 'ArrowUp' ? -1 : 1)));
+    [order[from], order[to]] = [order[to], order[from]];
+    applyPlateOrder(order);
+    row.querySelector('.plate-row-hit').focus();
   });
 });
 window.addEventListener('pointermove', updatePlateDrag);
@@ -1368,11 +1398,13 @@ document.querySelector('#prepare-state-start').addEventListener('click', () => {
 
 /* 带参数回到打印页：切换当前任务盘并落到指定状态 */
 function goToPrinterState(plate, status) {
-  /* 模型入口提交新批次；旧执行结果不会被重建为等待任务。 */
-  for (const id of modelPlateIds.map(item => `plate-${item}`)) taskResults.delete(id);
+  /* 仅勾选盘按列表顺序构成本批次，未勾选盘不创建任务。 */
+  const submittedOrder = selectedPrintOrder();
+  if (!submittedOrder.length) return;
+  for (const id of submittedOrder.map(item => `plate-${item}`)) taskResults.delete(id);
   completedPlates.clear();
   familyQueueTasks = [
-    ...plateOrder.filter(item => item !== plate && modelPlateIds.includes(item)).map(item => taskCatalog[`plate-${item}`]),
+    ...submittedOrder.filter(item => item !== plate).map(item => taskCatalog[`plate-${item}`]),
     ...familyQueueTasks.filter(task => task.owner === 'girl')
   ];
   const next = taskSessionUrl(status);
@@ -1383,6 +1415,7 @@ function goToPrinterState(plate, status) {
   window.location.href = next.href;
 }
 
+applyPlateOrder(plateOrder);
 renderPlateSelection();
 /* 首屏固件是有新版本的：提醒条与设备设置页的橙色文案都按 firmwareUpdateAvailable 显示 */
 setFirmwareUpdateAvailable(true);
@@ -1424,11 +1457,11 @@ function bindTimelapseToggle(button) {
 bindTimelapseToggle(document.querySelector('#timelapse-toggle'));
 bindTimelapseToggle(document.querySelector('#prepare-state-toggle'));
 
-/* 底部“开始打印”：带着当前选中的盘回到打印页，并把任务面板切到“准备中” */
+/* 底部“开始打印”：首个勾选盘取得执行权，其余勾选盘按顺序入队。 */
 document.querySelector('#start-print').addEventListener('click', () => {
   if (document.querySelector('#start-print').disabled || !handlePreparePrinterState()) return;
   if (!validatePrintFilament()) return;
-  goToPrinterState(selectedPlate, 'preparing');
+  goToPrinterState(selectedPrintOrder()[0], 'preparing');
 });
 
 /* 准备页设备状态独立于工作台当前执行任务；切换演示状态不改写执行任务。 */
@@ -1441,8 +1474,7 @@ function renderPreparePrinterState() {
   label.innerHTML = `<i aria-hidden="true"></i>${PREPARE_PRINTER_LABELS[preparePrinterStatus]}`;
   preparePrinterControl.value = preparePrinterStatus;
   const start = document.querySelector('#start-print');
-  start.disabled = false;
-  start.setAttribute('aria-label', '开始打印');
+  renderPlateSelection();
 }
 preparePrinterControl.addEventListener('change', event => {
   preparePrinterStatus = event.target.value;

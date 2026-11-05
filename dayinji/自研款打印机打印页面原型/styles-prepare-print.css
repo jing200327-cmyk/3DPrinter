@@ -96,3 +96,12 @@
 .slice-progress > span { display: block; width: 0; height: 100%; background: linear-gradient(110deg, #7950f2, #347ff1); }
 #slice-save-percent { display: block; margin: 12px 0; font-size: 20px; color: #5866ef; }
 .slice-dialog #slice-saving-copy { margin-bottom: 0; }
+
+/* 提交前仅用复选框选择盘；行本身只承担排序。 */
+#prepare-stage .prepare-select-all { position:absolute; top:23.4%; right:5.5%; min-height:44px; display:flex; align-items:center; gap:2cqw; font-size:3.5cqw; cursor:pointer; }
+#prepare-stage .prepare-select-all input, #prepare-stage .prepare-plate-check { width:5cqw; height:5cqw; margin:0; accent-color:#20bb6b; cursor:pointer; }
+#prepare-stage .prepare-plate-check { position:absolute; z-index:5; right:3%; top:45%; }
+#prepare-stage .prepare-plate-info { width:44%; }
+#prepare-stage .plate-row-hit { right:12%; }
+#prepare-stage .plate-row-grip { right:11%; }
+#prepare-stage .prepare-plate-check:focus-visible, #prepare-stage .prepare-select-all input:focus-visible { outline:2px solid #008af5; outline-offset:4px; }

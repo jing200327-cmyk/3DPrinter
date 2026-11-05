@@ -21,6 +21,8 @@
   </div></div>`;
   const rows = tasks.map((task, index) => {
     const row = document.querySelector('#prepare-plate-list .plate-row').cloneNode(true);
+    row.querySelector('.prepare-plate-check').remove();
+    row.setAttribute('role', 'option');
     row.classList.replace('plate-row', 'family-plate-row');
     row.dataset.plate = task.id;
     row.dataset.slot = index;

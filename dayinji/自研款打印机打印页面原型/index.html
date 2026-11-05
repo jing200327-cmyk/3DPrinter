@@ -712,8 +712,9 @@
         <header class="prepare-header"><button id="prepare-print-back" class="prepare-back" type="button" aria-label="返回模型详情">←</button><h1>准备打印</h1></header>
         <div class="prepare-printer"><img src="assets/准备打印-打印机.png" alt="Ugee Funbox 打印机"><div><strong>Ugee Funbox</strong><span class="prepare-idle"><i aria-hidden="true"></i>空闲</span></div><button id="prepare-switch-printer" class="prepare-switch" type="button" aria-label="切换或添加打印机">切换</button></div>
         <h2 class="prepare-section-title">选择要打印的盘</h2>
-        <div id="prepare-plate-list" class="plate-list" role="listbox" aria-label="选择要打印的盘">
-          <div class="plate-row prepare-plate" data-plate="1" data-slot="0" role="option" aria-selected="true">
+        <label class="prepare-select-all"><span>全选</span><input id="prepare-select-all" type="checkbox" checked aria-label="全选打印盘"></label>
+        <div id="prepare-plate-list" class="plate-list" role="group" aria-label="选择要打印的盘">
+          <div class="plate-row prepare-plate" data-plate="1" data-slot="0" role="group" aria-label="盘 1">
             <span class="plate-row-ring" aria-hidden="true"></span>
             <div class="prepare-model"><img src="assets/准备打印-模型1.png" alt="史蒂夫_01_012214 模型缩略图" draggable="false"></div>
             <div class="prepare-plate-info"><strong>盘 1</strong><span class="prepare-model-name">史蒂夫_01_012214</span></div>
@@ -722,11 +723,12 @@
               <div class="prepare-material-body"><img class="prepare-spool" src="assets/准备打印-蓝色料盘.png" alt="蓝色耗材料盘" draggable="false"><span class="prepare-loaded-color">蓝色</span></div>
             </div>
             <div class="prepare-plate-stats"><span><i class="prepare-clock" aria-hidden="true"></i>2 h 16 min</span><span><i class="prepare-weight" aria-hidden="true"></i>72 g</span></div>
-            <button class="plate-row-hit" type="button" aria-label="选择盘 1 史蒂夫_01_012214"></button>
+            <button class="plate-row-hit" type="button" aria-label="拖动排序盘 1 史蒂夫_01_012214"></button>
+            <input class="prepare-plate-check" type="checkbox" checked aria-label="打印盘 1">
             <button class="plate-3d-btn" type="button" data-preview-plate="盘 1" data-preview-name="史蒂夫_01_012214" data-preview-duration="2 h 16 min" data-preview-grams="72" aria-label="3D 预览：盘 1 史蒂夫_01_012214"><span class="plate-3d-btn__text" aria-hidden="true">3D</span></button>
             <span class="plate-row-grip" aria-hidden="true"></span>
           </div>
-          <div class="plate-row prepare-plate" data-plate="2" data-slot="1" role="option" aria-selected="false">
+          <div class="plate-row prepare-plate" data-plate="2" data-slot="1" role="group" aria-label="盘 2">
             <span class="plate-row-ring" aria-hidden="true"></span>
             <div class="prepare-model"><img src="assets/准备打印-模型2.png" alt="史蒂夫_02_012209 模型缩略图" draggable="false"></div>
             <div class="prepare-plate-info"><strong>盘 2</strong><span class="prepare-model-name">史蒂夫_02_012209</span></div>
@@ -735,11 +737,12 @@
               <div class="prepare-material-body"><img class="prepare-spool" src="assets/准备打印-蓝色料盘.png" alt="蓝色耗材料盘" draggable="false"><span class="prepare-loaded-color">蓝色</span></div>
             </div>
             <div class="prepare-plate-stats"><span><i class="prepare-clock" aria-hidden="true"></i>1 h 42 min</span><span><i class="prepare-weight" aria-hidden="true"></i>54 g</span></div>
-            <button class="plate-row-hit" type="button" aria-label="选择盘 2 史蒂夫_02_012209"></button>
+            <button class="plate-row-hit" type="button" aria-label="拖动排序盘 2 史蒂夫_02_012209"></button>
+            <input class="prepare-plate-check" type="checkbox" checked aria-label="打印盘 2">
             <button class="plate-3d-btn" type="button" data-preview-plate="盘 2" data-preview-name="史蒂夫_02_012209" data-preview-duration="1 h 42 min" data-preview-grams="54" aria-label="3D 预览：盘 2 史蒂夫_02_012209"><span class="plate-3d-btn__text" aria-hidden="true">3D</span></button>
             <span class="plate-row-grip" aria-hidden="true"></span>
           </div>
-          <div class="plate-row prepare-plate" data-plate="3" data-slot="2" role="option" aria-selected="false">
+          <div class="plate-row prepare-plate" data-plate="3" data-slot="2" role="group" aria-label="盘 3">
             <span class="plate-row-ring" aria-hidden="true"></span>
             <div class="prepare-model"><img src="assets/准备打印-模型3.png" alt="史蒂夫_03_012207 模型缩略图" draggable="false"></div>
             <div class="prepare-plate-info"><strong>盘 3</strong><span class="prepare-model-name">史蒂夫_03_012207</span></div>
@@ -748,7 +751,8 @@
               <div class="prepare-material-body"><img class="prepare-spool" src="assets/准备打印-蓝色料盘.png" alt="蓝色耗材料盘" draggable="false"><span class="prepare-mismatch" role="img" aria-label="颜色不匹配" title="模型需要绿色，料架当前为蓝色">!</span></div>
             </div>
             <div class="prepare-plate-stats"><span><i class="prepare-clock" aria-hidden="true"></i>3 h 08 min</span><span><i class="prepare-weight" aria-hidden="true"></i>96 g</span></div>
-            <button class="plate-row-hit" type="button" aria-label="选择盘 3 史蒂夫_03_012207"></button>
+            <button class="plate-row-hit" type="button" aria-label="拖动排序盘 3 史蒂夫_03_012207"></button>
+            <input class="prepare-plate-check" type="checkbox" checked aria-label="打印盘 3">
             <button class="plate-3d-btn" type="button" data-preview-plate="盘 3" data-preview-name="史蒂夫_03_012207" data-preview-duration="3 h 08 min" data-preview-grams="96" aria-label="3D 预览：盘 3 史蒂夫_03_012207"><span class="plate-3d-btn__text" aria-hidden="true">3D</span></button>
             <span class="plate-row-grip" aria-hidden="true"></span>
           </div>
@@ -778,7 +782,7 @@
               <div class="prepare-material-body"><img class="prepare-spool" src="assets/准备打印-蓝色料盘.png" alt="蓝色耗材料盘" draggable="false"><span class="prepare-loaded-color">蓝色</span></div>
             </div>
             <div class="prepare-plate-stats"><span><i class="prepare-clock" aria-hidden="true"></i>2 h 16 min</span><span><i class="prepare-weight" aria-hidden="true"></i>72 g</span></div>
-            <button class="state-row-hit" type="button" aria-label="选择盘 1 史蒂夫_01_012214"></button>
+            <button class="state-row-hit" type="button" aria-label="拖动排序盘 1 史蒂夫_01_012214"></button>
             <button class="plate-3d-btn" type="button" data-preview-plate="盘 1" data-preview-name="史蒂夫_01_012214" data-preview-duration="2 h 16 min" data-preview-grams="72" aria-label="3D 预览：盘 1 史蒂夫_01_012214"><span class="plate-3d-btn__text" aria-hidden="true">3D</span></button>
 
           </div>
@@ -791,7 +795,7 @@
               <div class="prepare-material-body"><img class="prepare-spool" src="assets/准备打印-蓝色料盘.png" alt="蓝色耗材料盘" draggable="false"><span class="prepare-loaded-color">蓝色</span></div>
             </div>
             <div class="prepare-plate-stats"><span><i class="prepare-clock" aria-hidden="true"></i>1 h 42 min</span><span><i class="prepare-weight" aria-hidden="true"></i>54 g</span></div>
-            <button class="state-row-hit" type="button" aria-label="选择盘 2 史蒂夫_02_012209"></button>
+            <button class="state-row-hit" type="button" aria-label="拖动排序盘 2 史蒂夫_02_012209"></button>
             <button class="plate-3d-btn" type="button" data-preview-plate="盘 2" data-preview-name="史蒂夫_02_012209" data-preview-duration="1 h 42 min" data-preview-grams="54" aria-label="3D 预览：盘 2 史蒂夫_02_012209"><span class="plate-3d-btn__text" aria-hidden="true">3D</span></button>
 
           </div>
@@ -804,7 +808,7 @@
               <div class="prepare-material-body"><img class="prepare-spool" src="assets/准备打印-蓝色料盘.png" alt="蓝色耗材料盘" draggable="false"><span class="prepare-mismatch" role="img" aria-label="颜色不匹配" title="模型需要绿色，料架当前为蓝色">!</span></div>
             </div>
             <div class="prepare-plate-stats"><span><i class="prepare-clock" aria-hidden="true"></i>3 h 08 min</span><span><i class="prepare-weight" aria-hidden="true"></i>96 g</span></div>
-            <button class="state-row-hit" type="button" aria-label="选择盘 3 史蒂夫_03_012207"></button>
+            <button class="state-row-hit" type="button" aria-label="拖动排序盘 3 史蒂夫_03_012207"></button>
             <button class="plate-3d-btn" type="button" data-preview-plate="盘 3" data-preview-name="史蒂夫_03_012207" data-preview-duration="3 h 08 min" data-preview-grams="96" aria-label="3D 预览：盘 3 史蒂夫_03_012207"><span class="plate-3d-btn__text" aria-hidden="true">3D</span></button>
 
           </div>
@@ -1192,14 +1196,14 @@
   </dialog>
   <script src="prototype-filament-backpack.js?v=2"></script>
   <script src="prototype-prepare-backpack.js?v=3"></script>
-  <script src="prototype.js?v=r038"></script>
+  <script src="prototype.js?v=r039"></script>
   <script src="prototype-device-control.js?v=2"></script>
   <script src="prototype-calibration.js?v=3"></script>
-  <script src="prototype-family-queue.js?v=3"></script>
+  <script src="prototype-family-queue.js?v=4"></script>
   <script src="prototype-simulation.js?v=r008"></script>
   <script src="prototype-connection.js?v=3"></script>
   <script src="prototype-completion.js?v=2"></script>
-  <script src="prototype-save-slice.js?v=2"></script>
+  <script src="prototype-save-slice.js?v=3"></script>
   <script src="prototype-device-info.js?v=2"></script>
   <script src="prototype-add-printer-roles.js?v=2"></script>
   <script src="prototype-settings-account.js?v=1"></script>
