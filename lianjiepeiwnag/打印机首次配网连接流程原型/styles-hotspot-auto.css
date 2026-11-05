@@ -6,3 +6,9 @@
 .hotspot-timeout-dialog { width:min(90vw,350px); padding:24px; border:0; border-radius:22px; color:#242937; }.hotspot-timeout-dialog::backdrop { background:#151b2b88; }.hotspot-timeout-dialog h2 { margin:0 0 12px; text-align:center; font-size:19px; }.hotspot-timeout-dialog p { line-height:1.8; font-size:14px; margin-bottom:24px; }.hotspot-timeout-dialog>div { display:flex; gap:10px; }.hotspot-timeout-dialog button { flex:1; font-size:14px; min-height:46px; }
 #toast { max-width:min(88vw,360px); white-space:normal; text-align:center; line-height:1.7; }
 @media(prefers-reduced-motion:reduce) { .hotspot-gradient[aria-busy="true"]:before { animation:none; } }
+
+.print-ready-content { height:calc(100dvh - 168px); align-content:center; padding:24px 16px; }
+.connected-banner { width:100%; max-width:350px; margin:auto; padding:0 18px; }
+.hotspot-demo { margin:14px 0; padding:12px 14px; border:1px dashed #c5c2d9; border-radius:14px; color:var(--muted); font-size:12px; }
+.hotspot-demo label { display:block; margin-top:12px; }
+.hotspot-demo select { width:100%; margin-top:8px; padding:10px; border:1px solid #d7d4e9; border-radius:8px; background:white; color:var(--ink); }

@@ -373,7 +373,7 @@ document.querySelector('#toggle-password').addEventListener('click', (event) => 
    —— 正常分支：连接成功 → 显示「连接成功」→ 进【打印前准备】。
    —— 异常分支：连接超过 60s → 关闭本页回到【网络配置】并弹提醒弹窗，
       文案【连接失败，请检查：1.WiFi密码是否正确；2.在点击连接前手机是否连接上打印机WiFi热点】，
-      给【确定】按钮，点击后回到【网络配置】页且密码输入框内容自动清空。
+      给【确定】按钮，点击后返回【连接打印机热点】页并提示重新连接。
    ========================================================================== */
 function clearConnectingTimers() {
   window.clearTimeout(connectionTimer);
@@ -381,7 +381,7 @@ function clearConnectingTimers() {
   connectingTicker = null;
 }
 
-/* 非空密码统一等待 3s，再按原有模拟凭据给出连接结果。 */
+/* 提交后统一等待 3s，再按原有模拟凭据给出连接结果。 */
 function openConnectingSheet(validConnection) {
   clearConnectingTimers();
   connectingSeconds = 0;
@@ -400,7 +400,7 @@ function openConnectingSheet(validConnection) {
       connectingDialog.close();
       wifiError.hidden = false;
       wifiPassword.setAttribute('aria-invalid', 'true');
-      showNotice(WIFI_CONNECTION_ERROR, wifiPassword);
+      showNotice(WIFI_CONNECTION_ERROR, document.querySelector('#connect-hotspot'), returnToHotspotAfterFailure);
     }
   }, CONNECTING_SUCCESS_DELAY);
 }
@@ -416,36 +416,33 @@ function finishConnectingAsSuccess() {
   }, 900);
 }
 
-/* 异常分支：60s 超时 → 回【网络配置】页弹提醒，确定后清空密码输入框 */
+/* 失败确认后清理失效热点状态，重新连接。 */
+function returnToHotspotAfterFailure() {
+  printerHotspotConnected = false;
+  selectedWlan = 'Home_5G';
+  renderWlanNetworks();
+  wifiPassword.value = '';
+  wifiPassword.removeAttribute('aria-invalid');
+  wifiError.hidden = true;
+  wifiPassword.type = 'password';
+  document.querySelector('#toggle-password').setAttribute('aria-label', '显示密码');
+  showScreen('hotspot');
+  showToast('请重新开启WiFi热点并连接');
+}
+
 function finishConnectingAsTimeout() {
   clearConnectingTimers();
   connectingDialog.close();
   showScreen('home-wifi');
-  showNotice(WIFI_TIMEOUT_ERROR, document.querySelector('#connect-home-wifi'), () => {
-    /* 需求：点击【确定】后回到【网络配置】页，前端密码输入框内容自动清空 */
-    wifiPassword.value = '';
-    wifiPassword.removeAttribute('aria-invalid');
-    wifiError.hidden = true;
-    document.querySelector('#toggle-password').setAttribute('aria-label', '显示密码');
-    wifiPassword.type = 'password';
-    wifiPassword.focus({ preventScroll: true });
-  });
+  showNotice(WIFI_TIMEOUT_ERROR, document.querySelector('#connect-hotspot'), returnToHotspotAfterFailure);
 }
 
-document.querySelector('#connecting-done').addEventListener('click', finishConnectingAsSuccess);
-document.querySelector('#connecting-timeout').addEventListener('click', finishConnectingAsTimeout);
-
 document.querySelector('#connect-home-wifi').addEventListener('click', () => {
-  if (!wifiPassword.value) {
-    wifiError.hidden = true;
-    wifiPassword.setAttribute('aria-invalid', 'true');
-    showNotice('当前密码为空', wifiPassword);
-    return;
-  }
-
   wifiError.hidden = true;
   wifiPassword.removeAttribute('aria-invalid');
-  const validCredentials = document.querySelector('#home-wifi-name').value === 'Home_5G' && wifiPassword.value === EXPECTED_HOME_WIFI_PASSWORD;
+  const password = wifiPassword.value;
+  const validCredentials = document.querySelector('#home-wifi-name').value === 'Home_5G' &&
+    (password === '' || password === EXPECTED_HOME_WIFI_PASSWORD);
   openConnectingSheet(validCredentials && printerHotspotConnected);
 });
 
@@ -1028,6 +1025,11 @@ document.querySelector('#connect-hotspot').addEventListener('click', () => {
     hotspotConnecting = false;
     renderHotspotConnection();
     if (noticeDialog.open) noticeDialog.close();
+    if (document.querySelector('#hotspot-result').value === 'timeout') {
+      printerHotspotConnected = false;
+      document.querySelector('#hotspot-timeout-dialog').showModal();
+      return;
+    }
     printerHotspotConnected = true;
     selectedWlan = PRINTER_WLAN;
     renderWlanNetworks();
