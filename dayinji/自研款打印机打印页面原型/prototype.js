@@ -1260,12 +1260,37 @@ document.querySelector('#configure-new-printer').addEventListener('click', () =>
 document.querySelector('#open-remove-printer').addEventListener('click', () => openReuseScreen('removePrinter'));
 document.querySelector('#remove-printer-back').addEventListener('click', goBackInReuseScreens);
 document.querySelector('#remove-printer-cancel').addEventListener('click', goBackInReuseScreens);
-document.querySelector('#remove-printer-confirm').addEventListener('click', () => openReuseScreen('logicDemo'));
+const removeQueuedDialog = document.querySelector('#remove-queued-dialog');
+function finishPrinterRemoval() {
+  for (const task of familyQueueTasks) taskResults.set(task.id, 'cancelled');
+  familyQueueTasks = [];
+  window.history.replaceState(null, '', taskSessionUrl());
+  renderPlateTaskAndQueue();
+  nextPlateButton.disabled = true;
+  myPrintersList.querySelector('[aria-pressed="true"]')?.remove();
+  myPrintersList.firstElementChild?.setAttribute('aria-pressed', 'true');
+  document.querySelector('#my-printers-empty').hidden = !!myPrintersList.firstElementChild;
+  openReuseScreen('logicDemo');
+}
+
+document.querySelector('#remove-printer-confirm').addEventListener('click', () => {
+  goBackInReuseScreens();
+  if (familyQueueTasks.length) {
+    document.querySelector('#open-remove-printer').focus();
+    removeQueuedDialog.showModal();
+    return;
+  }
+  finishPrinterRemoval();
+});
+document.querySelector('#confirm-remove-queued').addEventListener('click', () => {
+  removeQueuedDialog.close();
+  finishPrinterRemoval();
+});
 document.querySelector('#logic-demo-back').addEventListener('click', goBackInReuseScreens);
 /* IF 已有其他打印机：直接回到打印页，等于自动连接到「我的打印机」第一台 */
 document.querySelector('#logic-demo-existing').addEventListener('click', () => {
   closeReuseScreens();
-  showToast('已自动连接「我的打印机」第一台：Ugee Funbox');
+  showToast('已自动连接「我的打印机」列表里的第一台打印机');
 });
 /* ELSE 没有其他打印机：回到首次配网连接流程原型首页 */
 document.querySelector('#logic-demo-none').addEventListener('click', () => {

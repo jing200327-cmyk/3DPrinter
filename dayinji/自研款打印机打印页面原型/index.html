@@ -689,10 +689,10 @@
   <section id="logic-demo-screen" class="reuse-screen reuse-screen--logic" hidden tabindex="-1" aria-label="移除打印机跳转逻辑">
     <div class="reuse-screen-frame logic-demo">
       <div class="logic-demo-card">
-        <h2 class="logic-demo-title">确认移除后，App 往哪里走？</h2>
-        <p class="logic-demo-copy">点击「确认」后需要先判断：当前账号是否还连接着其他打印机。</p>
+        <h2 class="logic-demo-title">打印机已解绑</h2>
+        <p class="logic-demo-copy">解绑后，根据账号下剩余的打印机进入对应页面。</p>
         <div class="logic-demo-rule">
-          <p><b>IF</b><span>已有其他打印机</span><em>直接回到打印页，自动连接「我的打印机」列表里的第一台（Ugee Funbox）</em></p>
+          <p><b>IF</b><span>已有其他打印机</span><em>直接回到打印页，自动连接「我的打印机」列表里的第一台</em></p>
           <p><b>ELSE</b><span>没有其他打印机</span><em>跳转到「打印机首次配网连接流程」原型首页，重新开始配网</em></p>
         </div>
         <div class="logic-demo-actions">
@@ -1185,6 +1185,16 @@
   <!-- 3D 预览页逻辑；three.js 与内嵌模型数据（base64 STL，约 1.2 MB，绕开 file:// 的 CORS 限制）
        由它在第一次打开预览页时才按需加载，不拖慢打印页面首屏 -->
   <script src="prototype-3d-preview.js?v=r009"></script>
+  <dialog id="remove-queued-dialog" class="app-dialog" aria-labelledby="remove-queued-title" aria-describedby="remove-queued-copy">
+    <form method="dialog">
+      <h2 id="remove-queued-title">移除打印机</h2>
+      <p id="remove-queued-copy">移除打印机将取消所有成员在这台设备上的待打印任务，是否继续？</p>
+      <div class="dialog-actions">
+        <button value="cancel" data-tone="neutral" autofocus>取消</button>
+        <button id="confirm-remove-queued" type="button" data-tone="danger">确认移除</button>
+      </div>
+    </form>
+  </dialog>
   <dialog id="printer-bound-dialog" class="app-dialog" aria-labelledby="printer-bound-title" aria-describedby="printer-bound-copy">
     <form method="dialog">
       <h2 id="printer-bound-title">设备已被绑定</h2>
@@ -1196,7 +1206,7 @@
   </dialog>
   <script src="prototype-filament-backpack.js?v=2"></script>
   <script src="prototype-prepare-backpack.js?v=3"></script>
-  <script src="prototype.js?v=r042-preview"></script>
+  <script src="prototype.js?v=r043-remove"></script>
   <script src="prototype-device-control.js?v=2"></script>
   <script src="prototype-calibration.js?v=3"></script>
   <script src="prototype-family-queue.js?v=5"></script>
