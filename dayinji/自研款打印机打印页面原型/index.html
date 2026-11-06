@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f4f5fa">
   <title>自研款打印机打印页面原型</title>
-  <link rel="stylesheet" href="styles.css?v=r024">
+  <link rel="stylesheet" href="styles.css?v=20261106-reset">
   <link rel="stylesheet" href="styles-share-printer.css?v=r008">
   <link rel="stylesheet" href="styles-filament-operation.css?v=r009">
   <link rel="stylesheet" href="styles-3d-preview.css?v=r009">
@@ -278,7 +278,8 @@
           <button id="open-device-control" class="settings-control-entry" type="button">设备控制<span aria-hidden="true">›</span></button>
           <button id="open-timelapse-settings" class="settings-timelapse-entry" type="button">延时摄影<span aria-hidden="true">›</span></button>
         </div>
-        <button id="open-remove-printer" class="reuse-hotspot reuse-hotspot--remove-printer" type="button" aria-label="移除打印机"></button>
+        <button id="open-factory-reset" class="settings-reset-button" type="button" aria-haspopup="dialog">恢复出厂设置</button>
+        <button aria-haspopup="dialog" id="open-remove-printer" class="reuse-hotspot reuse-hotspot--remove-printer" type="button" aria-label="移除打印机"></button>
       </div>
     </div>
     <button id="device-settings-back" class="reuse-screen-back" type="button" aria-label="返回打印机页面"></button>
@@ -669,21 +670,28 @@
     </form>
   </dialog>
 
-  <!-- 移除打印机弹窗（复用 移除打印机弹窗.png） -->
-  <section id="remove-printer-screen" class="reuse-screen" hidden tabindex="-1" aria-label="是否确认移除当前打印机">
-    <div class="reuse-screen-frame">
-      <div class="reuse-stage" style="--reuse-ratio: 411 / 879">
-        <img src="../../原型修改复用图片资源/移除打印机弹窗.png" alt="是否确认移除当前打印机，含取消与确认按钮">
-        <button id="remove-printer-cancel" class="reuse-hotspot reuse-hotspot--remove-cancel" type="button" aria-label="取消，返回设备设置"></button>
-        <button id="remove-printer-confirm" class="reuse-hotspot reuse-hotspot--remove-confirm" type="button" aria-label="确认移除当前打印机"></button>
+  <dialog id="factory-reset-dialog" class="app-dialog" aria-labelledby="factory-reset-title" aria-describedby="factory-reset-copy factory-reset-warning">
+    <form method="dialog">
+      <h2 id="factory-reset-title">确认恢复出厂设置？</h2>
+      <p id="factory-reset-copy">恢复出厂将清空打印机 WiFi、本地模型、设备参数，清除所有账号绑定与设备打印队列。打印机将进入待配网状态。</p>
+      <p id="factory-reset-warning">⚠️此操作不可撤销，所有家庭成员均无法继续使用设备，需重新绑定。</p>
+      <div class="dialog-actions">
+        <button value="cancel" autofocus>取消</button>
+        <button id="factory-reset-confirm" type="button" data-tone="danger">确认恢复出厂</button>
       </div>
-    </div>
-    <!-- 左上角回退按钮：这一页是弹窗，遮罩把原图烘焙的返回箭头压得太暗，
-         这里在箭头原位盖一个自绘的可见返回按钮（点击仍走原来的 goBackInReuseScreens） -->
-    <button id="remove-printer-back" class="reuse-screen-back remove-dialog-back" type="button" aria-label="返回设备设置">
-      <span class="remove-dialog-back__icon" aria-hidden="true"></span>
-    </button>
-  </section>
+    </form>
+  </dialog>
+  <dialog id="remove-printer-dialog" class="app-dialog" aria-labelledby="remove-printer-title" aria-describedby="remove-printer-copy remove-printer-warning">
+    <form method="dialog">
+      <h2 id="remove-printer-title">确认解绑打印机？</h2>
+      <p id="remove-printer-copy">解绑仅解除本账号与打印机绑定，不会重置设备。将清空此打印机的打印队列；打印机 WiFi、本地文件保留，其他家庭成员无法继续使用。解绑后可重新进行连接绑定。</p>
+      <p id="remove-printer-warning">⚠️如需清空设备文件，请执行恢复出厂设置。</p>
+      <div class="dialog-actions">
+        <button value="cancel" autofocus>取消</button>
+        <button id="remove-printer-confirm" type="button" data-tone="danger">确认解绑</button>
+      </div>
+    </form>
+  </dialog>
 
   <!-- 移除打印机后的跳转逻辑页：与原型其余页面同构的浅色卡片风格 -->
   <section id="logic-demo-screen" class="reuse-screen reuse-screen--logic" hidden tabindex="-1" aria-label="移除打印机跳转逻辑">
@@ -1206,17 +1214,17 @@
   </dialog>
   <script src="prototype-filament-backpack.js?v=2"></script>
   <script src="prototype-prepare-backpack.js?v=3"></script>
-  <script src="prototype.js?v=r043-remove"></script>
+  <script src="prototype.js?v=20261106-reset"></script>
   <script src="prototype-device-control.js?v=2"></script>
-  <script src="prototype-calibration.js?v=3"></script>
+  <script src="prototype-calibration.js?v=20261106-reset"></script>
   <script src="prototype-family-queue.js?v=5"></script>
   <script src="prototype-simulation.js?v=r009"></script>
   <script src="prototype-connection.js?v=3"></script>
   <script src="prototype-completion.js?v=2"></script>
   <script src="prototype-save-slice.js?v=3"></script>
-  <script src="prototype-device-info.js?v=2"></script>
+  <script src="prototype-device-info.js?v=20261106-reset"></script>
   <script src="prototype-add-printer-roles.js?v=3"></script>
-  <script src="prototype-settings-account.js?v=1"></script>
+  <script src="prototype-settings-account.js?v=20261106-reset"></script>
   <script src="prototype-offline-import.js?v=1"></script>
 </body>
 </html>

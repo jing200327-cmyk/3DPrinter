@@ -96,6 +96,11 @@
     try { localStorage.setItem(storageKey, JSON.stringify(models.map(({id, name}) => ({id, name})))); }
     catch { showToast('修改已生效，当前浏览器无法保存，刷新后将恢复'); }
   }
+  window.addEventListener('printer-factory-reset', () => {
+    models = [];
+    persist();
+    try { localStorage.removeItem(nameStorageKey); } catch { /* Storage may be disabled. */ }
+  });
   function closeMenus() {
     document.querySelectorAll('.di-model-menu').forEach(menu => { menu.hidden = true; });
     document.querySelectorAll('.di-more').forEach(button => button.setAttribute('aria-expanded', 'false'));

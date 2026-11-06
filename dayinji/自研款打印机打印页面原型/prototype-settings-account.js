@@ -6,7 +6,10 @@
   surface.className = 'settings-child-surface';
   surface.setAttribute('aria-hidden', 'true');
   screen.querySelector('.reuse-stage').prepend(surface);
-  const restricted = ['#open-firmware-version', '#open-print-options', '#open-device-control', '#open-remove-printer'];
+  const restricted = ['#open-firmware-version', '#open-print-options', '#open-device-control', '#open-remove-printer', '#open-factory-reset'];
+  for (const action of ['factory-reset', 'remove-printer']) {
+    screen.querySelector(`#open-${action}`).addEventListener('click', () => document.querySelector(`#${action}-dialog`).showModal());
+  }
   function render(account) {
     const child = account === 'child';
     screen.dataset.account = child ? 'child' : 'owner';

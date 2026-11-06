@@ -36,7 +36,7 @@
   note.textContent='调平校准：原型进度以20倍速度演示，不发送真实设备指令。';
   document.querySelector('#simulation-console .simulation-content').append(note);
   let job=null, timer=null;
-  const lockSelector=['#printer-switch','#camera-toggle','#camera-view-limit','#pause-print','#cancel-print','#restart-print','#next-plate','#finish-now','#firmware-banner','#load-filament','#unload-filament','#open-material-settings','#filament-spool','.bp-slot','.bp-edit','#start-print','#prepare-state-start','#open-device-control','#open-print-options','#open-firmware-version','#open-remove-printer','#filament-guide-start','.di-model-print','#family-submit','#family-start-print'].join(',');
+  const lockSelector=['#printer-switch','#camera-toggle','#camera-view-limit','#pause-print','#cancel-print','#restart-print','#next-plate','#finish-now','#firmware-banner','#load-filament','#unload-filament','#open-material-settings','#filament-spool','.bp-slot','.bp-edit','#start-print','#prepare-state-start','#open-device-control','#open-print-options','#open-firmware-version','#open-remove-printer','#open-factory-reset','#filament-guide-start','.di-model-print','#family-submit','#family-start-print'].join(',');
   const lockedControls=new Map();
   const selectedProjects=()=>projects.filter(p=>$(`#calibration-${p.id}`).checked);
   const isRunning=()=>Boolean(job && Date.now()<job.endsAt);

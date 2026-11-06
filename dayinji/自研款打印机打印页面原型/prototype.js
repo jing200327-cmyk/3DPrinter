@@ -215,7 +215,7 @@ cameraViewLimitButton.addEventListener('click', () => {
 });
 
 /* ---------- 复用整张大图的整屏页面 ---------- */
-const reuseScreenNames = { deviceSettings: '#device-settings-screen', printOptions: '#print-options-screen', timelapse: '#timelapse-screen', fanFilter: '#fan-filter-screen', fanAlert: '#fan-alert-screen', addPrinter: '#add-printer-screen', sharePrinter: '#share-printer-screen', memberManage: '#member-manage-screen', removePrinter: '#remove-printer-screen', logicDemo: '#logic-demo-screen', materialSettings: '#material-settings-screen', materialName: '#material-name-screen', materialType: '#material-type-screen', materialColor: '#material-color-screen', exploreToys: '#explore-toys-screen', modelDetail: '#model-detail-screen', preparePrint: '#prepare-print-screen', prepareMaterial: '#prepare-material-screen', prepareEmpty: '#prepare-empty-screen', prepareState: '#prepare-state-screen', preview3d: '#preview-3d-screen', firmwareUpgrade: '#firmware-upgrade-screen', firmwareVersion: '#firmware-version-screen', firmwareProgress: '#firmware-progress-screen', firmwareDone: '#firmware-done-screen' };
+const reuseScreenNames = { deviceSettings: '#device-settings-screen', printOptions: '#print-options-screen', timelapse: '#timelapse-screen', fanFilter: '#fan-filter-screen', fanAlert: '#fan-alert-screen', addPrinter: '#add-printer-screen', sharePrinter: '#share-printer-screen', memberManage: '#member-manage-screen', logicDemo: '#logic-demo-screen', materialSettings: '#material-settings-screen', materialName: '#material-name-screen', materialType: '#material-type-screen', materialColor: '#material-color-screen', exploreToys: '#explore-toys-screen', modelDetail: '#model-detail-screen', preparePrint: '#prepare-print-screen', prepareMaterial: '#prepare-material-screen', prepareEmpty: '#prepare-empty-screen', prepareState: '#prepare-state-screen', preview3d: '#preview-3d-screen', firmwareUpgrade: '#firmware-upgrade-screen', firmwareVersion: '#firmware-version-screen', firmwareProgress: '#firmware-progress-screen', firmwareDone: '#firmware-done-screen' };
 let reuseStack = [];
 
 function openReuseScreen(name) {
@@ -1257,24 +1257,30 @@ document.querySelector('#configure-new-printer').addEventListener('click', () =>
 });
 
 /* ---------- 移除打印机 → 确认后的跳转逻辑演示 ---------- */
-document.querySelector('#open-remove-printer').addEventListener('click', () => openReuseScreen('removePrinter'));
-document.querySelector('#remove-printer-back').addEventListener('click', goBackInReuseScreens);
-document.querySelector('#remove-printer-cancel').addEventListener('click', goBackInReuseScreens);
 const removeQueuedDialog = document.querySelector('#remove-queued-dialog');
-function finishPrinterRemoval() {
+function clearPrinterQueue() {
   for (const task of familyQueueTasks) taskResults.set(task.id, 'cancelled');
   familyQueueTasks = [];
   window.history.replaceState(null, '', taskSessionUrl());
   renderPlateTaskAndQueue();
   nextPlateButton.disabled = true;
+}
+function finishPrinterRemoval() {
+  clearPrinterQueue();
   myPrintersList.querySelector('[aria-pressed="true"]')?.remove();
   myPrintersList.firstElementChild?.setAttribute('aria-pressed', 'true');
   document.querySelector('#my-printers-empty').hidden = !!myPrintersList.firstElementChild;
   openReuseScreen('logicDemo');
 }
 
+document.querySelector('#factory-reset-confirm').addEventListener('click', () => {
+  document.querySelector('#factory-reset-dialog').close();
+  clearPrinterQueue();
+  window.dispatchEvent(new Event('printer-factory-reset'));
+  window.location.href = PAIRING_FLOW_PATH;
+});
 document.querySelector('#remove-printer-confirm').addEventListener('click', () => {
-  goBackInReuseScreens();
+  document.querySelector('#remove-printer-dialog').close();
   if (familyQueueTasks.length) {
     document.querySelector('#open-remove-printer').focus();
     removeQueuedDialog.showModal();

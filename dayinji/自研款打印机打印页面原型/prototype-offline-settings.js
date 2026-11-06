@@ -1,5 +1,5 @@
 /* 离线设置复用在线设备信息页；仅展示缓存，设备读写在入口处阻断。 */
-const reuseScreenNames = { deviceSettings: '#device-settings-screen', removePrinter: '#remove-printer-screen', logicDemo: '#logic-demo-screen' };
+const reuseScreenNames = { deviceSettings: '#device-settings-screen', logicDemo: '#logic-demo-screen' };
 const reuseStack = [];
 function showToast(copy) { window.__OFFLINE_SCREENS.showToast(copy); }
 function openReuseScreen(name) {
@@ -34,9 +34,14 @@ function goBackInReuseScreens() {
       event.stopImmediatePropagation();goBackInReuseScreens();
     }
   }, true);
-  $('#open-remove-printer').addEventListener('click', () => openReuseScreen('removePrinter'));
-  ['remove-printer-back', 'remove-printer-cancel'].forEach(id => $(`#${id}`).addEventListener('click', goBackInReuseScreens));
-  $('#remove-printer-confirm').addEventListener('click', () => openReuseScreen('logicDemo'));
+  $('#factory-reset-confirm').addEventListener('click', () => {
+    $('#factory-reset-dialog').close();
+    showToast('当前打印机离线，连接后可恢复出厂设置');
+  });
+  $('#remove-printer-confirm').addEventListener('click', () => {
+    $('#remove-printer-dialog').close();
+    openReuseScreen('logicDemo');
+  });
   $('#logic-demo-back').addEventListener('click', () => { reuseStack.splice(0, reuseStack.length, 'deviceSettings');window.__OFFLINE_SCREENS.openScreen('device-settings-screen'); });
   $('#logic-demo-existing').addEventListener('click', () => { location.href = new URL('index.html', location.href).href; });
   $('#logic-demo-none').addEventListener('click', () => { location.href = new URL('../../lianjiepeiwnag/打印机首次配网连接流程原型/index.html', location.href).href; });
