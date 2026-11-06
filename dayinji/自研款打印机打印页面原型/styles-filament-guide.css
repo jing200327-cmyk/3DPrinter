@@ -16,6 +16,7 @@
 .fg-copy li { position:relative; padding-left:34px; font-size:13px; line-height:1.7; color:#555e70; counter-increment:step; }
 .fg-copy li:before { content:counter(step); position:absolute; left:0; top:0; width:23px; height:23px; display:grid; place-items:center; border-radius:50%; color:#6d5de5; background:#efedff; font-weight:700; }
 .fg-copy p { font-size:15px; line-height:1.9; color:#555e70; margin:0; }
+.fg-copy .fg-safety { margin-top:20px; padding:10px 12px; border-radius:8px; background:#fff6e5; color:#78470d; font-size:13px; line-height:1.7; }
 .fg-footer { flex:none; padding:12px 24px max(20px,env(safe-area-inset-bottom)); border-top:1px solid #f0f1f5; background:#fff; }
 .fg-footer button { width:100%; min-height:50px; font-size:16px; }
 .fg-video-dialog { width:min(90vw,355px); border:0; border-radius:22px; padding:22px; color:#242937; }

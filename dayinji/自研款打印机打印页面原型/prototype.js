@@ -2793,13 +2793,13 @@ function openFilamentGuide(operation) {
   const title = installing ? '安装耗材' : '退出耗材';
   const art = installing ? 'assets/filament-install-guide.svg' : 'assets/filament-remove-guide.svg';
   document.querySelector('#filament-guide-title').textContent = title;
-  document.querySelector('#filament-guide-subtitle').textContent = installing ? '安装耗材步骤' : '退出耗材说明';
+  document.querySelector('#filament-guide-subtitle').textContent = installing ? '安装耗材步骤' : '耗材退料说明';
   document.querySelector('#filament-guide-art').src = art;
   document.querySelector('#filament-guide-art').alt = installing ? '手动将料盘耗材推入料管的示意图' : '耗材送出后用手将耗材完整抽出的示意图';
   document.querySelector('#filament-video-art').src = art;
   document.querySelector('.fg-video-animation span').textContent = installing ? '↑' : '←';
   document.querySelector('#filament-video-title').textContent = title + ' · 动画演示';
-  document.querySelector('#filament-video-caption').textContent = installing ? '向上挤压橙色把手，持续推入耗材，直至到达打印头。' : '点击开始退料，等待料管中的耗材送出，再手动完整抽出。';
+  document.querySelector('#filament-video-caption').textContent = installing ? '向上挤压橙色把手，持续推入耗材，直至到达打印头。' : '等待退料进度到达 100%，再手动拔出耗材。';
   document.querySelector('#filament-guide-steps').hidden = !installing;
   document.querySelector('#filament-remove-copy').hidden = installing;
   document.querySelector('#filament-guide-start').textContent = installing ? '进料' : '开始退料';

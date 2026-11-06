@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="styles-3d-preview.css?v=r009">
   <link rel="stylesheet" href="styles-prepare-print.css?v=r008">
   <link rel="stylesheet" href="styles-simulation.css?v=r003">
-  <link rel="stylesheet" href="styles-filament-guide.css?v=1">
+  <link rel="stylesheet" href="styles-filament-guide.css?v=2">
   <link rel="stylesheet" href="styles-filament-backpack.css?v=1">
   <link rel="stylesheet" href="styles-prepare-backpack.css?v=1">
   <link rel="stylesheet" href="styles-device-control.css?v=3">
@@ -183,7 +183,15 @@
         <li>将耗材前端剪出斜口，轻轻捋直</li>
         <li>向上挤压橙色把手，同时将耗材持续推入下方孔中，直到耗材到达打印头为止</li>
         <li>点击进料</li>
-      </ol><p id="filament-remove-copy" hidden>点击开始退料后观察料管中耗材是否被送出，当耗材被送出后手动将耗材完整抽出即完成退料。</p></div>
+      </ol>
+      <div id="filament-remove-copy" hidden>
+        <ol>
+          <li>打印机升温预热</li>
+          <li>耗材自动退出</li>
+          <li>进度到达 100%，退料完成，可手动拔出耗材</li>
+        </ol>
+        <p class="fg-safety">⚠️安全提示：喷头高温，请勿触碰喷头，防止烫伤。</p>
+      </div></div>
     </div>
     <footer class="fg-footer"><button id="filament-guide-start" class="fg-gradient" type="button">进料</button></footer>
   </section>
@@ -1214,7 +1222,7 @@
   </dialog>
   <script src="prototype-filament-backpack.js?v=2"></script>
   <script src="prototype-prepare-backpack.js?v=3"></script>
-  <script src="prototype.js?v=20261106-reset"></script>
+  <script src="prototype.js?v=20261106-retract"></script>
   <script src="prototype-device-control.js?v=2"></script>
   <script src="prototype-calibration.js?v=20261106-reset"></script>
   <script src="prototype-family-queue.js?v=5"></script>
