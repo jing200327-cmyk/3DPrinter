@@ -51,6 +51,8 @@
 .di-detail-list {padding:8px 15px;}
 .di-detail-row {display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:46px;border-bottom:1px solid #f0f1f3;font-size:14px;}
 .di-detail-row:last-child {border:0;}
+.di-detail-row:has(#device-wifi-name) > :first-child { flex-shrink: 0; }
+#device-wifi-name { text-align: right; overflow-wrap: anywhere; }
 button.di-detail-row {width:100%;padding:0;text-align:left;border-left:0;border-top:0;border-right:0;background:none;cursor:pointer;}
 .di-detail-value {display:flex;align-items:center;gap:9px;font-weight:500;font-size:13px;}
 .di-chevron {font-size:26px;color:#555;line-height:1;}

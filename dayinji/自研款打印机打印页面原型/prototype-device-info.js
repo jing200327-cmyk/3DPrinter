@@ -9,7 +9,7 @@
   const copyValue = (label, value) => `${value}<button type="button" class="di-copy" data-copy="${value}" aria-label="复制 ${label}">${copyIcon}</button>`;
   $('#device-info-screen').innerHTML = wrap(`${header('设备信息', 'device-info-back', '设备设置')}<div class="di-content">
     <section class="di-card di-identity"><img src="assets/分享打印机-打印机.png" alt="Ugee Funbox 打印机实物图"><div><div class="di-device-title"><span id="device-account-badge" class="di-owner">机主</span><strong id="device-display-name">ugee funbox</strong><button id="edit-device-name" type="button" aria-label="修改打印机名称" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15z"/></svg></button></div><p>成型尺寸：180 × 180 × 180mm</p></div></section>
-    <section class="di-card di-detail-list" aria-label="设备规格">${row('机型型号', 'Ugee Funbox')}${row('固件版本', '2.01_7.0.9')}<button id="open-storage-management" class="di-detail-row" type="button"><span>存储空间</span><span class="di-detail-value"><span id="device-storage-value"></span><span class="di-chevron" aria-hidden="true">›</span></span></button></section>
+    <section class="di-card di-detail-list" aria-label="设备规格">${row('机型型号', 'Ugee Funbox')}${row('网络配置', '<span id="device-wifi-name"></span>')}${row('固件版本', '2.01_7.0.9')}<button id="open-storage-management" class="di-detail-row" type="button"><span>存储空间</span><span class="di-detail-value"><span id="device-storage-value"></span><span class="di-chevron" aria-hidden="true">›</span></span></button></section>
     <section class="di-card di-detail-list" aria-label="设备标识">${row('ID', copyValue('ID', '7022782816D8AB'))}${row('SN', copyValue('SN', 'FB202610300001'))}${row('IP', copyValue('IP', '192.168.1.105'))}${row('Mac地址', 'FC:EE:28:16:D8:AB')}</section></div>`);
   document.body.insertAdjacentHTML('beforeend', `<dialog id="device-name-dialog" class="di-dialog" aria-labelledby="device-name-title"><form id="device-name-form" novalidate><h2 id="device-name-title">修改打印机名称</h2><label for="device-name-input">打印机名称</label><input id="device-name-input" maxlength="40" autocomplete="off" aria-describedby="device-name-hint device-name-error"><p id="device-name-hint">最多40个字符</p><p id="device-name-error" class="di-error" role="status"></p><div class="di-dialog-actions"><button id="device-name-cancel" type="button">取消</button><button id="device-name-save" class="di-primary" type="submit">保存</button></div></form></dialog>`);
   const nameStorageKey = 'funbox-device-name-7022782816D8AB';
@@ -160,7 +160,17 @@
     const focusTarget = $(`[data-model="${selectedId}"] .di-more`) || $('.di-more') || $('#device-models-back');
     focusTarget.focus({preventScroll:true});
   });
-  $('#open-device-info').addEventListener('click', () => { closeMenus();updateStorage();openReuseScreen('deviceInfo'); });
+  function renderNetworkName() {
+    $('#device-wifi-name').textContent = printerCatalog.current?.ssid || '—';
+  }
+  renderNetworkName();
+  document.addEventListener('printer-status-change', renderNetworkName);
+  $('#open-device-info').addEventListener('click', () => {
+    closeMenus();
+    updateStorage();
+    renderNetworkName();
+    openReuseScreen('deviceInfo');
+  });
   $('#open-storage-management').addEventListener('click', () => openReuseScreen('storageManagement'));
   $('#manage-gcode').addEventListener('click', () => openReuseScreen('deviceModels'));
   ['device-info-back', 'storage-management-back', 'device-models-back'].forEach(id => $(`#${id}`).addEventListener('click', () => { closeMenus();goBackInReuseScreens(); }));

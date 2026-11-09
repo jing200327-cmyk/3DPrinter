@@ -4,14 +4,17 @@ const printerCatalog = (() => {
   const key = 'funbox-printers-v1-' + (empty ? 'pairing' : 'workbench');
   const day = 86400000;
   const now = Date.now();
-  let printers = empty ? [] : [
-    { id: 'funbox-1', name: 'Ugee Funbox(1)', status: null, connectedAt: now },
-    { id: 'funbox', name: 'Ugee Funbox', status: 'idle', connectedAt: now - day },
-    { id: 'ufun', name: 'Ugee Ufun', status: 'busy', connectedAt: now - 2 * day }
+  const demoPrinters = [
+    { id: 'funbox-1', name: 'Ugee Funbox(1)', ssid: '家庭WiFi', status: null, connectedAt: now },
+    { id: 'funbox', name: 'Ugee Funbox', ssid: '家庭WiFi', status: 'idle', connectedAt: now - day },
+    { id: 'ufun', name: 'Ugee Ufun', ssid: '家庭WiFi', status: 'busy', connectedAt: now - 2 * day }
   ];
+  let printers = empty ? [] : demoPrinters;
   try {
     const saved = JSON.parse(sessionStorage.getItem(key));
-    if (Array.isArray(saved)) printers = saved;
+    if (Array.isArray(saved)) printers = saved.map(printer => ({
+      ...demoPrinters.find(demo => demo.id === printer.id), ...printer
+    }));
   } catch { /* 存储不可用时仍可在当前页面演示。 */ }
   function save() {
     try { sessionStorage.setItem(key, JSON.stringify(printers)); } catch {}
