@@ -115,10 +115,7 @@
     }
     connection.dataset.connectionStatus = value;
     const label = value === 'connecting' ? '连接中...' : '离线';
-    const image = document.querySelector('#printer-connection-state-image');
-    image.hidden = value === 'connecting';
-    if (!image.hidden) image.src = '../../src/lianjiezhuangtai/离线.png';
-    image.alt = label;
+    document.querySelector('#workbench-printer-name').textContent = printerCatalog.current?.name || '添加打印机';
     document.querySelector('#printer-connection-state-label').textContent = label;
   }
   function renderLoading(loading) {
@@ -132,6 +129,9 @@
     lockConfig(loading);
   }
   function withProfile(url) {
+    const phoneNetwork = new URL(location.href).searchParams.get('phoneNetwork');
+    if (phoneNetwork) url.searchParams.set('phoneNetwork', phoneNetwork);
+    if (query.get('myPrinters') === 'empty') url.searchParams.set('myPrinters', 'empty');
     url.searchParams.set('offlineVersion', state.offlineVersion);
     url.searchParams.set('connectionAccount', state.account);
     url.searchParams.set('reconnectResult', state.result);
@@ -143,6 +143,7 @@
     stopTimers(); state.checking = false;
     // 用本次设备响应创建工作台上下文，不把离线前任务快照回写为设备状态。
     const url = withProfile(new URL('index.html', location.href));
+    printerCatalog.setStatus(null);
     url.searchParams.set('status', state.serverStatus);
     location.href = url.href;
   }
@@ -200,6 +201,9 @@
     if (state.checking) return;
     state.offlineVersion = button.dataset.offlineVersion;
     const url = new URL(location.href);
+    const phoneNetwork = new URL(location.href).searchParams.get('phoneNetwork');
+    if (phoneNetwork) url.searchParams.set('phoneNetwork', phoneNetwork);
+    if (query.get('myPrinters') === 'empty') url.searchParams.set('myPrinters', 'empty');
     url.searchParams.set('offlineVersion', state.offlineVersion);
     history.replaceState(null, '', url);
     updateChoices();
@@ -247,7 +251,14 @@
       document.getElementById(id).focus({ preventScroll: true });
     };
     window.__OFFLINE_SCREENS = { openScreen, closeScreens, showToast };
-    document.querySelector('#printer-switch').addEventListener('click', () => openScreen('add-printer-screen'));
+    renderConnection('offline');
+    document.querySelector('#printer-switch').addEventListener('click', () => {
+      printerCatalog.setStatus('offline');
+      const url = withProfile(new URL('index.html', location.href));
+      url.searchParams.set('screen', 'add-printer');
+      url.searchParams.set('from', 'offline-workbench');
+      location.href = url.href;
+    });
     document.querySelector('#printer-settings').addEventListener('click', () => openScreen('device-settings-screen'));
     document.querySelector('#add-printer-back').addEventListener('click', closeScreens);
     document.querySelector('#device-settings-back').addEventListener('click', closeScreens);

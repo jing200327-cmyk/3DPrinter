@@ -1,0 +1,87 @@
+/* 覆盖工作台底图中的固定设备名与状态，保留设备图标和切换入口。 */
+#workbench-printer-name,
+#printer-connection-state #printer-connection-state-label {
+  position: absolute;
+  left: calc(68 * var(--u));
+  width: calc(164 * var(--u));
+  padding: 0 calc(6 * var(--u));
+  background: #fff;
+  line-height: 1.3;
+}
+#workbench-printer-name {
+  top: calc(77 * var(--u));
+  height: calc(28 * var(--u));
+  display: flex;
+  align-items: center;
+  font-size: calc(15 * var(--u));
+}
+#printer-connection-state #printer-connection-state-label {
+  top: calc(104 * var(--u));
+  height: calc(24 * var(--u));
+  display: flex;
+  align-items: center;
+  gap: calc(7 * var(--u));
+  color: #737985;
+  font-size: calc(13 * var(--u));
+}
+#printer-connection-state-label::before {
+  content: '';
+  width: calc(9 * var(--u));
+  height: calc(9 * var(--u));
+  border-radius: 50%;
+  background: #42cda4;
+}
+[data-connection-status="busy"] #printer-connection-state-label::before,
+[data-printer-state="busy"].printer-status::before,
+[data-printer-state="busy"].prepare-idle i { background: #ecad29; }
+[data-connection-status="offline"] #printer-connection-state-label::before,
+[data-printer-state="offline"].printer-status::before,
+[data-printer-state="offline"].prepare-idle i { background: #a0a5af; }
+[data-printer-state="connecting"].printer-status::before,
+[data-printer-state="connecting"].prepare-idle i { background: #79a4ef; }
+.prepare-page[data-state="printing"] .prepare-idle { display: flex; }
+.add-printer-catalog .printer-card { height: calc(170 * var(--printer-unit)); }
+.add-printer-catalog { overflow-y: auto; overscroll-behavior: contain; }
+#picker-network-banner, #printer-bind-layer {
+  position: fixed;
+  left: 50%;
+  width: min(100vw, var(--device-width));
+  transform: translateX(-50%);
+}
+#picker-network-banner {
+  z-index: 62;
+  top: var(--frame-top);
+  padding: 10px 14px;
+  background: #fff2d8;
+  color: #795217;
+  text-align: center;
+  font-size: 14px;
+}
+#printer-bind-layer {
+  z-index: 60;
+  top: var(--frame-top);
+  height: var(--frame-height);
+  display: grid;
+  place-items: center;
+  background: rgb(31 34 42 / 42%);
+}
+#printer-bind-layer[hidden] { display: none; }
+#printer-bind-layer .app-dialog { padding: 24px; background: #fff; }
+#printer-bind-layer h2 { padding: 0; }
+#printer-bind-confirm:disabled { opacity: .5; cursor: wait; }
+#printer-bind-confirm:disabled::before {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 7px;
+  vertical-align: -2px;
+  border: 2px solid rgb(255 255 255 / 45%);
+  border-top-color: white;
+  border-radius: 50%;
+  content: '';
+  animation: reconnect-button-spin .8s linear infinite;
+}
+
+body:not(.operation-open) #picker-network-banner { display: none; }
+
+.family-prepare-page [data-printer-state="idle"] i { background: #20b387; }

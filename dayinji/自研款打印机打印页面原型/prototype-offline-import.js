@@ -23,15 +23,19 @@
   try { asked = sessionStorage.getItem('funbox-offline-import-asked') === 'yes'; } catch { /* 无存储时当前页面仍只提示一次。 */ }
   function render() {
     const unavailable = network !== 'online';banner.hidden = !unavailable;
-    copy.textContent = network === 'weak' ? '当前网络信号较弱，部分功能可能不可用' : '当前无网络，部分功能不可用';
+    copy.textContent = network === 'weak' ? '当前网络信号较弱，部分功能可能不可用' : '当前手机无网络，请联网';
+    const select = document.querySelector('#phone-network-simulation');
+    if (select) select.value = network;
+    document.dispatchEvent(new Event('phone-network-change'));
     if (!unavailable) { if (dialog.open) dialog.close();return; }
+    if (document.body.classList.contains('operation-open')) return;
     if (!asked) { asked = true;try { sessionStorage.setItem('funbox-offline-import-asked','yes'); } catch {} dialog.showModal(); }
   }
   window.addEventListener('online', () => { network = 'online';render(); });
   window.addEventListener('offline', () => { network = 'offline';render(); });
   const host = document.querySelector('#simulation-console .simulation-content');
   if (host) {
-    const label = document.createElement('label');label.className = 'simulation-sensor-control';label.textContent = '手机网络（无网导入入口）';
+    const label = document.createElement('label');label.className = 'simulation-sensor-control';label.textContent = '手机网络';
     const select = document.createElement('select');select.id = 'phone-network-simulation';
     [['online','正常联网'],['offline','手机无网'],['weak','网络较弱']].forEach(([value,text]) => { const option = document.createElement('option');option.value = value;option.textContent = text;select.append(option); });
     select.value = network;
@@ -39,7 +43,7 @@
       network = select.value;query.set('phoneNetwork',network);const next = new URL(location.href);next.searchParams.set('phoneNetwork',network);history.replaceState(null,'',next);
       link.href = importUrl('phone-banner');document.querySelector('#phone-network-go').href = link.href;render();
     });
-    label.append(select);host.append(label);
+    label.append(select);host.prepend(label);
   }
   render();
 })();

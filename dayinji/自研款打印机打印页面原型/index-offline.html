@@ -14,6 +14,8 @@
   <link rel="stylesheet" href="styles-simulation.css?v=r003">
   <link rel="stylesheet" href="styles-connection.css?v=1">
   <link rel="stylesheet" href="styles-offline-import.css?v=1">
+  <link rel="stylesheet" href="styles-printer-catalog.css?v=1">
+  <script src="printer-catalog.js?v=1"></script>
 </head>
 <body data-connection-page="offline">
   <main id="device-page" class="phone-shell" aria-label="自研款 3D 打印机设备页 · 打印机离线状态">
@@ -24,8 +26,8 @@
 
       <!-- 1 · 连接状态置灰：离线小图（灰色● + 「离线」文字）覆盖底图烘焙的「● 忙碌」 -->
       <div id="printer-connection-state" class="printer-connection-state" data-connection-status="offline" role="status" aria-live="polite">
-        <img id="printer-connection-state-image" src="../../src/lianjiezhuangtai/离线.png" alt="离线状态">
-        <span id="printer-connection-state-label" class="sr-only">离线</span>
+        <strong id="workbench-printer-name"></strong>
+        <span id="printer-connection-state-label"></span>
       </div>
 
       <!-- 1b · 「离线」右侧的蓝色刷新按钮：点击走重新连接分支 -->
@@ -169,6 +171,6 @@
   <script src="prototype-offline-settings.js?v=20261106-reset"></script>
   <script src="prototype-device-info.js?v=20261106-reset"></script>
   <script src="prototype-settings-account.js?v=20261106-reset"></script>
-  <script src="prototype-offline-import.js?v=1"></script>
+  <script src="prototype-offline-import.js?v=2"></script>
 </body>
 </html>

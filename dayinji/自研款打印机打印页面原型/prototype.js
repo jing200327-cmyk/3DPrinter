@@ -3,7 +3,7 @@ const cameraMonitor = document.querySelector('#timelapse-placeholder');
 const cameraMonitorImage = document.querySelector('#camera-monitor-image');
 const cameraToggleButton = document.querySelector('#camera-toggle');
 const printerConnectionState = document.querySelector('#printer-connection-state');
-const printerConnectionStateImage = document.querySelector('#printer-connection-state-image');
+const workbenchPrinterName = document.querySelector('#workbench-printer-name');
 const printerConnectionStateLabel = document.querySelector('#printer-connection-state-label');
 const taskState = document.querySelector('#task-state');
 const taskSummary = document.querySelector('.task-summary');
@@ -223,6 +223,7 @@ function openReuseScreen(name) {
   if (!target) return;
   if (name !== 'firmwareProgress' && !firmwareProgressScreen.hidden) leaveFirmwareProgress();
   renderPrepareFilamentState();
+  if (name === 'addPrinter') document.dispatchEvent(new Event('printer-picker-open'));
   reuseStack.push(name);
   reuseScreenList.forEach((screen) => { screen.hidden = screen !== target; });
   devicePage.inert = true;
@@ -490,15 +491,15 @@ function advancePreparation() {
 }
 
 function renderPrinterConnectionState(taskStatus) {
-  const connectionStatus = printerConnectionState.dataset.recoveryState || connectionStatusOverride || (['ready', 'cancelled', 'cancelled-all', 'completed'].includes(taskStatus) ? 'idle' : 'busy');
-  const labels = { idle: '空闲', busy: '忙碌', offline: '离线', connecting: '连接中...' };
+  const printer = printerCatalog.current;
+  const connectionStatus = printerConnectionState.dataset.recoveryState || connectionStatusOverride || printer?.status ||
+    (['ready', 'cancelled', 'cancelled-all', 'completed'].includes(taskStatus) ? 'idle' : 'busy');
   printerConnectionState.dataset.connectionStatus = connectionStatus;
-  printerConnectionStateLabel.textContent = labels[connectionStatus];
-  printerConnectionStateImage.hidden = ['busy', 'connecting'].includes(connectionStatus);
-  if (!printerConnectionStateImage.hidden) {
-    printerConnectionStateImage.src = printerConnectionStateImage.dataset[`${connectionStatus}Src`];
-    printerConnectionStateImage.alt = `${labels[connectionStatus]}状态`;
-  }
+  printerConnectionStateLabel.textContent = printer ? PREPARE_PRINTER_LABELS[connectionStatus] : '未连接';
+  workbenchPrinterName.textContent = printer?.name || '添加打印机';
+  preparePrinterStatus = connectionStatus;
+  renderPreparePrinterState();
+  document.dispatchEvent(new Event('printer-status-change'));
 }
 
 document.addEventListener('prototype-connection-change', () => renderPrinterConnectionState(currentStatus));
@@ -518,6 +519,8 @@ function setTaskStatus(status) {
     taskResults.set(activeTaskId, 'cancelled');
   }
   familyQueueTasks = familyQueueTasks.filter(task => task.id !== activeTaskId && !taskResults.has(task.id));
+  if (taskPanel.dataset.statusInitialized && status !== currentStatus) printerCatalog.setStatus(null);
+  taskPanel.dataset.statusInitialized = 'true';
   currentStatus = status;
   window.history.replaceState(null, '', taskSessionUrl());
   renderPlateTaskAndQueue();
@@ -717,7 +720,7 @@ function openPrepareStateScreen(preferredPlate, queueTaskId) {
   const sameBatch = taskCatalog[queueTaskId]?.submission === taskCatalog[activeTaskId]?.submission;
   stampedPlate = sameBatch ? String(activePreparedTaskId ? activeTask.plate : activePlate) : null;
   /* 打印中 / 暂停中打印机忙碌，其余状态空闲（与底图一致，补丁隐藏） */
-  printerBusyPatch.hidden = key !== 'printing';
+  printerBusyPatch.hidden = true;
   renderStateRows();
   selectStateRow(preferredPlate);
   openReuseScreen('prepareState');
@@ -1207,45 +1210,17 @@ timelapseActionButton.addEventListener('click', () => openReuseScreen('timelapse
 
 /* ---------- 添加打印机 → 配置新的打印机 ---------- */
 /* 仅为当前页面的发现/绑定演示数据；其它打印机仅显示已确认无 Owner 的设备。 */
-const myPrintersList = document.querySelector('#my-printers-list');
-/* 首次发现设备的独立演示场景：我的打印机初始为空。 */
-const emptyMyPrintersDemo = params.get('myPrinters') === 'empty';
-if (emptyMyPrintersDemo) {
-  myPrintersList.replaceChildren();
-  document.querySelector('#my-printers-empty').hidden = false;
-}
-const printerBoundDialog = document.querySelector('#printer-bound-dialog');
-const otherPrintersList = document.querySelector('#other-printers-list');
-for (const card of otherPrintersList.children) {
-  card.hidden = card.dataset.ownerStatus !== 'unowned';
-}
-myPrintersList.addEventListener('click', (event) => {
-  const card = event.target.closest('.printer-card');
-  if (!card) return;
-  myPrintersList.querySelectorAll('.printer-card').forEach(item => item.setAttribute('aria-pressed', String(item === card)));
-});
-otherPrintersList.addEventListener('click', (event) => {
-  const card = event.target.closest('.printer-card');
-  if (!card || card.hidden) return;
-  // 演示提交认领时，设备刚被其他家庭绑定的竞态。
-  if (params.get('claimConflict') === card.id || card.dataset.ownerStatus !== 'unowned') {
-    card.remove();
-    printerBoundDialog.showModal();
+document.querySelector('#add-printer-back').addEventListener('click', () => {
+  const origin = new URL(location.href).searchParams.get('from');
+  if (origin === 'offline-workbench' && reuseStack.length === 1) {
+    const url = new URL('index-offline.html', location.href);
+    url.search = location.search;
+    url.searchParams.delete('screen');
+    url.searchParams.delete('from');
+    location.href = url.href;
     return;
   }
-  card.dataset.ownerStatus = 'family';
-  const name = card.querySelector('.printer-name').textContent;
-  document.querySelector('#my-printers-empty').hidden = true;
-  const status = document.createElement('span');
-  status.className = 'printer-status';
-  status.textContent = '已连接';
-  card.querySelector('.printer-card-copy').append(status);
-  myPrintersList.append(card);
-  myPrintersList.querySelectorAll('.printer-card').forEach(item => item.setAttribute('aria-pressed', String(item === card)));
-  document.querySelector('#printer-add-announcement').textContent = `${name} 已连接，已加入我的打印机。`;
-});
-document.querySelector('#add-printer-back').addEventListener('click', () => {
-  if (params.get('from') === 'pairing-start' && reuseStack.length === 1) {
+  if (origin === 'pairing-start' && reuseStack.length === 1) {
     window.location.href = `${PAIRING_FLOW_PATH}?nearby=available`;
     return;
   }
@@ -1267,9 +1242,8 @@ function clearPrinterQueue() {
 }
 function finishPrinterRemoval() {
   clearPrinterQueue();
-  myPrintersList.querySelector('[aria-pressed="true"]')?.remove();
-  myPrintersList.firstElementChild?.setAttribute('aria-pressed', 'true');
-  document.querySelector('#my-printers-empty').hidden = !!myPrintersList.firstElementChild;
+  printerCatalog.removeCurrent();
+  renderPrinterConnectionState(currentStatus);
   openReuseScreen('logicDemo');
 }
 
@@ -1536,16 +1510,20 @@ const PREPARE_PRINTER_LABELS = { idle: '空闲', offline: '离线', busy: '忙�
 let preparePrinterStatus = Object.hasOwn(PREPARE_PRINTER_LABELS, params.get('preparePrinter')) ? params.get('preparePrinter') : 'idle';
 const preparePrinterControl = document.querySelector('#simulation-prepare-printer');
 function renderPreparePrinterState() {
-  const label = prepareStage.querySelector('.prepare-idle');
-  label.dataset.printerState = preparePrinterStatus;
-  label.innerHTML = `<i aria-hidden="true"></i>${PREPARE_PRINTER_LABELS[preparePrinterStatus]}`;
+  const printer = printerCatalog.current;
+  document.querySelectorAll('.prepare-printer').forEach(panel => {
+    panel.querySelector('strong').textContent = printer?.name || '添加打印机';
+    const label = panel.querySelector('.prepare-idle');
+    label.dataset.printerState = preparePrinterStatus;
+    label.replaceChildren(document.createElement('i'), printer ? PREPARE_PRINTER_LABELS[preparePrinterStatus] : '未连接');
+  });
   preparePrinterControl.value = preparePrinterStatus;
   renderPlateSelection();
 }
 preparePrinterControl.addEventListener('change', event => {
-  preparePrinterStatus = event.target.value;
+  printerCatalog.setStatus(event.target.value);
   toast.classList.remove('is-visible');
-  renderPreparePrinterState();
+  renderPrinterConnectionState(currentStatus);
   const next = taskSessionUrl();
   next.searchParams.set('preparePrinter', preparePrinterStatus);
   history.replaceState(null, '', next);
@@ -1557,7 +1535,7 @@ function handlePreparePrinterState() {
   }
   return true;
 }
-renderPreparePrinterState();
+if (Object.hasOwn(PREPARE_PRINTER_LABELS, params.get('preparePrinter'))) printerCatalog.setStatus(preparePrinterStatus);
 
 /* 名额按提交批次计数，同批次多盘只占一个；终态不占名额。 */
 function ownedPendingBatchCount(owner) {

@@ -96,7 +96,6 @@
     $('#family-submit').setAttribute('aria-label', readonly ? '开始打印（已加入队列，等待按序打印）' : '将两盘模型加入打印队列');
     $('#family-timelapse-toggle').disabled = readonly;
     $('#family-leveling-toggle').disabled = readonly;
-    $('#family-switch-printer').disabled = readonly;
     $('#family-prepare-summary').hidden = readonly;
     $('#family-prepare-summary').textContent = readonly ? '' : '本次提交 2 盘，将按上方排序加入打印队列。';
   }
