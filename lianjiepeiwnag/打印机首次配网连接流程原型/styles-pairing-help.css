@@ -197,7 +197,7 @@
   .ripple, .connecting-core { animation: none; }
 }
 #connecting-dialog { overflow-y: auto; }
-#connecting-dialog.network-interrupted { height: 100dvh; max-height: 100dvh; border-radius: 0; }
+#connecting-dialog .network-banner { position: fixed; inset: 0 0 auto; width: min(100vw, var(--device-width)); margin-inline: auto; }
 #network-recovery { flex-shrink: 0; text-align: center; background: #fff; }
 .network-banner { margin: 0; padding: 12px 16px; background: #b42332; color: white; font-weight: 600; }
 .network-controls { display: grid; justify-content: center; gap: 8px; padding: 12px; font-size: 13px; }

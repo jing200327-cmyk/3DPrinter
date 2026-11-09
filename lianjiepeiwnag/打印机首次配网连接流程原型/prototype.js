@@ -386,14 +386,12 @@ function resetNetworkRecovery() {
   cloudProgress.hidden = true;
   loseNetwork.hidden = false;
   connectButton.disabled = false;
-  connectingDialog.classList.remove('network-interrupted');
-  connectingDialog.prepend(recoveryPanel);
+  loseNetwork.after(recoveryPanel);
 }
 
 // The demo cloud returns a pending status before reporting the selected result.
 loseNetwork.addEventListener('click', () => {
   clearTimeout(connectionTimer);
-  connectingDialog.classList.add('network-interrupted');
   loseNetwork.hidden = true;
   recoveryPanel.hidden = false;
   connectButton.disabled = true;
