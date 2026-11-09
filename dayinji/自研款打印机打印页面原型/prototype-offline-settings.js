@@ -17,27 +17,12 @@ function goBackInReuseScreens() {
 }
 (() => {
   const $ = selector => document.querySelector(selector);
-  document.addEventListener('DOMContentLoaded', () => {
-    const note = document.createElement('p');
-    note.className = 'di-card di-detail-row';
-    note.textContent = '当前打印机离线，以下展示缓存信息，重新连接后更新。';
-    $('#device-info-screen .di-content').prepend(note);
-  });
   $('#printer-settings').addEventListener('click', () => { reuseStack.splice(0, reuseStack.length, 'deviceSettings'); });
-  // 捕获阶段先拦截，避免共享信息页的处理器修改数据或打开设备管理子页。
-  document.addEventListener('click', event => {
-    if (!event.target.closest('#edit-device-name, #open-storage-management, #manage-gcode, #device-model-list [data-action], #model-save, #device-name-save')) return;
-    event.preventDefault();event.stopImmediatePropagation();showToast('当前打印机离线');
-  }, true);
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && !document.querySelector('dialog[open]')) {
       event.stopImmediatePropagation();goBackInReuseScreens();
     }
   }, true);
-  $('#factory-reset-confirm').addEventListener('click', () => {
-    $('#factory-reset-dialog').close();
-    showToast('当前打印机离线，连接后可恢复出厂设置');
-  });
   $('#remove-printer-confirm').addEventListener('click', () => {
     $('#remove-printer-dialog').close();
     openReuseScreen('logicDemo');

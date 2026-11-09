@@ -9,14 +9,14 @@ for(const version of ['new','classic']){
 await page.goto(base+'index-offline.html?offlineVersion='+version);await page.locator('#printer-settings').click();
 assert.equal((await page.locator('#device-settings-screen .reuse-stage').innerHTML()).trim(),online.trim(),'在线离线设置结构一致');checks++;
 await page.screenshot({path:path.join(shots,'settings-'+version+'.png')});
-for(const id of ['open-firmware-version','open-print-options','open-device-control','open-timelapse-settings']){
-await page.locator('#'+id).click();assert.equal(await page.locator('#toast').innerText(),'当前打印机离线');assert(await page.locator('#toast').evaluate(e=>e.classList.contains('is-visible')));assert(await page.locator('#device-settings-screen').isVisible());checks++;
+for(const id of ['open-firmware-version','open-print-options','open-device-control','open-timelapse-settings','open-factory-reset']){
+await page.locator('#'+id).click();assert.equal(await page.locator('#toast').innerText(),'当前打印机离线');assert(await page.locator('#toast').evaluate(e=>e.classList.contains('is-visible')));assert(await page.locator('#device-settings-screen').isVisible());assert.equal(await page.locator('dialog[open]').count(),0);checks++;
 }
 await page.screenshot({path:path.join(shots,'toast-'+version+'.png')});
 await page.locator('#open-device-info').click();assert(await page.locator('#device-info-screen').isVisible());checks++;
 for(const id of ['edit-device-name','open-storage-management']){await page.locator('#'+id).click();assert.equal(await page.locator('#toast').innerText(),'当前打印机离线');assert(await page.locator('#device-info-screen').isVisible());assert.equal(await page.locator('dialog[open]').count(),0);checks++;}
 await page.locator('#device-info-back').click();assert(await page.locator('#device-settings-screen').isVisible());
-await page.locator('#open-remove-printer').click();assert(await page.locator('#remove-printer-screen').isVisible());await page.locator('#remove-printer-cancel').click();assert(await page.locator('#device-settings-screen').isVisible());checks++;
+await page.locator('#open-remove-printer').click();assert(await page.locator('#remove-printer-dialog').isVisible());await page.locator('#remove-printer-dialog .dialog-actions button').first().click();assert(await page.locator('#device-settings-screen').isVisible());checks++;
 await page.locator('#open-remove-printer').click();await page.locator('#remove-printer-confirm').click();assert(await page.locator('#logic-demo-screen').isVisible());await page.locator('#logic-demo-back').click();checks++;
 await page.locator('#open-device-info').click();await page.keyboard.press('Escape');assert(await page.locator('#device-settings-screen').isVisible());await page.keyboard.press('Escape');assert(await page.locator('#device-settings-screen').isHidden());assert.equal(await page.locator('#device-page').evaluate(e=>e.inert),false);checks++;
 }

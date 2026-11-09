@@ -5,7 +5,7 @@
   const offline = document.body.dataset.connectionPage === 'offline';
   const state = {
     offlineVersion: query.get('offlineVersion') === 'classic' ? 'classic' : 'new',
-    account: query.get('connectionAccount') === 'restricted' ? 'restricted' : 'owner',
+    account: query.get('connectionAccount') === 'restricted' || query.get('deviceAccount') === 'child' || query.get('addPrinterAccount') === 'child' ? 'restricted' : 'owner',
     result: query.get('reconnectResult') === 'success' ? 'success' : 'timeout',
     ownerName: query.get('ownerName')?.trim().slice(0, 24) || '家长',
     serverStatus: ['ready', 'printing', 'paused', 'completed'].includes(query.get('serverStatus')) ? query.get('serverStatus') : 'printing',
@@ -262,13 +262,10 @@
     document.querySelector('#printer-settings').addEventListener('click', () => openScreen('device-settings-screen'));
     document.querySelector('#add-printer-back').addEventListener('click', closeScreens);
     document.querySelector('#device-settings-back').addEventListener('click', closeScreens);
-    document.addEventListener('keydown', event => { if (event.key === 'Escape' && !dialog.open) closeScreens(); });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape' && !document.querySelector('dialog[open]')) closeScreens(); });
     document.querySelector('#configure-new-printer').addEventListener('click', () => {
       if (state.account !== 'owner') { showToast('仅超管可修改打印机网络，请联系超管'); return; }
       location.href = new URL('../../lianjiepeiwnag/打印机首次配网连接流程原型/index.html?screen=printer-select&account=parent', location.href).href;
-    });
-    ['#open-firmware-version', '#open-print-options', '#open-timelapse-settings', '#open-device-control'].forEach(selector => {
-      document.querySelector(selector).addEventListener('click', () => showToast('当前打印机离线'));
     });
     if (query.get('autoRetry') === '1') beginReconnect();
   } else if (query.get('connection') === 'offline') {
