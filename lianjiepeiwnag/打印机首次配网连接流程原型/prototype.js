@@ -21,12 +21,8 @@ const PRINTER_WLAN = 'Ugee Funbox-AP';
 const EXPECTED_HOME_WIFI_PASSWORD = '12345678';
 const MISSING_PRINTER_WIFI_MESSAGE = '你还没有连接到打印机WiFi，请返回设置连接打印机WiFi热点';
 const WIFI_CONNECTION_ERROR = '连接失败：请检查：1.WiFi密码是否正确；2.在点击连接前手机是否连接上打印机WiFi热点';
-/* 需求文档 2.2-5 第二点规定的 60s 超时提醒文案（注意：此处文档原文用「，」，与上方即时校验的「：」不同，此处按文档原文） */
-const WIFI_TIMEOUT_ERROR = '连接失败，请检查：1.WiFi密码是否正确；2.在点击连接前手机是否连接上打印机WiFi热点';
 /* 配网流程结束后进入自研款打印机打印页面原型 */
 const PRINTER_HOME_PATH = '../../dayinji/自研款打印机打印页面原型/index.html';
-/* 【连接等待】页的真实超时阈值：60s（与需求文档一致）
-   演示时不可能真等 60s，故正常分支 3s 收、异常分支点击「模拟 60s 超时」立即收 */
 const CONNECTING_TEXT = '正在连接打印机中...';
 const CONNECTING_TIMEOUT_SECONDS = 60;
 const CONNECTING_SUCCESS_DELAY = 3000;
@@ -324,6 +320,7 @@ document.querySelectorAll('[data-back]').forEach((button) => {
 });
 /* 退出配网时复位所有流程内状态：计时器、弹层、WiFi 选择与已填写的密码 */
 function resetPairingFlowState() {
+  resetNetworkRecovery();
   window.clearTimeout(hotspotTimer);
   hotspotConnecting = false;
   renderHotspotConnection();
@@ -375,16 +372,57 @@ document.querySelector('#toggle-password').addEventListener('click', (event) => 
   event.currentTarget.setAttribute('aria-label', visible ? '显示密码' : '隐藏密码');
 });
 
-/* ==========================================================================
-   【连接等待】页
-   —— 网络配置页点「连接」→ 自下而上弹出【连接等待】页：
-      页面中心蓝色填充圆圈（圆心文案【正在连接打印机中...】），蓝色圆圈做「动态点击」
-      脉冲，四周浅蓝色水波纹虚线圆圈依次向外扩散。
-   —— 正常分支：连接成功 → 显示「连接成功」→ 进【打印前准备】。
-   —— 异常分支：连接超过 60s → 关闭本页回到【网络配置】并弹提醒弹窗，
-      文案【连接失败，请检查：1.WiFi密码是否正确；2.在点击连接前手机是否连接上打印机WiFi热点】，
-      给【确定】按钮，点击后返回【连接打印机热点】页并提示重新连接。
-   ========================================================================== */
+const recoveryPanel = document.querySelector('#network-recovery');
+const loseNetwork = document.querySelector('#lose-network');
+const cloudProgress = document.querySelector('#cloud-progress');
+const connectButton = document.querySelector('#connect-home-wifi');
+let cloudPollTimer;
+
+function resetNetworkRecovery() {
+  clearInterval(cloudPollTimer);
+  recoveryPanel.hidden = true;
+  recoveryPanel.querySelector('.network-banner').hidden = false;
+  recoveryPanel.querySelector('.network-controls').hidden = false;
+  cloudProgress.hidden = true;
+  loseNetwork.hidden = false;
+  connectButton.disabled = false;
+  connectingDialog.classList.remove('network-interrupted');
+  connectingDialog.prepend(recoveryPanel);
+}
+
+// The demo cloud returns a pending status before reporting the selected result.
+loseNetwork.addEventListener('click', () => {
+  clearTimeout(connectionTimer);
+  connectingDialog.classList.add('network-interrupted');
+  loseNetwork.hidden = true;
+  recoveryPanel.hidden = false;
+  connectButton.disabled = true;
+  document.querySelector('#cloud-result').focus();
+});
+
+document.querySelector('#restore-network').addEventListener('click', () => {
+  const result = document.querySelector('#cloud-result').value;
+  recoveryPanel.querySelector('.network-banner').hidden = true;
+  recoveryPanel.querySelector('.network-controls').hidden = true;
+  cloudProgress.hidden = false;
+  const availableAt = Date.now() + 1000;
+  function pollCloud() {
+    if (Date.now() < availableAt) return;
+    clearConnectingTimers();
+    if (connectingDialog.open) connectingDialog.close();
+    resetNetworkRecovery();
+    if (result === 'online') showScreen('print-ready');
+    else returnToHotspotAfterFailure();
+  }
+  cloudPollTimer = setInterval(pollCloud, 500);
+  pollCloud();
+});
+
+connectingDialog.addEventListener('cancel', event => event.preventDefault());
+document.addEventListener('prototype:screenchange', event => {
+  if (event.detail.screen !== 'home-wifi' && !recoveryPanel.hidden) resetNetworkRecovery();
+});
+
 function clearConnectingTimers() {
   window.clearTimeout(connectionTimer);
   window.clearInterval(connectingTicker);
@@ -397,8 +435,9 @@ function openConnectingSheet(validConnection) {
   connectingSeconds = 0;
   document.querySelector('#connecting-seconds').textContent = '0';
   connectingDialog.showModal();
+  const startedAt = Date.now();
   connectingTicker = window.setInterval(() => {
-    connectingSeconds += 1;
+    connectingSeconds = Math.floor((Date.now() - startedAt) / 1000);
     document.querySelector('#connecting-seconds').textContent = String(connectingSeconds);
     if (connectingSeconds >= CONNECTING_TIMEOUT_SECONDS) finishConnectingAsTimeout();
   }, 1000);
@@ -444,10 +483,11 @@ function finishConnectingAsTimeout() {
   clearConnectingTimers();
   connectingDialog.close();
   showScreen('home-wifi');
-  showNotice(WIFI_TIMEOUT_ERROR, document.querySelector('#connect-hotspot'), returnToHotspotAfterFailure);
+  if (!recoveryPanel.hidden) document.querySelector('#screen-home-wifi header').after(recoveryPanel);
 }
 
 function connectHomeWifi() {
+  if (connectButton.disabled || connectingDialog.open) return;
   const ssid = wifiName.value;
   const ssidError = !ssid.trim() ? '请选择或输入 WiFi 名称（SSID）' :
     new TextEncoder().encode(ssid).length > 32 ? 'WiFi 名称（SSID）不能超过 32 字节' : '';

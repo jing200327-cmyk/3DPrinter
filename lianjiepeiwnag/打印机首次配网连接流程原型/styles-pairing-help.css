@@ -196,3 +196,10 @@
   .sheet[open] { animation: none; }
   .ripple, .connecting-core { animation: none; }
 }
+#connecting-dialog { overflow-y: auto; }
+#connecting-dialog.network-interrupted { height: 100dvh; max-height: 100dvh; border-radius: 0; }
+#network-recovery { flex-shrink: 0; text-align: center; background: #fff; }
+.network-banner { margin: 0; padding: 12px 16px; background: #b42332; color: white; font-weight: 600; }
+.network-controls { display: grid; justify-content: center; gap: 8px; padding: 12px; font-size: 13px; }
+.network-controls select, #lose-network { padding: 6px 12px; }
+#cloud-progress { margin: 0; padding: 14px; color: var(--brand-dark); }

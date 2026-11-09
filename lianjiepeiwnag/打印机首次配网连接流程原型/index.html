@@ -8,7 +8,7 @@
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="styles-join-share.css?v=20261029">
-  <link rel="stylesheet" href="styles-pairing-help.css">
+  <link rel="stylesheet" href="styles-pairing-help.css?v=network-20261109">
   <link rel="stylesheet" href="styles-hotspot-auto.css?v=20261105">
   <link rel="stylesheet" href="offline-print.css?v=1">
   <link rel="stylesheet" href="styles-child-home.css?v=ugee-20261105">
@@ -181,7 +181,7 @@
           <label id="home-wifi-label" for="home-wifi-name">家庭 WiFi</label>
           <div id="home-wifi-picker" class="ssid-wrap wifi-picker">
             <div class="wifi-picker-row">
-              <input id="home-wifi-name" type="text" value="Home_5G" readonly role="combobox" aria-expanded="false" aria-controls="home-wifi-options" aria-autocomplete="none" placeholder="请输入 WiFi 名称（SSID）" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="wifi-name-hint wifi-name-error">
+              <input id="home-wifi-name" type="text" value="Home_5G" readonly role="combobox" aria-expanded="false" aria-controls="home-wifi-options" aria-autocomplete="none" placeholder="请输入 WiFi 名称（SSID）" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="wifi-name-error">
               <button id="wifi-dropdown-toggle" type="button" aria-label="选择附近 WiFi" aria-haspopup="listbox" aria-controls="home-wifi-options" aria-expanded="false">⌄</button>
             </div>
             <div id="home-wifi-options" class="wifi-options" role="listbox" aria-label="附近 WiFi" hidden>
@@ -189,7 +189,6 @@
               <button type="button" role="option" aria-selected="false" data-home-wifi="STEM_Lab_2.4G">STEM_Lab_2.4G</button>
             </div>
           </div>
-          <p id="wifi-name-hint" class="field-hint">单击选择 WiFi，双击可手动输入 SSID。</p>
           <p id="wifi-name-error" class="field-error" role="alert" hidden></p>
           <label for="home-wifi-password">WiFi 密码</label>
           <div class="password-wrap"><input id="home-wifi-password" type="password" autocomplete="off" placeholder="请输入 WiFi 密码（可为空）"><button id="toggle-password" type="button" aria-label="显示密码">◉</button></div>
@@ -569,6 +568,14 @@
        页面中心为蓝色填充圆圈（圆心为文案【正在连接打印机中...】），
        蓝色圆圈做「动态点击」脉冲，四周为浅蓝色水波纹形式圆圈虚线。 -->
   <dialog id="connecting-dialog" class="sheet connecting-sheet" aria-labelledby="connecting-title">
+    <div id="network-recovery" hidden>
+      <p class="network-banner" role="alert">当前手机无网络，请联网。</p>
+      <div class="network-controls">
+        <label>模拟云端打印机状态 <select id="cloud-result"><option value="online">已在线</option><option value="offline">未在线</option></select></label>
+        <button id="restore-network" type="button" class="connecting-demo__btn">模拟手机重新联网</button>
+      </div>
+      <p id="cloud-progress" role="status" hidden>正在查询云端打印机状态…</p>
+    </div>
     <div class="sheet-grabber" aria-hidden="true"></div>
     <div class="connecting-stage">
       <div class="connecting-visual" aria-hidden="true">
@@ -579,7 +586,8 @@
       </div>
       <h2 id="connecting-title" class="sr-only">正在连接打印机中...</h2>
       <p class="connecting-tip">请保持手机靠近打印机，不要退出应用</p>
-      <p class="connecting-timer">已等待 <b id="connecting-seconds">0</b> 秒<span id="connecting-limit-note">，连接超过 60s 将提示失败</span></p>
+      <button id="lose-network" class="connecting-demo__btn" type="button">模拟手机网络异常</button>
+      <p class="connecting-timer">已等待 <b id="connecting-seconds">0</b> 秒<span id="connecting-limit-note">，满 60 秒将返回网络配置</span></p>
     </div>
 
   </dialog>
@@ -666,7 +674,7 @@
   <dialog id="offline-timeout" class="offline-modal" aria-labelledby="offline-timeout-title"><span class="offline-error-icon" aria-hidden="true">!</span><h2 id="offline-timeout-title">连接超时</h2><p>未能连接到打印机热点。<br>请确认打印机已开机，并长按蓝色按钮开启热点后重试。</p><button id="offline-retry" class="primary-button hotspot-gradient" type="button">重试</button><button id="offline-timeout-back" class="secondary-button" type="button">返回检查</button></dialog>
   <dialog id="offline-upload" class="offline-modal" aria-labelledby="offline-upload-title" aria-describedby="offline-upload-copy"><span class="offline-upload-mark" aria-hidden="true">↑</span><h2 id="offline-upload-title">上传中</h2><p id="offline-upload-copy">正在将模型上传云端完成切片</p><progress id="offline-upload-progress" class="offline-upload-progress" max="100" value="0" aria-label="上传进度"></progress><p id="offline-upload-percent" class="offline-upload-percent">0%</p><p id="offline-upload-filename" class="offline-upload-filename"></p></dialog>
 
-  <script src="prototype.js?v=nearby-claim-entry-20261105"></script>
+  <script src="prototype.js?v=network-20261109"></script>
   <script src="offline-print.js?v=3"></script>
 </body>
 </html>
