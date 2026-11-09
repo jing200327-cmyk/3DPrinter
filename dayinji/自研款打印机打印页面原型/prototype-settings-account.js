@@ -35,9 +35,15 @@
     return document.body.dataset.connectionPage === 'offline' ||
       document.querySelector('#printer-connection-state')?.dataset.connectionStatus === 'offline';
   }
-  const cacheNotice = document.createElement('p');
-  cacheNotice.className = 'di-card di-detail-row';
-  cacheNotice.textContent = '当前打印机离线，以下展示缓存信息，重新连接后更新。';
+  const cacheNotice = document.createElement('aside');
+  cacheNotice.className = 'di-offline-notice';
+  cacheNotice.setAttribute('role', 'status');
+  cacheNotice.innerHTML = `<span class="di-offline-symbol" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 3l18 18M3 9a14 14 0 0 1 2-1.5M9 5.8a14 14 0 0 1 12 3.3M6 12.5a9 9 0 0 1 4-2M15 11a9 9 0 0 1 3 1.5M9 16a5 5 0 0 1 4-1"/>
+      <circle cx="12" cy="19" r="1" fill="currentColor" stroke="none"/>
+    </svg></span>
+    <div><strong>打印机离线</strong><p>当前显示本机缓存资料，重连后自动更新。</p></div>`;
   document.querySelector('#device-info-screen .di-content').prepend(cacheNotice);
   const updateNotice = () => { cacheNotice.hidden = !isOffline(); };
   updateNotice();

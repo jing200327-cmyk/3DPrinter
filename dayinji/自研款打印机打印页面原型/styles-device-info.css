@@ -11,6 +11,30 @@
 .di-back {position:absolute; left:14px; top:7px; width:44px;height:44px;border:0;background:none;cursor:pointer;display:grid;place-items:center;}
 .di-back svg {width:14px;height:23px;fill:none;stroke:currentColor;stroke-width:2.5;}
 .di-content {padding:0 17px;}
+.di-offline-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 13px;
+  padding: 13px 15px;
+  border: 1px solid #dce4f0;
+  border-radius: 16px;
+  background: #eff3fa;
+  color: #34445e;
+}
+.di-offline-notice[hidden] { display: none; }
+.di-offline-symbol {
+  display: grid;
+  flex: 0 0 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e1e9f6;
+  color: #51678a;
+}
+.di-offline-symbol svg { width: 17px; height: 17px; }
+.di-offline-notice strong { display: block; font-size: 14px; line-height: 20px; font-weight: 600; }
+.di-offline-notice p { margin: 3px 0 0; color: #54647a; font-size: 13px; line-height: 1.55; }
 .di-card {background:#fff;border-radius:19px;box-shadow:0 5px 13px #22222206;margin-bottom:13px;}
 .di-identity {display:flex;gap:12px;align-items:center;padding:19px 16px;min-height:118px;}
 .di-identity img {width:76px;height:83px;object-fit:contain;}
