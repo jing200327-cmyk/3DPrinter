@@ -39,9 +39,9 @@
     candidate = null;
   }
 
-  function activate(id) {
+  function activate(id, deviceName) {
     if (printerCatalog.current) printerCatalog.setStatus(printerConnectionState.dataset.connectionStatus);
-    printerCatalog.connect(id);
+    printerCatalog.connect(id, deviceName);
     switching = null;
     const url = new URL(location.href);
     for (const key of ['screen', 'from', 'preparePrinter']) url.searchParams.delete(key);
@@ -92,7 +92,7 @@
       $('#printer-bound-dialog').showModal();
       return;
     }
-    activate(card.id);
+    activate(card.id, card.querySelector('.printer-name').textContent);
   });
 
   function renderNetwork() {

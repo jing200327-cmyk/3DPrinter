@@ -16,18 +16,26 @@ const printerCatalog = (() => {
   function save() {
     try { sessionStorage.setItem(key, JSON.stringify(printers)); } catch {}
   }
-  function nextName() {
-    const names = new Set(printers.map(printer => printer.name));
-    let name = 'Ugee Funbox';
-    for (let i = 1; names.has(name); i++) name = 'Ugee Funbox(' + i + ')';
+  // 旧版本会给 UG 设备写入 Funbox 名称，保留已绑定设备及原有顺序。
+  const previousDiscoveryNames = { 'printer-ug01': 'UG-01', 'printer-ug02': 'UG-02' };
+  for (const printer of printers) {
+    if (previousDiscoveryNames[printer.id] && /^Ugee Funbox(?:\(\d+\))?$/.test(printer.name)) {
+      printer.name = previousDiscoveryNames[printer.id];
+      save();
+    }
+  }
+  function nextName(deviceName) {
+    const names = new Set(printers.map(printer => printer.name.toLowerCase()));
+    let name = deviceName;
+    for (let i = 1; names.has(name.toLowerCase()); i++) name = deviceName + '(' + i + ')';
     return name;
   }
   return {
     get all() { return printers; },
     get current() { return printers[0]; },
-    connect(id) {
+    connect(id, deviceName) {
       let printer = printers.find(item => item.id === id);
-      if (!printer) printer = { id, name: nextName(), status: 'idle' };
+      if (!printer) printer = { id, name: nextName(deviceName), status: 'idle' };
       printer.connectedAt = Math.max(Date.now(), (printers[0]?.connectedAt || 0) + 1);
       printers = [printer, ...printers.filter(item => item.id !== id)];
       save();

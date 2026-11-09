@@ -14,5 +14,26 @@ assert.equal(await cards.first().getAttribute('aria-pressed'), 'true');
 assert.equal(await cards.first().locator('.printer-name').textContent(), 'Ugee Funbox');
 assert(await p.locator('#other-printers-list').isHidden());
 await p.addStyleTag({content:'#simulation-console{display:none!important}'});if(process.env.CHILD_PRINTER_SHOT)await p.screenshot({path:process.env.CHILD_PRINTER_SHOT});
-await p.locator('#add-printer-back').click();assert(await p.locator('#add-printer-screen').isHidden());assert.deepEqual(errors,[]);console.log(JSON.stringify({ok:true,errors,base}));
+await p.locator('#add-printer-back').click();assert(await p.locator('#add-printer-screen').isHidden());
+await p.goto(base + '?screen=add-printer&addPrinterAccount=parent');
+for (const [id, nearbyName, boundName] of [
+  ['printer-ug01', 'UG-01', 'UG-01'],
+  ['printer-ug02', 'UG-02', 'UG-02'],
+  ['printer-nearby-funbox', 'ugee Funbox', 'ugee Funbox(2)']
+]) {
+  await p.locator('#' + id).click();
+  assert.equal(await p.locator('#printer-bind-target').textContent(), nearbyName);
+  await p.locator('#printer-bind-confirm').click();
+  await p.locator('#add-printer-screen').waitFor({state:'hidden'});
+  assert.equal(await p.locator('#workbench-printer-name').textContent(), boundName);
+  await p.locator('#printer-switch').click();
+  assert.equal(await cards.first().locator('.printer-name').textContent(), boundName);
+  assert.equal(await cards.first().getAttribute('aria-pressed'), 'true');
+  assert(await p.locator('#' + id).isHidden());
+}
+await p.goto(base + '?screen=add-printer&myPrinters=empty');
+await p.locator('#printer-nearby-funbox').click();
+await p.locator('#printer-bind-confirm').click();
+assert.equal(await p.locator('#workbench-printer-name').textContent(), 'ugee Funbox');
+assert.deepEqual(errors,[]);console.log(JSON.stringify({ok:true,errors,base}));
 }finally{await b.close()}})();

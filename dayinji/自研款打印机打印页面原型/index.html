@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="styles-device-info.css?v=2">
   <link rel="stylesheet" href="styles-offline-import.css?v=1">
   <link rel="stylesheet" href="styles-printer-catalog.css?v=1">
-  <script src="printer-catalog.js?v=1"></script>
+  <script src="printer-catalog.js?v=2"></script>
 </head>
 <body>
   <main id="device-page" class="phone-shell" aria-label="自研款 3D 打印机设备页">
@@ -392,6 +392,11 @@
               <button id="printer-ug02" data-owner-status="unowned" hidden class="printer-card" type="button">
                 <span class="printer-card-icon" aria-hidden="true"></span>
                 <span class="printer-card-copy"><span class="printer-name">UG-02</span></span>
+                <span class="printer-selected" aria-hidden="true">✓</span>
+              </button>
+              <button id="printer-nearby-funbox" data-owner-status="unowned" hidden class="printer-card" type="button">
+                <span class="printer-card-icon" aria-hidden="true"></span>
+                <span class="printer-card-copy"><span class="printer-name">ugee Funbox</span></span>
                 <span class="printer-selected" aria-hidden="true">✓</span>
               </button>
             </div>
@@ -1237,6 +1242,6 @@
   <script src="prototype-add-printer-roles.js?v=3"></script>
   <script src="prototype-settings-account.js?v=20261106-reset"></script>
   <script src="prototype-offline-import.js?v=2"></script>
-  <script src="prototype-printer-picker.js?v=1"></script>
+  <script src="prototype-printer-picker.js?v=2"></script>
 </body>
 </html>
