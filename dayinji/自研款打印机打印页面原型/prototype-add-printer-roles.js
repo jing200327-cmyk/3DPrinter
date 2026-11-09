@@ -11,6 +11,9 @@
   function render(next) {
     account = ['parent', 'base', 'child'].includes(next) ? next : 'parent';
     screen.dataset.account = account;
+    const title = account === 'child' ? '切换打印机' : '添加打印机';
+    screen.setAttribute('aria-label', title);
+    document.querySelector('#printer-switch').setAttribute('aria-label', title);
     screen.querySelector('#other-printers-list').closest('section').hidden = account === 'child';
     screen.querySelector('#configure-new-printer').hidden = account === 'child';
     screen.querySelector('#open-share-printer').hidden = account !== 'parent';

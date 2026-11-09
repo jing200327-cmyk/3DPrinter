@@ -85,3 +85,18 @@
 body:not(.operation-open) #picker-network-banner { display: none; }
 
 .family-prepare-page [data-printer-state="idle"] i { background: #20b387; }
+.child-printer-title { display: none; }
+#add-printer-screen[data-account="child"] .reuse-stage { container-type: inline-size; }
+#add-printer-screen[data-account="child"] .child-printer-title {
+  position: absolute;
+  inset: 9.2% 32% auto;
+  height: 3.8%;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  background: white;
+  color: #222;
+  font-size: 3.6cqw;
+  font-weight: 500;
+  line-height: 1;
+}
