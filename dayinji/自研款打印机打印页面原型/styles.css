@@ -276,8 +276,9 @@ body.operation-open { overflow: hidden; }
 .reuse-hotspot--print-options { left: 3.99%; top: 25.83%; width: 90.16%; height: 7.05%; border-radius: 12px; }
 .reuse-hotspot--timelapse-setting { left: 3.99%; top: 36.71%; width: 90.16%; height: 7.05%; border-radius: 12px; }
 /* 设备设置页底部：移除打印机（坐标按 376×809 原图量取） */
-.settings-reset-button { position: absolute; top: 83.8%; left: 2.93%; width: 94.4%; height: 7%; border: 0; border-radius: 6px; background: white; color: #d81111; font: inherit; font-weight: 600; cursor: pointer; }
-.reuse-hotspot--remove-printer { left: 2.93%; top: 92.5%; width: 94.4%; height: 7%; border-radius: 12px; }
+.settings-action { position: absolute; left: 2.93%; width: 94.4%; height: 7%; border: 0; border-radius: 6px; background: white; color: #d81111; font: inherit; font-weight: 600; cursor: pointer; }
+.settings-remove-button { top: 83.8%; }
+.settings-reset-button { top: 92.5%; }
 /* 延时摄影页：右上角删除图标（按 2800×1711 原图量取，热区中心正好压在图标中心上） */
 /* 准备打印页：底部“开始打印”（按 311×675 原图量取） */
 .reuse-hotspot--start-print { left: 1.61%; top: 92.59%; width: 97.75%; height: 6.82%; border-radius: 999px; }

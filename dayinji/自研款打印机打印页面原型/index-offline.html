@@ -7,7 +7,7 @@
   <title>打印机离线状态 · 自研款打印机打印页面原型</title>
   <!-- 复用在线工作台的设备框 / 头部 / 摄像头裁切 / 底部导航 / Toast / 复用整图页样式（只引用，不修改）；
        离线态专属规则全部收在 styles-offline.css 的专属类名作用域内 -->
-  <link rel="stylesheet" href="styles.css?v=20261106-reset">
+  <link rel="stylesheet" href="styles.css?v=20261109-settings">
   <link rel="stylesheet" href="styles-device-control.css?v=3">
   <link rel="stylesheet" href="styles-device-info.css?v=2">
   <link rel="stylesheet" href="styles-offline.css?v=r004">
@@ -100,8 +100,8 @@
           <button id="open-device-control" class="settings-control-entry" type="button">设备控制<span aria-hidden="true">›</span></button>
           <button id="open-timelapse-settings" class="settings-timelapse-entry" type="button">延时摄影<span aria-hidden="true">›</span></button>
         </div>
-        <button id="open-factory-reset" class="settings-reset-button" type="button" aria-haspopup="dialog">恢复出厂设置</button>
-        <button aria-haspopup="dialog" id="open-remove-printer" class="reuse-hotspot reuse-hotspot--remove-printer" type="button" aria-label="移除打印机"></button>
+        <button id="open-remove-printer" class="settings-action settings-remove-button" type="button" aria-haspopup="dialog">移除打印机</button>
+        <button id="open-factory-reset" class="settings-action settings-reset-button" type="button" aria-haspopup="dialog">恢复出厂设置</button>
       </div>
     </div>
     <button id="device-settings-back" class="reuse-screen-back" type="button" aria-label="返回离线工作台"></button>
@@ -168,9 +168,9 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script src="prototype-connection.js?v=6"></script>
-  <script src="prototype-offline-settings.js?v=20261106-reset"></script>
-  <script src="prototype-device-info.js?v=20261106-reset"></script>
-  <script src="prototype-settings-account.js?v=20261106-reset"></script>
+  <script src="prototype-offline-settings.js?v=20261109-settings"></script>
+  <script src="prototype-device-info.js?v=20261109-settings"></script>
+  <script src="prototype-settings-account.js?v=20261109-settings"></script>
   <script src="prototype-offline-import.js?v=2"></script>
 </body>
 </html>
