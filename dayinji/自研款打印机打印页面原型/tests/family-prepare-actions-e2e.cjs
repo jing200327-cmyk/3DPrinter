@@ -46,7 +46,7 @@ const base = process.env.PRINTER_PAGE_URL || 'http://127.0.0.1:8765/dayinji/' + 
     // Existing prepare page still uses the selected plate, validation and shared save flow.
     await page.goto(base + '?screen=prepare-print');
     await page.locator('#leveling-toggle').click(); assert.equal(await page.locator('#leveling-toggle').getAttribute('aria-checked'), 'true');
-    const originalName = (await page.locator('#prepare-plate-list [aria-selected="true"] .prepare-model-name').textContent()).trim();
+    const originalName = (await page.locator('#prepare-plate-list .plate-row:has(.prepare-plate-check:checked) .prepare-model-name').first().textContent()).trim();
     await page.locator('#save-slice').click(); assert.equal(await page.locator('#slice-name').inputValue(), originalName.slice(0, 40));
     await page.locator('#slice-name-confirm').click(); await page.locator('#slice-success-dialog').waitFor({ state: 'visible' });
     await page.locator('#slice-view-now').click();
