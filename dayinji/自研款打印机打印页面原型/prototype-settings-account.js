@@ -13,6 +13,7 @@
   function render(account) {
     const child = account === 'child';
     screen.dataset.account = child ? 'child' : 'owner';
+    renderPlateTaskAndQueue();
     restricted.forEach(selector => { screen.querySelector(selector).hidden = child; });
     const badge = document.querySelector('#device-account-badge');
     badge.textContent = child ? '已授权' : '机主';

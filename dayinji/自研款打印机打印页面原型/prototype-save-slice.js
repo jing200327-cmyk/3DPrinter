@@ -10,7 +10,7 @@
   const error = document.querySelector('#slice-name-error');
   const progress = document.querySelector('#slice-save-progress');
   const percentLabel = document.querySelector('#slice-save-percent');
-  document.querySelectorAll('#leveling-toggle, #family-leveling-toggle').forEach(calibration => {
+  document.querySelectorAll('#leveling-toggle, #family-leveling-toggle, #prepare-state-leveling').forEach(calibration => {
     calibration.addEventListener('click', () => {
       calibration.setAttribute('aria-checked', String(calibration.getAttribute('aria-checked') !== 'true'));
     });

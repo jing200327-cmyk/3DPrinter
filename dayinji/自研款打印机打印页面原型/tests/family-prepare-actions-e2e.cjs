@@ -40,7 +40,7 @@ const base = process.env.PRINTER_PAGE_URL || 'http://127.0.0.1:8765/dayinji/' + 
     }
     await page.locator('#family-submit').click();
     await page.locator('[data-queue-id="girl-1"]').click();
-    assert(await leveling.isDisabled()); assert(await page.locator('#family-submit').isDisabled());
+    assert(await leveling.isEnabled()); assert(await page.locator("#family-switch-printer").isHidden()); assert(await page.locator('#family-submit').isDisabled());
     await page.locator('#family-save-slice').click(); assert(await page.locator('#slice-name-dialog').isVisible());
     await page.locator('#slice-name-cancel').click();
     // Existing prepare page still uses the selected plate, validation and shared save flow.

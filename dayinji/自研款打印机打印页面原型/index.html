@@ -9,14 +9,14 @@
   <link rel="stylesheet" href="styles-share-printer.css?v=r008">
   <link rel="stylesheet" href="styles-filament-operation.css?v=r009">
   <link rel="stylesheet" href="styles-3d-preview.css?v=r009">
-  <link rel="stylesheet" href="styles-prepare-print.css?v=r008">
+  <link rel="stylesheet" href="styles-prepare-print.css?v=r009">
   <link rel="stylesheet" href="styles-simulation.css?v=r003">
   <link rel="stylesheet" href="styles-filament-guide.css?v=2">
   <link rel="stylesheet" href="styles-filament-backpack.css?v=1">
   <link rel="stylesheet" href="styles-prepare-backpack.css?v=1">
   <link rel="stylesheet" href="styles-device-control.css?v=3">
   <link rel="stylesheet" href="styles-calibration.css?v=3">
-  <link rel="stylesheet" href="styles-family-queue.css?v=2">
+  <link rel="stylesheet" href="styles-family-queue.css?v=q2">
   <link rel="stylesheet" href="styles-connection.css?v=1">
   <link rel="stylesheet" href="styles-completion.css?v=2">
   <link rel="stylesheet" href="styles-device-info.css?v=2">
@@ -784,7 +784,7 @@
       <div id="prepare-state-stage" class="reuse-stage prepare-page" style="--reuse-ratio: 311 / 675">
         <div class="prepare-statusbar" aria-hidden="true"><strong>9:41</strong><span class="prepare-island"></span><span class="prepare-status-icons">▂▄▆ <svg viewBox="0 0 20 16"><path d="M2 5Q10-2 18 5M5 8Q10 3 15 8M8 11Q10 9 12 11"/><circle cx="10" cy="14" r="1"/></svg><span class="prepare-battery"></span></span></div>
         <header class="prepare-header"><button id="prepare-state-back" class="prepare-back" type="button" aria-label="返回打印页面">←</button><h1>准备打印</h1></header>
-        <div class="prepare-printer"><img src="assets/准备打印-打印机.png" alt="Ugee Funbox 打印机"><div><strong>Ugee Funbox</strong><span class="prepare-idle"><i aria-hidden="true"></i>空闲</span><span id="printer-busy-patch" class="printer-busy-patch" hidden><span class="printer-busy-dot" aria-hidden="true"></span>忙碌</span></div><button id="prepare-state-switch-printer" class="prepare-switch" type="button" aria-label="切换或添加打印机">切换</button></div>
+        <div class="prepare-printer"><img src="assets/准备打印-打印机.png" alt="Ugee Funbox 打印机"><div><strong>Ugee Funbox</strong><span class="prepare-idle"><i aria-hidden="true"></i>空闲</span></div></div>
         <h2 class="prepare-section-title">选择要打印的盘</h2>
         <div  class="state-plate-list" role="listbox" aria-label="选择要打印的盘">
           <div class="state-row prepare-plate" data-row="1" role="option" aria-selected="false">
@@ -796,7 +796,7 @@
               <div class="prepare-material-body"><img class="prepare-spool" src="assets/准备打印-蓝色料盘.png" alt="蓝色耗材料盘" draggable="false"><span class="prepare-loaded-color">蓝色</span></div>
             </div>
             <div class="prepare-plate-stats"><span><i class="prepare-clock" aria-hidden="true"></i>2 h 16 min</span><span><i class="prepare-weight" aria-hidden="true"></i>72 g</span></div>
-            <button class="state-row-hit" type="button" aria-label="拖动排序盘 1 史蒂夫_01_012214"></button>
+            <button class="state-row-hit" type="button" aria-label="选择盘 1 史蒂夫_01_012214"></button>
             <button class="plate-3d-btn" type="button" data-preview-plate="盘 1" data-preview-name="史蒂夫_01_012214" data-preview-duration="2 h 16 min" data-preview-grams="72" aria-label="3D 预览：盘 1 史蒂夫_01_012214"><span class="plate-3d-btn__text" aria-hidden="true">3D</span></button>
 
           </div>
@@ -809,7 +809,7 @@
               <div class="prepare-material-body"><img class="prepare-spool" src="assets/准备打印-蓝色料盘.png" alt="蓝色耗材料盘" draggable="false"><span class="prepare-loaded-color">蓝色</span></div>
             </div>
             <div class="prepare-plate-stats"><span><i class="prepare-clock" aria-hidden="true"></i>1 h 42 min</span><span><i class="prepare-weight" aria-hidden="true"></i>54 g</span></div>
-            <button class="state-row-hit" type="button" aria-label="拖动排序盘 2 史蒂夫_02_012209"></button>
+            <button class="state-row-hit" type="button" aria-label="选择盘 2 史蒂夫_02_012209"></button>
             <button class="plate-3d-btn" type="button" data-preview-plate="盘 2" data-preview-name="史蒂夫_02_012209" data-preview-duration="1 h 42 min" data-preview-grams="54" aria-label="3D 预览：盘 2 史蒂夫_02_012209"><span class="plate-3d-btn__text" aria-hidden="true">3D</span></button>
 
           </div>
@@ -822,14 +822,14 @@
               <div class="prepare-material-body"><img class="prepare-spool" src="assets/准备打印-蓝色料盘.png" alt="蓝色耗材料盘" draggable="false"><span class="prepare-mismatch" role="img" aria-label="颜色不匹配" title="模型需要绿色，料架当前为蓝色">!</span></div>
             </div>
             <div class="prepare-plate-stats"><span><i class="prepare-clock" aria-hidden="true"></i>3 h 08 min</span><span><i class="prepare-weight" aria-hidden="true"></i>96 g</span></div>
-            <button class="state-row-hit" type="button" aria-label="拖动排序盘 3 史蒂夫_03_012207"></button>
+            <button class="state-row-hit" type="button" aria-label="选择盘 3 史蒂夫_03_012207"></button>
             <button class="plate-3d-btn" type="button" data-preview-plate="盘 3" data-preview-name="史蒂夫_03_012207" data-preview-duration="3 h 08 min" data-preview-grams="96" aria-label="3D 预览：盘 3 史蒂夫_03_012207"><span class="plate-3d-btn__text" aria-hidden="true">3D</span></button>
 
           </div>
         </div>
         <img id="state-stamp" class="state-stamp" src="assets/状态戳-正在打印.png" alt="正在打印" hidden>
-        <div class="prepare-options"><h2>打印选项</h2><div class="prepare-timelapse"><span>延时摄影</span><button id="prepare-state-toggle" class="timelapse-check" type="button" role="checkbox" aria-checked="true" aria-label="延时摄影"><span class="timelapse-check-box" aria-hidden="true"></span></button></div></div>
-        <button id="prepare-state-start" class="prepare-start" type="button" aria-label="开始打印">开始打印</button><span id="prepare-state-dim" hidden></span>
+        <div class="prepare-options"><h2>打印选项</h2><div class="prepare-option-list"><div class="prepare-timelapse"><span>延时摄影</span><button id="prepare-state-toggle" class="timelapse-check" type="button" role="checkbox" aria-checked="true" aria-label="延时摄影"><span class="timelapse-check-box" aria-hidden="true"></span></button></div><div class="prepare-timelapse"><span>调平校准</span><button id="prepare-state-leveling" class="timelapse-check" type="button" role="checkbox" aria-checked="false" aria-label="调平校准"><span class="timelapse-check-box" aria-hidden="true"></span></button></div></div></div>
+        <button id="prepare-state-start" class="prepare-start" type="button" aria-label="开始打印">开始打印</button>
       </div>
     </div>
   </section>
@@ -1231,17 +1231,17 @@
   </dialog>
   <script src="prototype-filament-backpack.js?v=2"></script>
   <script src="prototype-prepare-backpack.js?v=3"></script>
-  <script src="prototype.js?v=20261109-printers"></script>
+  <script src="prototype.js?v=20261109-queue"></script>
   <script src="prototype-device-control.js?v=2"></script>
   <script src="prototype-calibration.js?v=20261109-settings"></script>
-  <script src="prototype-family-queue.js?v=6"></script>
+  <script src="prototype-family-queue.js?v=7"></script>
   <script src="prototype-simulation.js?v=r009"></script>
   <script src="prototype-connection.js?v=4"></script>
   <script src="prototype-completion.js?v=2"></script>
-  <script src="prototype-save-slice.js?v=3"></script>
+  <script src="prototype-save-slice.js?v=4"></script>
   <script src="prototype-device-info.js?v=20261109-settings"></script>
   <script src="prototype-add-printer-roles.js?v=4"></script>
-  <script src="prototype-settings-account.js?v=20261109-settings"></script>
+  <script src="prototype-settings-account.js?v=q20261109-settings"></script>
   <script src="prototype-offline-import.js?v=2"></script>
   <script src="prototype-printer-picker.js?v=2"></script>
 </body>

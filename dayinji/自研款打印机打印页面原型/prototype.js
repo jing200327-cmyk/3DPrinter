@@ -75,9 +75,7 @@ const plateList = document.querySelector('#prepare-plate-list');
 const prepareStateScreen = document.querySelector('#prepare-state-screen');
 const prepareStateStage = document.querySelector('#prepare-state-stage');
 const prepareStateStart = document.querySelector('#prepare-state-start');
-const prepareStateDim = document.querySelector('#prepare-state-dim');
 const stateStampImage = document.querySelector('#state-stamp');
-const printerBusyPatch = document.querySelector('#printer-busy-patch');
 const stateRows = [...document.querySelectorAll('#prepare-state-stage .state-row')];
 const reuseScreenList = [...document.querySelectorAll('.reuse-screen')];
 const referenceScreen = document.querySelector('#reference-screen');
@@ -361,6 +359,7 @@ function renderPlateTaskAndQueue() {
     const image = button.querySelector('.queue-task-artwork');
     const avatar = button.querySelector('.task-owner-avatar');
     button.dataset.queueId = queueTask.id;
+    button.disabled = !canControlQueueTask(queueTask);
     button.dataset.owner = queueTask.owner;
     button.classList.toggle('owner-task-card--boy', !isGirlTask);
     button.classList.toggle('owner-task-card--girl', isGirlTask);
@@ -678,11 +677,12 @@ function renderStateRows() {
     row.hidden = !rowTask;
     if (!rowTask) return;
     row.style.top = `${[28.148, 45.926, 63.852][batchTasks.indexOf(rowTask)]}%`;
-    const result = taskResults.get(rowTask.id) || (rowTask.id === activeTaskId && plate === stampedPlate ? resolvePrepareStateKey() : null);
+    const result = taskResults.get(rowTask.id) || (rowTask.id === activeTaskId && plate === stampedPlate && currentStatus !== 'ready' ? resolvePrepareStateKey() : null);
     const stamped = Boolean(result);
     row.classList.toggle('is-stamped', stamped);
-    row.setAttribute('aria-disabled', String(stamped));
-    row.querySelector('.state-row-hit').hidden = stamped;
+    const selectable = !stamped && familyQueueTasks.some(task => task.id === rowTask.id);
+    row.setAttribute('aria-disabled', String(!selectable));
+    row.querySelector('.state-row-hit').hidden = !selectable;
     row.querySelector('.plate-3d-btn').disabled = stamped;
     row.querySelectorAll('.state-stamp:not(#state-stamp)').forEach(image => image.remove());
     if (result) {
@@ -698,19 +698,32 @@ function renderStateRows() {
 }
 
 function selectedQueuedTask() {
-  const openedTask = familyQueueTasks.find(task => task.id === prepareQueueTaskId);
-  if (openedTask?.owner === 'girl') return openedTask;
-  return familyQueueTasks.find(task => task.plate === selectedStateRow && (!openedTask || task.submission === openedTask.submission));
+  const opened = taskCatalog[prepareQueueTaskId];
+  return familyQueueTasks.find(task => task.submission === opened?.submission && task.plate === selectedStateRow);
+}
+
+function canControlQueueTask(task) {
+  return task && (document.querySelector('#device-settings-screen').dataset.account !== 'child' || task.owner === 'boy');
+}
+
+function canStartQueueTask(task) {
+  return canControlQueueTask(task) && familyQueueTasks.some(item => item.id === task.id)
+    && printerCatalog.current && preparePrinterStatus === 'idle'
+    && !['preparing', 'printing', 'paused'].includes(currentStatus);
 }
 
 function updatePrepareStart() {
-  const task = selectedQueuedTask();
-  const busy = ['preparing', 'printing', 'paused'].includes(currentStatus);
-  const startDisabled = busy || !task || task.id !== familyQueueTasks[0]?.id;
-  prepareStateStart.disabled = startDisabled;
-  prepareStateStart.setAttribute('aria-label', busy ? '开始打印（当前任务正在打印或已暂停，暂不可用）' : (startDisabled ? '开始打印（请按打印队列顺序执行）' : '开始打印'));
-  prepareStateDim.hidden = !startDisabled;
+  const enabled = Boolean(canStartQueueTask(selectedQueuedTask()));
+  prepareStateStart.disabled = !enabled;
+  prepareStateStart.setAttribute('aria-label', '开始打印');
 }
+
+document.addEventListener('printer-status-change', () => {
+  if (!prepareStateScreen.hidden) {
+    renderStateRows();
+    selectStateRow(selectedStateRow);
+  }
+});
 
 function openPrepareStateScreen(preferredPlate, queueTaskId) {
   prepareQueueTaskId = queueTaskId;
@@ -719,8 +732,9 @@ function openPrepareStateScreen(preferredPlate, queueTaskId) {
   /* 男孩任务：当前任务盘盖戳；女孩任务：三个盘都可复用，不盖戳 */
   const sameBatch = taskCatalog[queueTaskId]?.submission === taskCatalog[activeTaskId]?.submission;
   stampedPlate = sameBatch ? String(activePreparedTaskId ? activeTask.plate : activePlate) : null;
-  /* 打印中 / 暂停中打印机忙碌，其余状态空闲（与底图一致，补丁隐藏） */
-  printerBusyPatch.hidden = true;
+  const batch = preparedBatches.find(item => `batch-${item.id}` === taskCatalog[queueTaskId]?.submission);
+  document.querySelector('#prepare-state-leveling').setAttribute('aria-checked', String(batch?.leveling ?? false));
+  document.querySelector('#prepare-state-toggle').setAttribute('aria-checked', String(batch?.timelapse ?? true));
   renderStateRows();
   selectStateRow(preferredPlate);
   openReuseScreen('prepareState');
@@ -729,7 +743,7 @@ function openPrepareStateScreen(preferredPlate, queueTaskId) {
 /* 打印队列里的待打印任务：按当前任务状态打开对应的准备打印页，不再跳转打印旅程的配色页 */
 function openQueueTaskSettings(queueId) {
   const queueTask = getVisibleQueueTasks().find((task) => task.id === queueId);
-  if (!queueTask) return;
+  if (!canControlQueueTask(queueTask)) return;
   if (window.__FAMILY_QUEUE?.owns(queueTask)) return window.__FAMILY_QUEUE.openQueuedTask(queueTask);
   const plate = queueTask && plateCatalog[queueTask.plate] ? queueTask.plate : '2';
   openPrepareStateScreen(plate, queueTask.id);
@@ -747,14 +761,19 @@ function startNextPlate() {
     showToast('打印队列里已经没有待打印任务了');
     return;
   }
-  startQueuedTask(nextTask, 'preparing');
+  startQueuedTask(nextTask);
 }
 
-function startQueuedTask(nextTask, status) {
-  if (!nextTask || nextTask.id !== familyQueueTasks[0]?.id || ['preparing', 'printing', 'paused'].includes(currentStatus)) return;
+function startQueuedTask(nextTask, options) {
+  if (!canStartQueueTask(nextTask)) return;
   familyQueueTasks = familyQueueTasks.filter(task => task.id !== nextTask.id);
-  const next = taskSessionUrl(status);
+  const next = taskSessionUrl('preparing');
   next.searchParams.delete('screen');
+  next.searchParams.delete('queueTask');
+  for (const key of ['leveling', 'timelapse']) {
+    if (options) next.searchParams.set(key, String(options[key]));
+    else next.searchParams.delete(key);
+  }
   if (nextTask.owner === 'girl') {
     next.searchParams.set('family', 'multi');
     next.searchParams.set('activeTask', nextTask.task);
@@ -1429,9 +1448,12 @@ stateRows.forEach((row) => {
 });
 document.querySelector('#prepare-state-back').addEventListener('click', closeReuseScreens);
 document.querySelector('#prepare-state-start').addEventListener('click', () => {
-  if (prepareStateStart.disabled) return;
+  if (!canStartQueueTask(selectedQueuedTask())) return;
   if (!validatePrintFilament()) return;
-  startQueuedTask(selectedQueuedTask(), 'printing');
+  startQueuedTask(selectedQueuedTask(), {
+    leveling: document.querySelector('#prepare-state-leveling').getAttribute('aria-checked') === 'true',
+    timelapse: document.querySelector('#prepare-state-toggle').getAttribute('aria-checked') === 'true'
+  });
 });
 
 /* 带参数回到打印页：切换当前任务盘并落到指定状态 */
@@ -1459,7 +1481,6 @@ renderPlateSelection();
 setFirmwareUpdateAvailable(true);
 /* 准备打印页打印机卡片右侧的“切换” → 添加打印机页 */
 document.querySelector('#prepare-switch-printer').addEventListener('click', () => openReuseScreen('addPrinter'));
-document.querySelector('#prepare-state-switch-printer').addEventListener('click', () => openReuseScreen('addPrinter'));
 document.querySelector('#model-detail-back').addEventListener('click', goBackInReuseScreens);
 document.querySelector('#prepare-print-back').addEventListener('click', goBackInReuseScreens);
 

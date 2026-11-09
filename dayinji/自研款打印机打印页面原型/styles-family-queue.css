@@ -11,3 +11,7 @@
 .family-prepare-page[data-readonly="true"] .plate-row-grip { display: none; }
 .family-prepare-page .prepare-start:disabled { opacity: .42; }
 @media (prefers-reduced-motion: reduce) { .family-plate-row { transition: none; } }
+
+.family-plate-row.is-stamped > :not(.family-result-stamp) { opacity: .4; pointer-events: none; }
+.family-result-stamp { position: absolute; z-index: 6; left: 50%; top: 50%; width: 31%; transform: translate(-50%, -50%); pointer-events: none; }
+.family-prepare-page .prepare-idle[data-printer-state="idle"] i { background: #20b387; }

@@ -6,6 +6,7 @@
   let order = tasks.map(task => task.id);
   let selected = order[0];
   let readonly = false;
+  let submittedOptions = { leveling: false, timelapse: true };
   let drag = null;
   let suppressClick = false;
   const $ = selector => screen.querySelector(selector);
@@ -40,6 +41,7 @@
     hit.setAttribute('aria-label', `选择盘 ${index + 1} ${task.title}，方向键调整顺序`);
     hit.addEventListener('click', () => {
       if (suppressClick) { suppressClick = false; return; }
+      if (readonly && !familyQueueTasks.some(item => item.id === task.id)) return;
       selected = task.id;
       render();
     });
@@ -86,16 +88,30 @@
   }
   function render() {
     rows.forEach(row => {
-      row.dataset.slot = order.indexOf(row.dataset.plate);
+      const id = row.dataset.plate;
+      const pending = familyQueueTasks.some(task => task.id === id);
+      const result = taskResults.get(id) || (id === activeTaskId && currentStatus !== 'ready' ? resolvePrepareStateKey() : null);
+      row.querySelector('.plate-row-hit').disabled = readonly && !pending;
+      row.querySelector('.plate-3d-btn').disabled = Boolean(readonly && result);
+      row.querySelector('.family-result-stamp')?.remove();
+      row.classList.toggle('is-stamped', Boolean(readonly && result));
+      if (readonly && result) {
+        const stamp = document.createElement('img');
+        stamp.className = 'family-result-stamp';
+        stamp.src = PREPARE_STATE_STAMPS[result].src;
+        stamp.alt = PREPARE_STATE_STAMPS[result].alt;
+        row.append(stamp);
+      }
+      row.dataset.slot = order.indexOf(id);
       row.setAttribute('aria-selected', String(row.dataset.plate === selected));
       row.querySelector('.plate-row-hit').style.touchAction = readonly ? 'auto' : 'none';
     });
     $('#family-prepare-stage').dataset.readonly = String(readonly);
-    $('#family-submit').disabled = readonly;
+    $('#family-switch-printer').hidden = readonly;
+    $('#family-submit').disabled = readonly && !canStartQueueTask(taskCatalog[selected]);
     $('#family-submit').textContent = readonly ? '开始打印' : '加入打印队列';
-    $('#family-submit').setAttribute('aria-label', readonly ? '开始打印（已加入队列，等待按序打印）' : '将两盘模型加入打印队列');
-    $('#family-timelapse-toggle').disabled = readonly;
-    $('#family-leveling-toggle').disabled = readonly;
+    $('#family-submit').setAttribute('aria-label', readonly ? '开始打印' : '将两盘模型加入打印队列');
+
     $('#family-prepare-summary').hidden = readonly;
     $('#family-prepare-summary').textContent = readonly ? '' : '本次提交 2 盘，将按上方排序加入打印队列。';
   }
@@ -137,7 +153,9 @@
     openReuseScreen('familyPrepare');
   }
   function openQueuedTask(task) {
+    if (!canControlQueueTask(task)) return;
     readonly = true;
+    for (const key of ['leveling', 'timelapse']) $('#family-' + key + '-toggle').setAttribute('aria-checked', String(submittedOptions[key]));
     const pending = familyQueueTasks.filter(item => item.owner === 'girl').map(item => item.id);
     order = [...pending, ...tasks.map(item => item.id).filter(id => !pending.includes(id))];
     selected = task.id;
@@ -153,8 +171,21 @@
   $('#family-switch-printer').addEventListener('click', () => openReuseScreen('addPrinter'));
   bindTimelapseToggle($('#family-timelapse-toggle'));
   $('#family-submit').addEventListener('click', () => {
-    if (readonly || tasks.some(task => familyQueueTasks.some(queued => queued.id === task.id) || taskResults.has(task.id) || task.id === activeTaskId)) return;
+    if (readonly) {
+      if (canStartQueueTask(taskCatalog[selected]) && validatePrintFilament()) {
+        startQueuedTask(taskCatalog[selected], {
+          leveling: $('#family-leveling-toggle').getAttribute('aria-checked') === 'true',
+          timelapse: $('#family-timelapse-toggle').getAttribute('aria-checked') === 'true'
+        });
+      }
+      return;
+    }
+    if (tasks.some(task => familyQueueTasks.some(queued => queued.id === task.id) || taskResults.has(task.id) || task.id === activeTaskId)) return;
     if (ownedPendingBatchCount('girl') >= 2) { showToast('每人最多保留 2 个未完成模型任务，请先完成或取消已有任务'); return; }
+    submittedOptions = {
+      leveling: $('#family-leveling-toggle').getAttribute('aria-checked') === 'true',
+      timelapse: $('#family-timelapse-toggle').getAttribute('aria-checked') === 'true'
+    };
     familyQueueTasks.push(...order.map(id => taskCatalog[id]));
     rememberPage(null);
     renderPlateTaskAndQueue();
@@ -167,8 +198,9 @@
   });
   window.__FAMILY_QUEUE = {
     openSubmission, openQueuedTask,
-    owns: task => new URLSearchParams(location.search).get('simulation') === 'family' && task.owner === 'girl'
+    owns: task => task.owner === 'girl'
   };
+  document.addEventListener('printer-status-change', () => { if (readonly && !screen.hidden) render(); });
   render();
   const initial = new URLSearchParams(location.search);
   if (initial.get('simulation') === 'family' && initial.get('screen') === 'family-prepare') openSubmission();
