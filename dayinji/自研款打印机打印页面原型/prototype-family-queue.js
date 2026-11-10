@@ -127,7 +127,7 @@
   }
   function openSubmission() {
     // 从空闲、终态或单盘演示进入时，建立一组含两条旧队列的忙碌模拟。
-    if (isSinglePlateModel || !['preparing', 'printing', 'paused'].includes(currentStatus)) {
+    if (isSinglePlateModel || (!isFamilyQueue && !familyQueueTasks.length) || !['preparing', 'printing', 'paused'].includes(currentStatus)) {
       const url = new URL(location.href);
       for (const key of ['plates', 'activeTask', 'source', 'completed', 'results', 'connection', 'queueTask']) url.searchParams.delete(key);
       url.searchParams.set('plate', '1');

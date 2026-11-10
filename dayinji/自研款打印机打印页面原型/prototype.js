@@ -153,7 +153,16 @@ try {
     if (Object.hasOwn(taskCatalog, id) && ['completed', 'cancelled'].includes(result)) taskResults.set(id, result);
   }
 } catch { /* 无效的演示链接按未保存状态加载。 */ }
-const initialQueueIds = params.has('queue') ? params.get('queue').split(',') : Object.keys(taskCatalog).filter(id => !taskCatalog[id].prepared && (taskCatalog[id].owner === 'boy' || (isFamilyQueue && !isSinglePlateModel)));
+let initialQueueIds = [];
+// 旧版空闲首屏会把两条示例任务写入分享链接。
+const legacyReadyDemo = params.get('status') === 'ready' && params.get('queue') === 'plate-2,plate-3'
+  && !isFamilyQueue && !params.has('source') && !params.has('activeTask') && !params.has('prepareSubmitted')
+  && preparedBatches.length === 0 && taskResults.size === 0;
+if (params.has('queue') && !legacyReadyDemo) {
+  initialQueueIds = params.get('queue').split(',');
+} else if (isFamilyQueue || params.get('source') === 'journey-v2' || ['completed', 'cancelled', 'preparing'].includes(params.get('status'))) {
+  initialQueueIds = Object.keys(taskCatalog).filter(id => !taskCatalog[id].prepared && (taskCatalog[id].owner === 'boy' || (isFamilyQueue && !isSinglePlateModel)));
+}
 let familyQueueTasks = [...new Set(initialQueueIds)].filter(id => Object.hasOwn(taskCatalog, id) && id !== activeTaskId && !taskResults.has(id)).map(id => taskCatalog[id]);
 const TOTAL_SECONDS = activeTask.seconds;
 const PREPARATION_DURATION_SECONDS = 26;
@@ -317,7 +326,7 @@ function cancelTasksForActiveRole() {
 }
 
 function shouldShowEmptyQueue(status = currentStatus) {
-  return familyQueueTasks.length === 0 && (status === 'cancelled-all' || (isSinglePlateModel && !['ready', 'preparing'].includes(status)));
+  return familyQueueTasks.length === 0 && (status === 'cancelled-all' || (isSinglePlateModel && ['completed', 'cancelled'].includes(status)));
 }
 
 function renderPlateTaskAndQueue() {
@@ -383,8 +392,7 @@ function renderPlateTaskAndQueue() {
   const showEmpty = shouldShowEmptyQueue();
   queueEmpty.hidden = !showEmpty;
   queueToggle.disabled = showEmpty;
-  queueToggle.hidden = visibleQueueTasks.length === 0 && !showEmpty;
-  if (visibleQueueTasks.length === 0) printQueue.hidden = !showEmpty;
+  printQueue.classList.toggle('is-empty', visibleQueueTasks.length === 0 && !showEmpty);
 }
 
 function formatTime(totalSeconds) {
@@ -563,7 +571,8 @@ function setTaskStatus(status) {
   completedMyModelsButton.hidden = status !== 'completed' || !allCompleted;
   completionActions.classList.remove('is-single');
   const showEmpty = shouldShowEmptyQueue(status);
-  queueToggle.hidden = (isReady && !familyQueueTasks.some(task => task.prepared)) || isPreparing || (familyQueueTasks.length === 0 && !showEmpty);
+  queueToggle.hidden = isPreparing || (isReady && familyQueueTasks.length > 0 && !familyQueueTasks.some(task => task.prepared))
+    || (isTerminal && familyQueueTasks.length === 0 && !showEmpty);
   if (isCancelled && !queueToggle.hidden) {
     queueToggle.setAttribute('aria-expanded', 'true');
     printQueue.hidden = false;

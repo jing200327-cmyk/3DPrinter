@@ -172,6 +172,7 @@ button:focus-visible { outline: 3px solid rgb(70 155 223 / 42%); outline-offset:
 .chevron { width: 10px; height: 10px; border-right: 2px solid #9da1a8; border-bottom: 2px solid #9da1a8; transform: rotate(45deg) translateY(-3px); transition: transform 180ms ease; }
 .queue-toggle[aria-expanded="true"] .chevron { transform: rotate(225deg) translate(-2px, -1px); }
 .print-queue { padding: 0 20px 20px; }
+.print-queue.is-empty { padding: 0; }
 .print-queue[hidden] { display: none; }
 .queue-list { display: grid; gap: 10px; animation: queue-in 180ms ease-out; }
 .queue-item { display: block; width: 100%; overflow: hidden; padding: 0; border: 0; border-radius: 13px; background: transparent; cursor: pointer; }
