@@ -91,8 +91,15 @@
   };
   $('#exterior-light').addEventListener('click', event => toggle(event.currentTarget));
   $('#power-loss-resume').addEventListener('click', event => toggle(event.currentTarget));
+  /* 电机释放前校验喷嘴温度：低于 45℃ 才可释放，避免高温时移动打印头 */
+  const MOTOR_RELEASE_MAX_TEMP = 45;
   $('#motor-release').addEventListener('click', event => {
-    showToast(toggle(event.currentTarget) ? '电机已释放，可手动移动打印头' : '电机保持力矩已恢复');
+    const button = event.currentTarget;
+    const turningOn = button.getAttribute('aria-checked') !== 'true';
+    if (turningOn && currentTemperature >= MOTOR_RELEASE_MAX_TEMP) {
+      return showToast('当前喷嘴温度过高，请稍后重试');
+    }
+    showToast(toggle(button) ? '电机已释放，可手动移动打印头' : '电机保持力矩已恢复');
   });
   let moveStep = 1;
   const positions = { x: 0, y: 180, z: 180 };
