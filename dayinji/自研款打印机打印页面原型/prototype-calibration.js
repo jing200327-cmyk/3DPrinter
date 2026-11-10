@@ -63,8 +63,10 @@
   }
   function render(){
     $('#calibration-selection').hidden=Boolean(job);$('#calibration-running').hidden=!job;banner.hidden=!job;
-    if(!job){syncLock();return;}
+    if(!job){syncLock();window.PrinterBusy?.end('calibration');return;}
     const running=isRunning(), progress=running?Math.min(99,Math.floor((Date.now()-job.startedAt)/(job.endsAt-job.startedAt)*100)):100;
+    /* 调平校准进行中：工作台打印机状态按忙碌展示；结束或清空任务后回到空闲 */
+    if(running)window.PrinterBusy?.begin('calibration');else window.PrinterBusy?.end('calibration');
     const chosen=projects.filter(p=>job.projects.includes(p.id)), elapsed=Math.max(0,(Date.now()-job.startedAt)*20/60000);
     let cumulative=0,currentName='';
     $('#calibration-project-statuses').replaceChildren(...chosen.map(project=>{

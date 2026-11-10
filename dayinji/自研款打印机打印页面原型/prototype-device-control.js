@@ -65,7 +65,11 @@
     </dialog>`);
 
   $('#open-device-control').addEventListener('click', () => openReuseScreen('deviceControl'));
-  $('#open-motion-control').addEventListener('click', () => openReuseScreen('motionControl'));
+  $('#open-motion-control').addEventListener('click', () => {
+    /* 运动控制页打开期间视为正在控制设备：工作台打印机状态按忙碌展示 */
+    window.PrinterBusy?.begin('motion');
+    openReuseScreen('motionControl');
+  });
   $('#open-temperature-control').addEventListener('click', () => openReuseScreen('temperatureControl'));
   $('#device-control-back').addEventListener('click', goBackInReuseScreens);
   $('#motion-control-back').addEventListener('click', goBackInReuseScreens);
@@ -139,6 +143,7 @@
     window.clearInterval(temperatureTimer);
     temperatureTimer = null;
     operation = 'idle';
+    window.PrinterBusy?.end('temperature');
     renderTemperature(message);
   }
   $('#edit-nozzle-target').addEventListener('click', () => {
@@ -173,6 +178,8 @@
     if (name === 'heat' && currentTemperature >= goal) return renderTemperature('当前温度已达到目标温度');
     if (name === 'cool' && currentTemperature <= goal) return renderTemperature('已降至室温');
     operation = name;
+    /* 升温 / 降温进行中：工作台打印机状态按忙碌展示 */
+    window.PrinterBusy?.begin('temperature');
     const message = name === 'heat' ? '升温中…' : '降温中…';
     renderTemperature(message);
     temperatureTimer = window.setInterval(() => {
@@ -194,5 +201,10 @@
       if (cancelDialog.open) cancelDialog.close();
     }
   }).observe(temperatureScreen, { attributes: true, attributeFilter: ['hidden'] });
+  /* 离开运动控制页（返回或整屏关闭）即结束运动控制忙碌态 */
+  const motionScreen = $('#motion-control-screen');
+  new MutationObserver(() => {
+    if (motionScreen.hidden) window.PrinterBusy?.end('motion');
+  }).observe(motionScreen, { attributes: true, attributeFilter: ['hidden'] });
   renderTemperature();
 })();

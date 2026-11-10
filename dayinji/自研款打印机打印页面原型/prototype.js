@@ -497,9 +497,34 @@ function advancePreparation() {
   renderPreparation();
 }
 
+/* ---------- 打印机忙碌登记 ----------
+   打印任务之外，固件升级、运动控制、温度控制、调平校准、进退料进行中也算「忙碌」；
+   只要有一项在跑，工作台的打印机状态就显示忙碌，全部结束后回到空闲。 */
+const printerBusyReasons = new Set();
+/* ?busy=… 演示固定态：由参数种下的忙碌来源不随后续操作被清除 */
+const printerBusyForced = Boolean(params.get('busy'));
+function setPrinterBusy(reason, active) {
+  if (!active && printerBusyForced) return;
+  if (Boolean(active) === printerBusyReasons.has(reason)) return;
+  if (active) printerBusyReasons.add(reason); else printerBusyReasons.delete(reason);
+  renderPrinterConnectionState(currentStatus);
+}
+window.PrinterBusy = {
+  begin: (reason) => setPrinterBusy(reason, true),
+  end: (reason) => setPrinterBusy(reason, false),
+  has: (reason) => printerBusyReasons.has(reason),
+  any: () => printerBusyReasons.size > 0,
+  reasons: () => [...printerBusyReasons]
+};
+/* 演示台：?busy=1 或 ?busy=firmware,calibration 把状态固定在忙碌，便于截图核对工作台 */
+if (params.get('busy')) {
+  const reasons = params.get('busy') === '1' ? ['firmware', 'motion', 'temperature', 'calibration', 'filament'] : params.get('busy').split(',');
+  reasons.filter(Boolean).forEach((reason) => printerBusyReasons.add(reason));
+}
+
 function getPrinterConnectionStatus(taskStatus) {
   return printerConnectionState.dataset.recoveryState || connectionStatusOverride || printerCatalog.current?.status ||
-    (['ready', 'cancelled', 'cancelled-all', 'completed'].includes(taskStatus) ? 'idle' : 'busy');
+    (printerBusyReasons.size > 0 || !['ready', 'cancelled', 'cancelled-all', 'completed'].includes(taskStatus) ? 'busy' : 'idle');
 }
 
 function renderPrinterConnectionState(taskStatus) {
@@ -935,6 +960,7 @@ function firmwareHasUpdateContext() {
 }
 
 function stopFirmwareProgress() {
+  setPrinterBusy('firmware', false);
   window.clearInterval(firmwareProgressTimer);
   firmwareProgressTimer = null;
   window.clearTimeout(firmwareCompletionTimer);
@@ -997,6 +1023,7 @@ function startFirmwareProgress() {
   clearFirmwareNetwork();
   renderFirmwareProgress(0);
   firmwareProgressDemo.hidden = false;
+  setPrinterBusy('firmware', true);
   firmwareProgressTimer = window.setInterval(() => {
     if (firmwareNetworkPaused) return;
     const next = Math.min(100, firmwareProgress + FIRMWARE_PROGRESS_STEP);
@@ -1876,6 +1903,7 @@ function foStart(operation) {
   foState.tipShown = false;
   foHideTip();
   foRender();
+  setPrinterBusy('filament', true);
   foTimer = window.setInterval(foTick, foConfig.tick);
 }
 
@@ -1913,6 +1941,7 @@ function foTick() {
 function foComplete() {
   window.clearInterval(foTimer);
   foTimer = 0;
+  setPrinterBusy('filament', false);
   foState.running = false;
   foState.done = true;
   foState.progress = 1;
@@ -1977,6 +2006,7 @@ function foLeave() {
 function foAbort() {
   window.clearInterval(foTimer);
   foTimer = 0;
+  setPrinterBusy('filament', false);
   const operation = foState.operation;
   foState.running = false;
   foState.done = false;
