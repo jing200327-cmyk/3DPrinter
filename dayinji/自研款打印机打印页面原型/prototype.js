@@ -489,10 +489,14 @@ function advancePreparation() {
   renderPreparation();
 }
 
+function getPrinterConnectionStatus(taskStatus) {
+  return printerConnectionState.dataset.recoveryState || connectionStatusOverride || printerCatalog.current?.status ||
+    (['ready', 'cancelled', 'cancelled-all', 'completed'].includes(taskStatus) ? 'idle' : 'busy');
+}
+
 function renderPrinterConnectionState(taskStatus) {
   const printer = printerCatalog.current;
-  const connectionStatus = printerConnectionState.dataset.recoveryState || connectionStatusOverride || printer?.status ||
-    (['ready', 'cancelled', 'cancelled-all', 'completed'].includes(taskStatus) ? 'idle' : 'busy');
+  const connectionStatus = getPrinterConnectionStatus(taskStatus);
   printerConnectionState.dataset.connectionStatus = connectionStatus;
   printerConnectionStateLabel.textContent = printer ? PREPARE_PRINTER_LABELS[connectionStatus] : '未连接';
   workbenchPrinterName.textContent = printer?.name || '添加打印机';
@@ -1666,7 +1670,7 @@ fanFilterReplacedButton.addEventListener('click', () => {
   showToast('已更换滤芯，风扇剩余 400h');
 });
 
-/* ---------- 耗材面板：进退料入口始终可用，料盘选择仅用于展示 ---------- */
+/* ---------- 耗材面板 ---------- */
 function renderFilamentPanel() {
   renderPrepareFilamentState();
   if (filamentBackpack.active) return filamentBackpack.render();
@@ -1994,25 +1998,21 @@ function foFinish() {
   returnToPrintPreparation();
 }
 
-/* 点击入口不校验耗材；传感器校验位于安装引导的进料动作中。 */
-loadFilamentButton.addEventListener('click', () => {
-  if (filamentBackpack.active && !filamentBackpack.canOperate('feed')) return;
-  if (filamentPanel.dataset.filamentState === 'feeding') {
-    foEnter('feed');
-    return;
+function openWorkbenchFilament(operation) {
+  if (!printerCatalog.current) return showToast('未连接打印机');
+  const status = getPrinterConnectionStatus(currentStatus);
+  if (status !== 'idle' && !(status === 'busy' && currentStatus === 'paused')) {
+    const message = { busy: '当前打印机繁忙', offline: '打印机已离线', connecting: '打印机连接中' };
+    return showToast(message[status] || '打印机暂不可用');
   }
-  openFilamentGuide('feed');
-});
+  if (filamentBackpack.active && !filamentBackpack.canOperate(operation)) return;
+  const inProgress = operation === 'feed' ? 'feeding' : 'retracting';
+  if (filamentPanel.dataset.filamentState === inProgress) foEnter(operation);
+  else openFilamentGuide(operation);
+}
 
-/* 退料同样不依赖耗材选择。 */
-unloadFilamentButton.addEventListener('click', () => {
-  if (filamentBackpack.active && !filamentBackpack.canOperate('retract')) return;
-  if (filamentPanel.dataset.filamentState === 'retracting') {
-    foEnter('retract');
-    return;
-  }
-  openFilamentGuide('retract');
-});
+loadFilamentButton.addEventListener('click', () => openWorkbenchFilament('feed'));
+unloadFilamentButton.addEventListener('click', () => openWorkbenchFilament('retract'));
 
 /* 回退：不中断进程 */
 filamentOperationBack.addEventListener('click', foLeave);
