@@ -88,7 +88,11 @@
     syncLock();if(!running){window.clearInterval(timer);timer=null;}
   }
   function startTimer(){window.clearInterval(timer);render();if(isRunning())timer=window.setInterval(render,250);}
-  function openCalibration(){render();if(reuseStack.at(-1)!=='calibration')openReuseScreen('calibration');}
+  function openCalibration(){
+    /* 已有校准任务时进入是「查看进度」；只有全新发起才受打印机忙碌阻断 */
+    if(!job&&window.blockDeviceControlWhenUnavailable?.())return;
+    render();if(reuseStack.at(-1)!=='calibration')openReuseScreen('calibration');
+  }
   function leave(){if(job)closeReuseScreens();else goBackInReuseScreens();}
   document.querySelector('#open-level-calibration').addEventListener('click',openCalibration);banner.addEventListener('click',openCalibration);
   projects.forEach(p=>$(`#calibration-${p.id}`).addEventListener('change',updateSelection));

@@ -66,14 +66,24 @@
 
   $('#open-device-control').addEventListener('click', () => openReuseScreen('deviceControl'));
   $('#open-motion-control').addEventListener('click', () => {
+    /* 打印机忙碌时不允许进入运动控制 */
+    if (window.blockDeviceControlWhenUnavailable?.()) return;
     /* 运动控制页打开期间视为正在控制设备：工作台打印机状态按忙碌展示 */
     window.PrinterBusy?.begin('motion');
     openReuseScreen('motionControl');
   });
-  $('#open-temperature-control').addEventListener('click', () => openReuseScreen('temperatureControl'));
+  $('#open-temperature-control').addEventListener('click', () => {
+    /* 打印机忙碌时不允许进入温度控制 */
+    if (window.blockDeviceControlWhenUnavailable?.()) return;
+    openReuseScreen('temperatureControl');
+  });
   $('#device-control-back').addEventListener('click', goBackInReuseScreens);
   $('#motion-control-back').addEventListener('click', goBackInReuseScreens);
-  $('#temperature-back').addEventListener('click', goBackInReuseScreens);
+  $('#temperature-back').addEventListener('click', () => {
+    /* 升温 / 降温进行中不允许退出页面 */
+    if (operation !== 'idle') return showToast('当前喷头加热/降温中，请勿退出');
+    goBackInReuseScreens();
+  });
   const toggle = button => {
     const checked = button.getAttribute('aria-checked') !== 'true';
     button.setAttribute('aria-checked', String(checked));

@@ -527,6 +527,25 @@ function getPrinterConnectionStatus(taskStatus) {
     (printerBusyReasons.size > 0 || !['ready', 'cancelled', 'cancelled-all', 'completed'].includes(taskStatus) ? 'busy' : 'idle');
 }
 
+/* 忽略某一项自身造成的忙碌后再判定状态：进退料入口用它区分「自己正在跑」和「被别的操作占用」 */
+function printerStatusExcept(reason) {
+  const status = getPrinterConnectionStatus(currentStatus);
+  if (status !== 'busy' || !printerBusyReasons.has(reason)) return status;
+  const otherOperationBusy = [...printerBusyReasons].some((item) => item !== reason);
+  const taskBusy = !['ready', 'cancelled', 'cancelled-all', 'completed'].includes(currentStatus);
+  return otherOperationBusy || taskBusy || printerCatalog.current?.status === 'busy' ? 'busy' : 'idle';
+}
+
+/* 设备控制类入口（运动控制、温度控制、调平校准）的统一前置校验：忙碌时阻断并提示 */
+function blockDeviceControlWhenUnavailable() {
+  const status = getPrinterConnectionStatus(currentStatus);
+  if (status === 'idle') return false;
+  const message = { busy: '当前打印机繁忙', offline: '打印机已离线', connecting: '打印机连接中' };
+  showToast(message[status] || '打印机暂不可用');
+  return true;
+}
+window.blockDeviceControlWhenUnavailable = blockDeviceControlWhenUnavailable;
+
 function renderPrinterConnectionState(taskStatus) {
   const printer = printerCatalog.current;
   const connectionStatus = getPrinterConnectionStatus(taskStatus);
@@ -2039,15 +2058,21 @@ function foFinish() {
 
 function openWorkbenchFilament(operation) {
   if (!printerCatalog.current) return showToast('未连接打印机');
-  const status = getPrinterConnectionStatus(currentStatus);
+  const inProgress = operation === 'feed' ? 'feeding' : 'retracting';
+  /* 同一条进退料正在进行：按钮即「回到进度页」，不能按繁忙阻断自己 */
+  if (filamentPanel.dataset.filamentState === inProgress) {
+    if (filamentBackpack.active && !filamentBackpack.canOperate(operation)) return;
+    foEnter(operation);
+    return;
+  }
+  /* 判定时忽略本操作自身造成的忙碌，让「进料中点击退料」仍走互斥提示 */
+  const status = printerStatusExcept('filament');
   if (status !== 'idle' && !(status === 'busy' && currentStatus === 'paused')) {
     const message = { busy: '当前打印机繁忙', offline: '打印机已离线', connecting: '打印机连接中' };
     return showToast(message[status] || '打印机暂不可用');
   }
   if (filamentBackpack.active && !filamentBackpack.canOperate(operation)) return;
-  const inProgress = operation === 'feed' ? 'feeding' : 'retracting';
-  if (filamentPanel.dataset.filamentState === inProgress) foEnter(operation);
-  else openFilamentGuide(operation);
+  openFilamentGuide(operation);
 }
 
 loadFilamentButton.addEventListener('click', () => openWorkbenchFilament('feed'));
