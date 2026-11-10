@@ -615,7 +615,8 @@ function setTaskStatus(status) {
   completedMyModelsButton.hidden = status !== 'completed' || !allCompleted;
   completionActions.classList.remove('is-single');
   const showEmpty = shouldShowEmptyQueue(status);
-  queueToggle.hidden = isPreparing || (isReady && familyQueueTasks.length > 0 && !familyQueueTasks.some(task => task.prepared))
+  /* 准备中也保留打印队列；仅「可打印」或终态且无待打印任务时收起 */
+  queueToggle.hidden = (isReady && familyQueueTasks.length > 0 && !familyQueueTasks.some(task => task.prepared))
     || (isTerminal && familyQueueTasks.length === 0 && !showEmpty);
   if (isCancelled && !queueToggle.hidden) {
     queueToggle.setAttribute('aria-expanded', 'true');
