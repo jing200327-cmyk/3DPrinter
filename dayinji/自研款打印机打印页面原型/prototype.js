@@ -98,7 +98,16 @@ const activeTaskOwnerCard = document.querySelector('#active-task-owner-card');
 const activeTaskOwnerAvatar = document.querySelector('#active-task-owner-avatar');
 const taskTitle = document.querySelector('#task-title');
 const taskMeta = document.querySelector('.task-meta');
-const queueTaskButtons = [...document.querySelectorAll('[data-queue-task]')];
+/* 打印队列：模型层为第一层，盘为第二层，均由脚本按队列数据渲染 */
+const queueList = document.querySelector('#queue-list');
+const queueModelTemplate = document.querySelector('#queue-model-template');
+const queuePlateTemplate = document.querySelector('#queue-plate-template');
+/* 模型层展开状态：默认全部收起，展开/收起状态在本次会话内保留 */
+const queueModelExpanded = new Set();
+/* 长按聚焦中的盘与待删除的盘 */
+let queueFocusTaskId = null;
+let pendingDeletePlateId = null;
+let queueEmptiedByDelete = false;
 
 const params = new URLSearchParams(window.location.search);
 const connectionStatusOverride = params.get('connection') === 'offline' ? 'offline' : null;
@@ -329,6 +338,182 @@ function shouldShowEmptyQueue(status = currentStatus) {
   return familyQueueTasks.length === 0 && (status === 'cancelled-all' || (isSinglePlateModel && ['completed', 'cancelled'].includes(status)));
 }
 
+/* ---------- 打印队列：模型层（第一层）+ 盘（第二层） ---------- */
+/* 同一模型的多个盘按提交批次 submission 聚合；模型名取盘名去掉盘序与文件号后的主干。 */
+function modelNameOf(task) {
+  const title = String(task.title || '');
+  const head = title.split('_')[0];
+  return head || title || '未命名模型';
+}
+
+function groupQueueByModel(tasks) {
+  const groups = [];
+  const index = new Map();
+  for (const task of tasks) {
+    const key = task.submission || task.id;
+    if (!index.has(key)) {
+      const group = { key, name: modelNameOf(task), tasks: [] };
+      index.set(key, group);
+      groups.push(group);
+    }
+    index.get(key).tasks.push(task);
+  }
+  return groups;
+}
+
+function formatQueueDuration(totalSeconds) {
+  const minutes = Math.max(1, Math.round(totalSeconds / 60));
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  if (hours && rest) return `${hours} h ${rest} min`;
+  if (hours) return `${hours} h`;
+  return `${rest} min`;
+}
+
+function buildQueuePlateCard(task) {
+  const wrap = queuePlateTemplate.content.firstElementChild.cloneNode(true);
+  const isGirlTask = task.owner === 'girl';
+  const card = wrap.querySelector('.queue-item');
+  const image = wrap.querySelector('.queue-task-artwork');
+  const avatar = wrap.querySelector('.task-owner-avatar');
+  const deleteButton = wrap.querySelector('.queue-item-delete');
+
+  wrap.dataset.queueId = task.id;
+  wrap.dataset.owner = task.owner;
+  card.classList.add(isGirlTask ? 'owner-task-card--girl' : 'owner-task-card--boy');
+  image.src = task.queueAsset;
+  image.alt = `${task.title}，等待打印`;
+  avatar.src = `../../src/dayinjirenwukongzhi/人物头像-${isGirlTask ? '女孩' : '男孩'}.png`;
+  wrap.setAttribute('aria-label', `${task.title}，等待打印`);
+
+  deleteButton.setAttribute('aria-label', `删除${task.title}这一盘`);
+  deleteButton.addEventListener('click', (event) => {
+    event.stopPropagation();
+    requestDeletePlate(task);
+  });
+  attachPlateLongPress(wrap, task);
+  return wrap;
+}
+
+/* 盘不可点击：长按（触屏/鼠标均可）进入聚焦态，聚焦后出现删除按钮 */
+const PLATE_LONG_PRESS_MS = 480;
+function attachPlateLongPress(wrap, task) {
+  let timer = null;
+  let startX = 0;
+  let startY = 0;
+  const cancelTimer = () => {
+    if (timer !== null) window.clearTimeout(timer);
+    timer = null;
+  };
+  wrap.addEventListener('pointerdown', (event) => {
+    if (event.button !== 0 && event.pointerType === 'mouse') return;
+    startX = event.clientX;
+    startY = event.clientY;
+    cancelTimer();
+    timer = window.setTimeout(() => {
+      timer = null;
+      enterQueueFocus(task.id);
+    }, PLATE_LONG_PRESS_MS);
+  });
+  wrap.addEventListener('pointermove', (event) => {
+    if (timer === null) return;
+    if (Math.abs(event.clientX - startX) > 8 || Math.abs(event.clientY - startY) > 8) cancelTimer();
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach((type) => wrap.addEventListener(type, cancelTimer));
+  wrap.addEventListener('contextmenu', (event) => {
+    if (queueFocusTaskId) event.preventDefault();
+  });
+}
+
+function enterQueueFocus(taskId) {
+  queueFocusTaskId = taskId;
+  printQueue.classList.add('is-focusing');
+  queueList.querySelectorAll('.queue-item-wrap').forEach((wrap) => {
+    wrap.classList.toggle('is-focused', wrap.dataset.queueId === taskId);
+  });
+}
+
+function exitQueueFocus() {
+  if (!queueFocusTaskId) return;
+  queueFocusTaskId = null;
+  printQueue.classList.remove('is-focusing');
+  queueList.querySelectorAll('.queue-item-wrap.is-focused').forEach((wrap) => wrap.classList.remove('is-focused'));
+}
+
+function requestDeletePlate(task) {
+  pendingDeletePlateId = task.id;
+  openDialog({
+    title: '是否要删除该盘',
+    dismissText: '取消',
+    dismissTone: 'neutral',
+    confirmText: '确认',
+    confirmTone: 'danger',
+    action: 'delete-plate'
+  });
+}
+
+function deleteQueuePlate(taskId) {
+  const target = familyQueueTasks.find((task) => task.id === taskId);
+  if (!target) {
+    exitQueueFocus();
+    return;
+  }
+  familyQueueTasks = familyQueueTasks.filter((task) => task.id !== taskId);
+  /* 队列快照写回链接，刷新后保持删除结果 */
+  window.history.replaceState(null, '', taskSessionUrl());
+  exitQueueFocus();
+  const modelGone = !familyQueueTasks.some((task) => (task.submission || task.id) === (target.submission || target.id));
+  queueEmptiedByDelete = familyQueueTasks.length === 0;
+  renderPlateTaskAndQueue();
+  showToast(modelGone ? '已删除该盘，该模型已全部移出队列' : '已删除该盘');
+}
+
+function renderPrintQueue(tasks) {
+  const groups = groupQueueByModel(tasks);
+  if (!groups.length) {
+    queueList.replaceChildren();
+    exitQueueFocus();
+    return;
+  }
+  const frag = document.createDocumentFragment();
+  for (const group of groups) {
+    const node = queueModelTemplate.content.firstElementChild.cloneNode(true);
+    const head = node.querySelector('.queue-model-head');
+    const plateBox = node.querySelector('.queue-model-plates');
+    const expanded = queueModelExpanded.has(group.key);
+    const totalSeconds = group.tasks.reduce((sum, task) => sum + (task.seconds || 0), 0);
+    const totalGrams = group.tasks.reduce((sum, task) => sum + (task.grams || 0), 0);
+
+    node.dataset.modelKey = group.key;
+    node.classList.toggle('is-collapsed', !expanded);
+    head.setAttribute('aria-expanded', String(expanded));
+    head.setAttribute('aria-label', `${group.name}，共 ${group.tasks.length} 个盘，${expanded ? '收起' : '展开'}盘列表`);
+    node.querySelector('.queue-model-name').textContent = group.name;
+    node.querySelector('.queue-model-meta').textContent = `${group.tasks.length} 个盘 · ${formatQueueDuration(totalSeconds)} · ${totalGrams} g`;
+    head.addEventListener('click', () => {
+      /* 聚焦态下点击模型层先退出聚焦，回到原打印队列 */
+      if (queueFocusTaskId) {
+        exitQueueFocus();
+        return;
+      }
+      if (queueModelExpanded.has(group.key)) queueModelExpanded.delete(group.key);
+      else queueModelExpanded.add(group.key);
+      renderPrintQueue(getVisibleQueueTasks());
+    });
+
+    plateBox.hidden = !expanded;
+    for (const task of group.tasks) plateBox.appendChild(buildQueuePlateCard(task));
+    frag.appendChild(node);
+  }
+  queueList.replaceChildren(frag);
+  printQueue.classList.toggle('is-focusing', Boolean(queueFocusTaskId));
+  if (queueFocusTaskId) {
+    queueList.querySelectorAll('.queue-item-wrap').forEach((wrap) => {
+      wrap.classList.toggle('is-focused', wrap.dataset.queueId === queueFocusTaskId);
+    });
+  }
+}
+
 function renderPlateTaskAndQueue() {
   const activeTaskIsGirl = activeGirlTaskId !== null;
   const visibleQueueTasks = getVisibleQueueTasks();
@@ -342,54 +527,9 @@ function renderPlateTaskAndQueue() {
   taskTitle.textContent = activeTask.title;
   taskMeta.textContent = `${activeTask.duration} · PLA · ${activeTask.grams} g`;
 
-  while (queueTaskButtons.length < visibleQueueTasks.length) {
-    const button = queueTaskButtons[0].cloneNode(true);
-    button.removeAttribute('id');
-    button.dataset.dynamicQueue = 'true';
-    button.querySelectorAll('[id]').forEach(node => node.removeAttribute('id'));
-    button.addEventListener('click', () => openQueueTaskSettings(button.dataset.queueId));
-    printQueue.querySelector('.queue-list').append(button);
-    queueTaskButtons.push(button);
-  }
-  queueTaskButtons.forEach((button, index) => {
-    const queueTask = visibleQueueTasks[index];
-    button.hidden = !queueTask;
-    if (!queueTask) {
-      button.removeAttribute('data-plate');
-      button.removeAttribute('data-task');
-      button.removeAttribute('data-queue-id');
-      button.removeAttribute('aria-label');
-      const image = button.querySelector('.queue-task-artwork');
-      image.removeAttribute('src');
-      image.alt = '';
-      return;
-    }
-    const isGirlTask = queueTask.owner === 'girl';
-    const image = button.querySelector('.queue-task-artwork');
-    const avatar = button.querySelector('.task-owner-avatar');
-    button.dataset.queueId = queueTask.id;
-    button.disabled = !canControlQueueTask(queueTask);
-    button.dataset.owner = queueTask.owner;
-    button.classList.toggle('owner-task-card--boy', !isGirlTask);
-    button.classList.toggle('owner-task-card--girl', isGirlTask);
-    if (isGirlTask) {
-      button.removeAttribute('data-plate');
-      button.dataset.task = queueTask.task;
-      button.setAttribute('aria-label', `女孩发起的${queueTask.title}，打开打印设置`);
-      image.src = queueTask.queueAsset;
-      image.alt = `${queueTask.title}，等待打印`;
-      avatar.src = '../../src/dayinjirenwukongzhi/人物头像-女孩.png';
-    } else {
-      button.dataset.plate = queueTask.plate;
-      button.removeAttribute('data-task');
-      button.setAttribute('aria-label', `男孩发起的盘 ${queueTask.plate}，打开打印设置`);
-      image.src = queueTask.queueAsset;
-      image.alt = `盘 ${queueTask.plate}，${queueTask.title}，等待打印`;
-      avatar.src = '../../src/dayinjirenwukongzhi/人物头像-男孩.png';
-    }
-  });
+  renderPrintQueue(visibleQueueTasks);
   queueToggle.querySelector('small').textContent = `${visibleQueueTasks.length} 个待打印任务`;
-  const showEmpty = shouldShowEmptyQueue();
+  const showEmpty = shouldShowEmptyQueue() || (queueEmptiedByDelete && visibleQueueTasks.length === 0);
   queueEmpty.hidden = !showEmpty;
   queueToggle.disabled = showEmpty;
   printQueue.classList.toggle('is-empty', visibleQueueTasks.length === 0 && !showEmpty);
@@ -764,8 +904,10 @@ function canControlQueueTask(task) {
   return task && (document.querySelector('#device-settings-screen').dataset.account !== 'child' || task.owner === 'boy');
 }
 
-function canStartQueueTask(task) {
-  return canControlQueueTask(task) && familyQueueTasks.some(item => item.id === task.id)
+function canStartQueueTask(task, options) {
+  /* 「下一盘」对所有成员（家长与儿童）都可操作，不受任务归属限制；其他入口仍按归属校验 */
+  const permitted = options && options.allowAnyMember ? Boolean(task) : canControlQueueTask(task);
+  return permitted && familyQueueTasks.some(item => item.id === task.id)
     && printerCatalog.current && preparePrinterStatus === 'idle'
     && !['preparing', 'printing', 'paused'].includes(currentStatus);
 }
@@ -814,16 +956,17 @@ function pickNextQueuedTask() {
 }
 
 function startNextPlate() {
+  /* 无论模型层是否展开，下一盘始终取队列队首任务 */
   const nextTask = pickNextQueuedTask();
   if (!nextTask) {
     showToast('打印队列里已经没有待打印任务了');
     return;
   }
-  startQueuedTask(nextTask);
+  startQueuedTask(nextTask, undefined, { allowAnyMember: true });
 }
 
-function startQueuedTask(nextTask, options) {
-  if (!canStartQueueTask(nextTask)) return;
+function startQueuedTask(nextTask, options, startOptions) {
+  if (!canStartQueueTask(nextTask, startOptions)) return;
   familyQueueTasks = familyQueueTasks.filter(task => task.id !== nextTask.id);
   const next = taskSessionUrl('preparing');
   next.searchParams.delete('screen');
@@ -897,7 +1040,13 @@ finishButton.addEventListener('click', () => {
   showToast('已进入打印完成状态');
 });
 
-document.querySelectorAll('[data-queue-task]:not([data-dynamic-queue])').forEach((task) => task.addEventListener('click', () => openQueueTaskSettings(task.dataset.queueId)));
+/* 打印队列里的盘不可点击：点击聚焦区以外的地方退出聚焦，回到原队列状态 */
+document.addEventListener('pointerdown', (event) => {
+  if (!queueFocusTaskId) return;
+  const target = event.target instanceof Element ? event.target : null;
+  if (target && (target.closest('.queue-item-wrap.is-focused') || target.closest('.queue-item-delete') || target.closest('#action-dialog'))) return;
+  exitQueueFocus();
+}, true);
 nextPlateButton.addEventListener('click', startNextPlate);
 restartPrintButton.addEventListener('click', restartPrint);
 completedMyModelsButton.addEventListener('click', () => openReference('我的模型.jpg', '我的模型', completedMyModelsButton));
@@ -2175,6 +2324,12 @@ dialog.addEventListener('close', () => {
         showToast('已取消当前打印任务');
       });
     }
+  }
+  /* 删除盘：确认后删盘并让下方盘补位；取消（含右上角 ×）回到原打印队列状态 */
+  if (pendingAction === 'delete-plate') {
+    if (dialog.returnValue === 'confirm') deleteQueuePlate(pendingDeletePlateId);
+    else exitQueueFocus();
+    pendingDeletePlateId = null;
   }
   pendingAction = null;
 });

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f4f5fa">
   <title>自研款打印机打印页面原型</title>
-  <link rel="stylesheet" href="styles.css?v=timelapse-baked-1">
+  <link rel="stylesheet" href="styles.css?v=queue-model-20261111">
   <link rel="stylesheet" href="styles-share-printer.css?v=r008">
   <link rel="stylesheet" href="styles-filament-operation.css?v=r009">
   <link rel="stylesheet" href="styles-3d-preview.css?v=r009">
@@ -117,25 +117,46 @@
         </button>
         <div id="print-queue" class="print-queue" hidden>
           <p id="queue-empty" class="queue-empty" hidden>当前打印队列为空</p>
-          <div class="queue-list">
-            <button id="queued-task" class="queue-item owner-task-card owner-task-card--boy" type="button" data-queue-task="1" data-plate="2" data-owner="boy" aria-label="男孩发起的盘 2，打开打印设置">
-              <img id="queue-task-image-one" class="queue-task-artwork" src="../../src/dayinji/打印队列2.jpg" alt="盘 2，等待打印">
-              <img id="queue-task-owner-avatar-one" class="task-owner-avatar" src="../../src/dayinjirenwukongzhi/人物头像-男孩.png" alt="" aria-hidden="true">
-            </button>
-            <button id="queued-task-second" class="queue-item owner-task-card owner-task-card--boy" type="button" data-queue-task="2" data-plate="3" data-owner="boy" aria-label="男孩发起的盘 3，打开打印设置">
-              <img id="queue-task-image-two" class="queue-task-artwork" src="../../src/dayinji/打印队列3.jpg" alt="盘 3，等待打印">
-              <img id="queue-task-owner-avatar-two" class="task-owner-avatar" src="../../src/dayinjirenwukongzhi/人物头像-男孩.png" alt="" aria-hidden="true">
-            </button>
-            <button id="queued-girl-task-one" class="queue-item owner-task-card owner-task-card--girl" type="button" data-queue-task="3" data-task="girl-1" data-owner="girl" aria-label="女孩发起的待打印任务 1，打开打印设置">
-              <img id="queue-task-image-girl-one" class="queue-task-artwork" src="../../src/dayinjirenwukongzhi/女孩的待打印任务__1.jpg" alt="女孩的待打印任务 1">
-              <img id="queue-task-owner-avatar-girl-one" class="task-owner-avatar" src="../../src/dayinjirenwukongzhi/人物头像-女孩.png" alt="" aria-hidden="true">
-            </button>
-            <button id="queued-girl-task-two" class="queue-item owner-task-card owner-task-card--girl" type="button" data-queue-task="4" data-task="girl-2" data-owner="girl" aria-label="女孩发起的待打印任务 2，打开打印设置">
-              <img id="queue-task-image-girl-two" class="queue-task-artwork" src="../../src/dayinjirenwukongzhi/女孩的待打印任务_2.jpg" alt="女孩的待打印任务 2">
-              <img id="queue-task-owner-avatar-girl-two" class="task-owner-avatar" src="../../src/dayinjirenwukongzhi/人物头像-女孩.png" alt="" aria-hidden="true">
-            </button>
-          </div>
+          <!-- 打印队列：模型层（第一层）→ 盘（第二层），由 prototype.js 按队列数据渲染 -->
+          <div id="queue-list" class="queue-list" role="list"></div>
         </div>
+
+        <!-- 打印队列模板：模型层（可展开/收起）；盘卡片不可点击，长按聚焦后出现删除按钮 -->
+        <template id="queue-model-template">
+          <section class="queue-model" role="listitem">
+            <button class="queue-model-head" type="button" aria-expanded="false">
+              <span class="queue-model-icon" aria-hidden="true">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
+                  <path d="M10 2.6 17.2 6 10 9.4 2.8 6 10 2.6Z"></path>
+                  <path d="M3.4 10 10 13.1l6.6-3.1"></path>
+                  <path d="M3.4 14 10 17.1l6.6-3.1"></path>
+                </svg>
+              </span>
+              <span class="queue-model-text">
+                <strong class="queue-model-name"></strong>
+                <small class="queue-model-meta"></small>
+              </span>
+              <span class="chevron" aria-hidden="true"></span>
+            </button>
+            <div class="queue-model-plates" role="list"></div>
+          </section>
+        </template>
+        <template id="queue-plate-template">
+          <div class="queue-item-wrap" role="listitem">
+            <button class="queue-item-delete" type="button" aria-label="删除该盘">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 6h12"></path>
+                <path d="M8 6V4.4c0-.5.4-.9.9-.9h2.2c.5 0 .9.4.9.9V6"></path>
+                <path d="M5.6 6l.7 9.1c.1.7.6 1.2 1.3 1.2h4.8c.7 0 1.2-.5 1.3-1.2L14.4 6"></path>
+                <path d="M8.6 9v4.4M11.4 9v4.4"></path>
+              </svg>
+            </button>
+            <div class="queue-item owner-task-card">
+              <img class="queue-task-artwork" alt="">
+              <img class="task-owner-avatar" alt="" aria-hidden="true">
+            </div>
+          </div>
+        </template>
       </section>
 
       <!-- 任务控制面板下方的固件升级提醒条：白底黑字 + 橙色带下划线的“立即升级>”，点击进设备设置页 -->
@@ -1236,7 +1257,7 @@
   </dialog>
   <script src="prototype-filament-backpack.js?v=2"></script>
   <script src="prototype-prepare-backpack.js?v=3"></script>
-  <script src="prototype.js?v=timelapse-baked-1"></script>
+  <script src="prototype.js?v=queue-model-20261111"></script>
   <script src="prototype-device-control.js?v=motor-temp-1"></script>
   <script src="prototype-calibration.js?v=busy-3"></script>
   <script src="prototype-family-queue.js?v=queue-7"></script>

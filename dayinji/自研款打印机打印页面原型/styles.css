@@ -174,14 +174,38 @@ button:focus-visible { outline: 3px solid rgb(70 155 223 / 42%); outline-offset:
 .print-queue { padding: 0 20px 20px; }
 .print-queue.is-empty { padding: 0; }
 .print-queue[hidden] { display: none; }
-.queue-list { display: grid; gap: 10px; animation: queue-in 180ms ease-out; }
-.queue-item { display: block; width: 100%; overflow: hidden; padding: 0; border: 0; border-radius: 13px; background: transparent; cursor: pointer; }
-.queue-item.owner-task-card { border-width: 3px; border-style: solid; }
+.queue-list { display: grid; gap: 12px; animation: queue-in 180ms ease-out; }
+
+/* 打印队列第一层：模型层（默认收起，点击展开该模型的盘） */
+.queue-model { border: 1px solid var(--line); border-radius: 14px; background: #fff; box-shadow: 0 2px 10px rgb(50 55 72 / 5%); }
+.queue-model-head { display: flex; width: 100%; align-items: center; gap: 10px; padding: 12px 14px; border: 0; border-radius: 14px; background: transparent; text-align: left; cursor: pointer; }
+.queue-model-icon { display: grid; width: 30px; height: 30px; flex: 0 0 30px; place-items: center; border-radius: 9px; color: #4d9cff; background: #edf4ff; }
+.queue-model-icon svg { width: 17px; height: 17px; }
+.queue-model-text { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 2px; }
+.queue-model-name { overflow: hidden; font-size: 15px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.queue-model-meta { color: var(--muted); font-size: 12px; }
+.queue-model-head .chevron { flex: 0 0 auto; }
+.queue-model-head[aria-expanded="true"] .chevron { transform: rotate(225deg) translate(-2px, -1px); }
+.queue-model-plates { display: grid; gap: 10px; padding: 0 12px 12px; }
+.queue-model-plates[hidden] { display: none; }
+.queue-model.is-collapsed .queue-model-head { padding-bottom: 13px; }
+
+/* 打印队列第二层：盘卡片（不可点击，长按聚焦后出现删除按钮） */
+.queue-item-wrap { position: relative; }
+.queue-item { display: block; overflow: hidden; border: 3px solid transparent; border-radius: 13px; background: transparent; transition: transform 180ms ease, box-shadow 180ms ease; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .queue-item.owner-task-card--boy { border-color: #4d9cff; }
 .queue-item.owner-task-card--girl { border-color: #36b77e; }
-.queue-item[hidden] { display: none; }
 .queue-item .queue-task-artwork { display: block; width: 100%; height: auto; }
-.queue-item .task-owner-avatar { top: 7px; left: 7px; width: 31px; height: 31px; }
+.queue-item .task-owner-avatar { top: 7px; left: 7px; width: 31px; height: 31px; pointer-events: none; }
+
+/* 长按聚焦：当前盘放大，其它盘虚焦 */
+.print-queue.is-focusing .queue-item-wrap { transition: opacity 180ms ease, filter 180ms ease, transform 180ms ease; }
+.print-queue.is-focusing .queue-item-wrap:not(.is-focused) { opacity: .4; filter: blur(2.4px); transform: scale(.985); }
+.queue-item-wrap.is-focused { z-index: 3; }
+.queue-item-wrap.is-focused .queue-item { transform: scale(1.04); box-shadow: 0 14px 30px rgb(38 45 60 / 22%); }
+.queue-item-delete { position: absolute; z-index: 4; top: -15px; left: 50%; display: grid; width: 34px; height: 34px; place-items: center; padding: 0; border: 1px solid #ffe1e4; border-radius: 50%; color: var(--danger); background: #fff; box-shadow: 0 6px 16px rgb(38 45 60 / 20%); opacity: 0; pointer-events: none; transform: translate(-50%, 2px) scale(.86); transition: opacity 160ms ease, transform 160ms ease; cursor: pointer; }
+.queue-item-delete svg { width: 17px; height: 17px; }
+.queue-item-wrap.is-focused .queue-item-delete { opacity: 1; pointer-events: auto; transform: translate(-50%, 0) scale(1); }
 @keyframes queue-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
 
 .filament-panel { overflow: visible; background: transparent; }
