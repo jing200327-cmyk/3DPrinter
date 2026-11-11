@@ -27,7 +27,7 @@
 .prepare-section-title { position: absolute; top: 24.3%; left: 5.7%; margin: 0; font-size: 4.4cqw; font-weight: 500; }
 .prepare-page .prepare-plate { left: 5.5%; width: 89%; height: 16%; border-radius: 3.5cqw; background: #fff; }
 .prepare-page .plate-row-ring, .prepare-page .state-row-ring { z-index: 0; inset: 0; border-radius: inherit; }
-.prepare-page .prepare-plate[aria-selected="true"] :is(.plate-row-ring, .state-row-ring) { background: #f0fbf6; border-color: #23c662; box-shadow: 0 0 0 2px #e0f8e8, 0 3px 8px #22c55e1f; }
+/* 勾选框是唯一的「要打这盘」表达：准备打印页不再给任何一盘加绿色整行高光 */
 .prepare-model { position: absolute; left: 3.2%; top: 8%; width: 37%; height: 65%; overflow: hidden; border-radius: 2cqw; background: #f5f5fa; }
 .prepare-model img { display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; }
 .prepare-plate-info { position: absolute; top: 8%; left: 45%; width: 50%; display: flex; align-items: baseline; gap: 2cqw; }

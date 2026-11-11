@@ -24,7 +24,9 @@
   </div></div>`;
   const rows = tasks.map((task, index) => {
     const row = document.querySelector('#prepare-plate-list .plate-row').cloneNode(true);
-    row.setAttribute('role', 'option');
+    /* 与打印旅程一致：行只承担排序，不再有「选中高光」这套交互 */
+    row.setAttribute('role', 'group');
+    row.setAttribute('aria-label', `盘 ${index + 1}`);
     row.classList.replace('plate-row', 'family-plate-row');
     row.dataset.plate = task.id;
     row.dataset.slot = index;
@@ -51,7 +53,8 @@
     });
     hit.addEventListener('click', () => {
       if (suppressClick) { suppressClick = false; return; }
-      if (readonly && !familyQueueTasks.some(item => item.id === task.id)) return;
+      /* 只读的队列详情不再靠点击切换「这一盘」，避免没有高光提示的隐性状态 */
+      if (readonly) return;
       selected = task.id;
       render();
     });
@@ -101,7 +104,6 @@
       const id = row.dataset.plate;
       const pending = familyQueueTasks.some(task => task.id === id);
       const result = taskResults.get(id) || (id === activeTaskId && currentStatus !== 'ready' ? resolvePrepareStateKey() : null);
-      row.querySelector('.plate-row-hit').disabled = readonly && !pending;
       row.querySelector('.plate-3d-btn').disabled = Boolean(readonly && result);
       row.querySelector('.family-result-stamp')?.remove();
       row.classList.toggle('is-stamped', Boolean(readonly && result));
@@ -113,8 +115,9 @@
         row.append(stamp);
       }
       row.dataset.slot = order.indexOf(id);
-      row.setAttribute('aria-selected', String(row.dataset.plate === selected));
       row.querySelector('.plate-row-hit').style.touchAction = readonly ? 'auto' : 'none';
+      /* 只读详情没有可执行的排序/选中操作，整行不再可点 */
+      row.querySelector('.plate-row-hit').disabled = readonly;
       /* 队列详情（只读）下勾选项固定反映队列里已有的盘，不可再改 */
       const box = row.querySelector('.prepare-plate-check');
       box.checked = readonly ? pending : checked.has(id);
