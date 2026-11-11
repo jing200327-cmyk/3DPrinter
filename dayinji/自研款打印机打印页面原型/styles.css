@@ -307,15 +307,8 @@ body.operation-open { overflow: hidden; }
 /* 延时摄影页：右上角删除图标（按 2800×1711 原图量取，热区中心正好压在图标中心上） */
 /* 准备打印页：底部“开始打印”（按 311×675 原图量取） */
 .reuse-hotspot--start-print { left: 1.61%; top: 92.59%; width: 97.75%; height: 6.82%; border-radius: 999px; }
-/* 暂停中 / 继续打印中 / 取消中 过渡弹窗：全屏遮罩（弱化底层打印页）+ 白色圆角卡片 */
-.transition-overlay { position: fixed; z-index: 60; inset: 0; display: grid; place-items: center; background: rgb(28 32 44 / 38%); backdrop-filter: blur(2px); }
-.transition-overlay[hidden] { display: none; }
-.transition-card { position: relative; display: grid; justify-items: center; gap: 10px; width: 218px; padding: 34px 20px 24px; border-radius: 24px; background: #fff; box-shadow: 0 18px 48px rgb(28 32 44 / 22%); }
-.transition-mascot { display: block; width: 136px; height: 200px; object-fit: contain; -webkit-user-drag: none; user-select: none; }
-#transition-overlay .transition-mascot { width: 104px; height: 136px; }
-.transition-label { margin: 0; color: #1c1c1e; font-size: 17px; font-weight: 600; letter-spacing: 0; }
-.transition-close { position: absolute; top: 10px; right: 10px; display: grid; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%; color: #6b7280; background: transparent; font-size: 22px; line-height: 1; cursor: pointer; place-items: center; }
-.transition-close:hover { background: #f1f2f4; }
+/* 暂停 / 继续 / 取消已改为只走按钮等待态，不再有“处理中”弹窗样式 */
+
 
 /* 准备打印页：延时摄影右侧的勾选框（按 311×675 原图量取，命中盒 44px 居中在原勾选框上，
    勾选态完全透明让原图烘焙的绿色勾选框透出来，取消勾选时才盖上自绘的白框）。 */

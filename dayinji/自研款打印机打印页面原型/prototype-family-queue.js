@@ -5,6 +5,8 @@
   const tasks = ['girl-1', 'girl-2'].map(id => taskCatalog[id]);
   let order = tasks.map(task => task.id);
   let selected = order[0];
+  /* 与打印旅程准备打印页一致：按盘勾选提交，默认全选所有盘 */
+  const checked = new Set(tasks.map(task => task.id));
   let readonly = false;
   let submittedOptions = { leveling: false, timelapse: true };
   let drag = null;
@@ -14,15 +16,14 @@
     ${document.querySelector('#prepare-stage .prepare-statusbar').outerHTML}
     <header class="prepare-header"><button id="family-prepare-back" class="prepare-back" type="button" aria-label="退出准备打印，返回工作台">←</button><h1>准备打印</h1></header>
     <div class="prepare-printer"><img src="assets/准备打印-打印机.png" alt="Ugee Funbox 打印机"><div><strong>Ugee Funbox</strong><span class="prepare-idle"><i aria-hidden="true"></i>忙碌</span></div><button id="family-switch-printer" class="prepare-switch" type="button">切换</button></div>
-    <h2 class="prepare-section-title">选择要打印的盘（共 2 盘）</h2>
-    <div id="family-plate-list" class="plate-list" role="listbox" aria-label="两盘模型及打印顺序" aria-describedby="family-prepare-summary"></div>
+    <h2 class="prepare-section-title">选择要打印的盘</h2>
+    <label class="prepare-select-all"><span>全选</span><input id="family-select-all" type="checkbox" checked aria-label="全选打印盘"></label>
+    <div id="family-plate-list" class="plate-list" role="group" aria-label="选择要打印的盘"></div>
     <div class="prepare-options"><h2>打印选项</h2><div class="prepare-option-list"><div class="prepare-timelapse"><span>延时摄影</span><button id="family-timelapse-toggle" class="timelapse-check" type="button" role="checkbox" aria-checked="true" aria-label="延时摄影"><span class="timelapse-check-box" aria-hidden="true"></span></button></div><div class="prepare-timelapse"><span>调平校准</span><button id="family-leveling-toggle" class="timelapse-check" type="button" role="checkbox" aria-checked="false" aria-label="调平校准"><span class="timelapse-check-box" aria-hidden="true"></span></button></div></div></div>
-    <p id="family-prepare-summary" class="family-prepare-summary"></p>
     <div class="prepare-footer"><button id="family-save-slice" class="prepare-save" type="button">保存</button><button id="family-submit" class="prepare-start" type="button">加入打印队列</button></div>
   </div></div>`;
   const rows = tasks.map((task, index) => {
     const row = document.querySelector('#prepare-plate-list .plate-row').cloneNode(true);
-    row.querySelector('.prepare-plate-check').remove();
     row.setAttribute('role', 'option');
     row.classList.replace('plate-row', 'family-plate-row');
     row.dataset.plate = task.id;
@@ -38,7 +39,16 @@
     stats[1].lastChild.textContent = `${task.grams} g`;
     row.querySelector('.prepare-material').setAttribute('aria-label', `盘 ${index + 1}，模型颜色蓝色，料架颜色蓝色`);
     const hit = row.querySelector('.plate-row-hit');
-    hit.setAttribute('aria-label', `选择盘 ${index + 1} ${task.title}，方向键调整顺序`);
+    hit.setAttribute('aria-label', `调整盘 ${index + 1} ${task.title} 的打印顺序`);
+    const check = row.querySelector('.prepare-plate-check');
+    check.setAttribute('aria-label', `打印盘 ${index + 1}`);
+    check.addEventListener('change', () => {
+      if (readonly) return;
+      if (check.checked) checked.add(task.id);
+      else checked.delete(task.id);
+      selected = task.id;
+      render();
+    });
     hit.addEventListener('click', () => {
       if (suppressClick) { suppressClick = false; return; }
       if (readonly && !familyQueueTasks.some(item => item.id === task.id)) return;
@@ -105,15 +115,36 @@
       row.dataset.slot = order.indexOf(id);
       row.setAttribute('aria-selected', String(row.dataset.plate === selected));
       row.querySelector('.plate-row-hit').style.touchAction = readonly ? 'auto' : 'none';
+      /* 队列详情（只读）下勾选项固定反映队列里已有的盘，不可再改 */
+      const box = row.querySelector('.prepare-plate-check');
+      box.checked = readonly ? pending : checked.has(id);
+      box.disabled = readonly;
     });
+    const chosen = selectedPrintOrder();
+    const selectAll = $('#family-select-all');
+    selectAll.checked = !readonly && chosen.length === tasks.length;
+    selectAll.indeterminate = !readonly && chosen.length > 0 && chosen.length < tasks.length;
+    selectAll.disabled = readonly;
+    selectAll.closest('.prepare-select-all').hidden = readonly;
     $('#family-prepare-stage').dataset.readonly = String(readonly);
     $('#family-switch-printer').hidden = readonly;
-    $('#family-submit').disabled = readonly && !canStartQueueTask(taskCatalog[selected]);
+    $('#family-submit').disabled = readonly ? !canStartQueueTask(taskCatalog[selected]) : chosen.length === 0;
     $('#family-submit').textContent = readonly ? '开始打印' : '加入打印队列';
-    $('#family-submit').setAttribute('aria-label', readonly ? '开始打印' : '将两盘模型加入打印队列');
-
-    $('#family-prepare-summary').hidden = readonly;
-    $('#family-prepare-summary').textContent = readonly ? '' : '本次提交 2 盘，将按上方排序加入打印队列。';
+    $('#family-submit').setAttribute('aria-label', readonly ? '开始打印' : `将 ${chosen.length} 盘模型加入打印队列`);
+  }
+  function selectedPrintOrder() { return order.filter(id => checked.has(id)); }
+  function bindQueueLimitNotices() {
+    $('#family-select-all').addEventListener('change', event => {
+      if (readonly) return;
+      checked.clear();
+      if (event.target.checked) tasks.forEach(task => checked.add(task.id));
+      render();
+    });
+    /* 两个限制提示只有「我知道了」，关闭后仍停留在准备打印页 */
+    const fullDialog = document.querySelector('#queue-full-dialog');
+    const accountDialog = document.querySelector('#account-limit-dialog');
+    document.querySelector('#queue-full-ok').addEventListener('click', () => fullDialog.close());
+    document.querySelector('#account-limit-ok').addEventListener('click', () => accountDialog.close());
   }
   function rememberPage(name, taskId) {
     const url = taskSessionUrl();
@@ -148,6 +179,9 @@
     readonly = false;
     order = tasks.map(task => task.id);
     selected = order[0];
+    /* 每次进入新的提交，勾选回到「默认全选所有盘」 */
+    checked.clear();
+    tasks.forEach(task => checked.add(task.id));
     rememberPage('family-prepare');
     render();
     openReuseScreen('familyPrepare');
@@ -181,12 +215,23 @@
       return;
     }
     if (tasks.some(task => familyQueueTasks.some(queued => queued.id === task.id) || taskResults.has(task.id) || task.id === activeTaskId)) return;
+    const chosen = selectedPrintOrder();
+    if (!chosen.length) { showToast('请先勾选要加入打印队列的盘'); return; }
+    /* 控制台模拟的两种限制：勾选后优先弹对应提示，不真正提交 */
+    if (document.querySelector('#simulate-queue-full')?.checked) {
+      document.querySelector('#queue-full-dialog').showModal();
+      return;
+    }
+    if (document.querySelector('#simulate-account-limit')?.checked) {
+      document.querySelector('#account-limit-dialog').showModal();
+      return;
+    }
     if (ownedPendingBatchCount('girl') >= 2) { showToast('每人最多保留 2 个未完成模型任务，请先完成或取消已有任务'); return; }
     submittedOptions = {
       leveling: $('#family-leveling-toggle').getAttribute('aria-checked') === 'true',
       timelapse: $('#family-timelapse-toggle').getAttribute('aria-checked') === 'true'
     };
-    familyQueueTasks.push(...order.map(id => taskCatalog[id]));
+    familyQueueTasks.push(...chosen.map(id => taskCatalog[id]));
     rememberPage(null);
     renderPlateTaskAndQueue();
     queueToggle.hidden = false;
@@ -194,8 +239,9 @@
     printQueue.hidden = false;
     closeReuseScreens();
     taskPanel.scrollIntoView({ block: 'start', behavior: 'instant' });
-    showToast('已将 2 个打印任务加入打印队列');
+    showToast(`已将 ${chosen.length} 个打印任务加入打印队列`);
   });
+  bindQueueLimitNotices();
   window.__FAMILY_QUEUE = {
     openSubmission, openQueuedTask,
     owns: task => task.owner === 'girl'

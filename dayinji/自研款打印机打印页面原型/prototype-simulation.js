@@ -5,12 +5,20 @@ const syncSimulationConsole = () => { simulationConsole.open = simulationMedia.m
 syncSimulationConsole();
 simulationMedia.addEventListener('change', syncSimulationConsole);
 const simulationMode = params.get('simulation') === 'family' ? 'family' : params.get('plates') === 'single' ? 'single' : 'multi';
+/* 「加入打印队列」的两个限制提示只属于多账号下的多盘模型模拟 */
+const queueLimitSection = document.querySelector('#simulation-queue-limits');
+function syncQueueLimits(visible = simulationMode === 'family') {
+  queueLimitSection.hidden = !visible;
+}
+syncQueueLimits();
+window.__SIM_QUEUE_LIMITS = { show: () => syncQueueLimits(true) };
 simulationConsole.querySelectorAll('[data-simulation-mode]').forEach(button => {
   button.setAttribute('aria-checked', String(button.dataset.simulationMode === simulationMode));
   button.addEventListener('click', () => {
     if (button.dataset.simulationMode === 'family') {
       simulationConsole.querySelectorAll('[data-simulation-mode]').forEach(option => option.setAttribute('aria-checked', String(option === button)));
       if (!simulationMedia.matches) simulationConsole.open = false;
+      syncQueueLimits(true);
       window.__FAMILY_QUEUE.openSubmission();
       return;
     }

@@ -97,14 +97,14 @@
 #slice-save-percent { display: block; margin: 12px 0; font-size: 20px; color: #5866ef; }
 .slice-dialog #slice-saving-copy { margin-bottom: 0; }
 
-/* 提交前仅用复选框选择盘；行本身只承担排序。 */
-#prepare-stage .prepare-section-title { top:23.4%; height:44px; display:flex; align-items:center; }
-#prepare-stage .prepare-select-all { position:absolute; top:23.4%; right:5.5%; height:44px; display:flex; align-items:center; gap:2cqw; font-size:3.5cqw; cursor:pointer; }
-#prepare-stage .prepare-select-all input, #prepare-stage .prepare-plate-check { appearance:none; box-sizing:border-box; width:25px; height:25px; margin:0; border:1.5px solid #c7c8cc; border-radius:3px; background:#fff; cursor:pointer; }
-#prepare-stage :is(.prepare-select-all input, .prepare-plate-check):checked { border-color:#20bb6b; background:#20bb6b url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m5 12 4 4 10-10' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/85% no-repeat; }
-#prepare-stage .prepare-select-all input:indeterminate { border-color:#20bb6b; background:#20bb6b url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12h12' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") center/85% no-repeat; }
-#prepare-stage .prepare-plate-check { position:absolute; z-index:5; right:0; top:50%; transform:translateY(-50%); }
-#prepare-stage .prepare-plate-info { width:44%; }
-#prepare-stage .plate-row-hit { right:12%; }
-#prepare-stage .plate-row-grip { right:11%; }
-#prepare-stage .prepare-plate-check:focus-visible, #prepare-stage .prepare-select-all input:focus-visible { outline:2px solid #008af5; outline-offset:4px; }
+/* 提交前仅用复选框选择盘；行本身只承担排序。打印旅程与多账号准备打印页共用同一套勾选/排序几何。 */
+:is(#prepare-stage, #family-prepare-stage) .prepare-section-title { top:23.4%; height:44px; display:flex; align-items:center; }
+:is(#prepare-stage, #family-prepare-stage) .prepare-select-all { position:absolute; top:23.4%; right:5.5%; height:44px; display:flex; align-items:center; gap:2cqw; font-size:3.5cqw; cursor:pointer; }
+:is(#prepare-stage, #family-prepare-stage) .prepare-select-all input, :is(#prepare-stage, #family-prepare-stage) .prepare-plate-check { appearance:none; box-sizing:border-box; width:25px; height:25px; margin:0; border:1.5px solid #c7c8cc; border-radius:3px; background:#fff; cursor:pointer; }
+:is(#prepare-stage, #family-prepare-stage) :is(.prepare-select-all input, .prepare-plate-check):checked { border-color:#20bb6b; background:#20bb6b url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m5 12 4 4 10-10' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/85% no-repeat; }
+:is(#prepare-stage, #family-prepare-stage) .prepare-select-all input:indeterminate { border-color:#20bb6b; background:#20bb6b url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12h12' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") center/85% no-repeat; }
+:is(#prepare-stage, #family-prepare-stage) .prepare-plate-check { position:absolute; z-index:5; right:0; top:50%; transform:translateY(-50%); }
+:is(#prepare-stage, #family-prepare-stage) .prepare-plate-info { width:44%; }
+:is(#prepare-stage, #family-prepare-stage) .plate-row-hit { right:12%; }
+:is(#prepare-stage, #family-prepare-stage) .plate-row-grip { right:11%; }
+:is(#prepare-stage, #family-prepare-stage) .prepare-plate-check:focus-visible, :is(#prepare-stage, #family-prepare-stage) .prepare-select-all input:focus-visible { outline:2px solid #008af5; outline-offset:4px; }

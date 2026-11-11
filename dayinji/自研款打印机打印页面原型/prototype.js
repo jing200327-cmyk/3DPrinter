@@ -90,9 +90,6 @@ const dialogCopy = document.querySelector('#dialog-copy');
 const dialogDismiss = document.querySelector('#dialog-dismiss');
 const dialogConfirm = document.querySelector('#dialog-confirm');
 const dialogClose = document.querySelector('#dialog-close');
-const transitionOverlay = document.querySelector('#transition-overlay');
-const transitionLabel = document.querySelector('#transition-label');
-const transitionCloseButton = document.querySelector('#transition-close');
 const activeTaskImage = document.querySelector('#active-task-image');
 const activeTaskOwnerCard = document.querySelector('#active-task-owner-card');
 const activeTaskOwnerAvatar = document.querySelector('#active-task-owner-avatar');
@@ -799,20 +796,18 @@ function openDialog({ title, copy = '', dismissText = '暂不', dismissTone = 'n
   dialog.showModal();
 }
 
-/* ---------- 暂停中 / 继续打印中 / 取消中 过渡弹窗 ---------- */
-/* 文档：点击暂停/继续/取消后立刻弹出过渡弹窗，用户可关闭弹窗，对应按钮转为“…中”，
-   等待指令执行完成后任务控制面板才切换状态；过渡期间不可取消。原型用 2s 模拟指令执行。 */
+/* ---------- 暂停 / 继续 / 取消：只走按钮等待态，不弹「处理中」弹窗 ---------- */
+/* 文档：点击暂停/继续/取消后，对应按钮立即转为“…中”并进入不可重复操作的等待态，
+   指令执行完成后任务控制面板才切换状态。原型用 2s 模拟指令执行。 */
 let transitionTimer = null;
 function openTransition(text, buttonSwap) {
-  transitionLabel.textContent = text;
-  transitionOverlay.hidden = false;
   if (buttonSwap) buttonSwap();
   pauseButton.disabled = true;
   cancelButton.disabled = true;
   finishButton.disabled = true;
 }
 function closeTransition() {
-  transitionOverlay.hidden = true;
+  /* 不再有处理中弹窗需要关闭；保留空实现供调用方沿用 */
 }
 function runTransition(text, buttonSwap, done) {
   if (transitionTimer !== null) return;
@@ -1021,18 +1016,13 @@ pauseButton.addEventListener('click', () => {
   }
 });
 
-transitionCloseButton.addEventListener('click', () => {
-  /* 文档：过渡弹窗可关闭，但指令继续执行，状态仍在计时结束后切换 */
-  closeTransition();
-});
-
 cameraToggleButton.addEventListener('click', toggleCamera);
 
 cancelButton.addEventListener('click', () => {
-  /* 单盘模型：弹窗提供「暂不 / 取消任务」；多盘模型：提供「取消当前任务 / 取消全部任务」+ 右上角关闭 */
+  /* 单盘模型：弹窗提供「暂不 / 确认」；多盘模型：提供「取消当前盘 / 取消当前模型」+ 右上角关闭 */
   openDialog(isSinglePlateModel
-    ? { title: '是否要取消任务', dismissText: '暂不', dismissTone: 'danger-ghost', confirmText: '取消任务', confirmTone: 'danger', action: 'cancel-print' }
-    : { title: '是否要取消任务', dismissText: '取消当前任务', dismissTone: 'danger-ghost', confirmText: '取消全部任务', confirmTone: 'danger', action: 'cancel-print' });
+    ? { title: '是否要取消任务', dismissText: '暂不', dismissTone: 'danger-ghost', confirmText: '确认', confirmTone: 'danger', action: 'cancel-print' }
+    : { title: '是否要取消任务', dismissText: '取消当前盘', dismissTone: 'danger-ghost', confirmText: '取消当前模型', confirmTone: 'danger', action: 'cancel-print' });
 });
 
 finishButton.addEventListener('click', () => {
@@ -2315,13 +2305,13 @@ dialog.addEventListener('close', () => {
         runTransition('取消中...', swapCancelling, () => {
           cancelTasksForActiveRole();
           setTaskStatus('cancelled-all');
-          showToast(`已取消${getActiveTaskOwner() === 'girl' ? '女孩' : '男孩'}的全部打印任务`);
+          showToast('已取消当前模型的全部打印任务');
         });
       }
     } else if (dialog.returnValue === 'cancel' && !isSinglePlateModel) {
       runTransition('取消中...', swapCancelling, () => {
         setTaskStatus('cancelled');
-        showToast('已取消当前打印任务');
+        showToast('已取消当前盘');
       });
     }
   }
