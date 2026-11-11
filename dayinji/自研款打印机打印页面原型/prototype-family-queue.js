@@ -229,7 +229,20 @@
       document.querySelector('#account-limit-dialog').showModal();
       return;
     }
-    if (ownedPendingBatchCount('girl') >= 2) { showToast('每人最多保留 2 个未完成模型任务，请先完成或取消已有任务'); return; }
+    /* 打印机队列已满：拒绝入队并提示，保留当前设置 */
+    if (document.querySelector('#simulate-queue-full')?.checked) {
+      document.querySelector('#queue-full-dialog').showModal();
+      return;
+    }
+    /* 本人未完成模型批次已达上限：拒绝入队并提示 */
+    if (document.querySelector('#simulate-account-limit')?.checked) {
+      document.querySelector('#account-limit-dialog').showModal();
+      return;
+    }
+    if (ownedPendingBatchCount('girl') >= 2) {
+      document.querySelector('#account-limit-dialog').showModal();
+      return;
+    }
     submittedOptions = {
       leveling: $('#family-leveling-toggle').getAttribute('aria-checked') === 'true',
       timelapse: $('#family-timelapse-toggle').getAttribute('aria-checked') === 'true'

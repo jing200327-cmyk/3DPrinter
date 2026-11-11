@@ -5,10 +5,10 @@ const syncSimulationConsole = () => { simulationConsole.open = simulationMedia.m
 syncSimulationConsole();
 simulationMedia.addEventListener('change', syncSimulationConsole);
 const simulationMode = params.get('simulation') === 'family' ? 'family' : params.get('plates') === 'single' ? 'single' : 'multi';
-/* 「加入打印队列」的两个限制提示只属于多账号下的多盘模型模拟 */
+/* 「加入打印队列」的两个限制提示开关：打印旅程与多账号准备页都会用到，常驻显示 */
 const queueLimitSection = document.querySelector('#simulation-queue-limits');
-function syncQueueLimits(visible = simulationMode === 'family') {
-  queueLimitSection.hidden = !visible;
+function syncQueueLimits() {
+  queueLimitSection.hidden = false;
 }
 syncQueueLimits();
 window.__SIM_QUEUE_LIMITS = { show: () => syncQueueLimits(true) };
