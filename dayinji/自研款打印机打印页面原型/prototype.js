@@ -453,6 +453,10 @@ function attachPlateLongPress(wrap, task) {
     cancelTimer();
     timer = window.setTimeout(() => {
       timer = null;
+      if (!canDeleteQueueTask(task)) {
+        showToast('只能删除自己发起的模型的盘');
+        return;
+      }
       enterQueueFocus(task.id);
     }, PLATE_LONG_PRESS_MS);
   });
@@ -497,6 +501,11 @@ function deleteQueuePlate(taskId) {
   const target = familyQueueTasks.find((task) => task.id === taskId);
   if (!target) {
     exitQueueFocus();
+    return;
+  }
+  if (!canDeleteQueueTask(target)) {
+    exitQueueFocus();
+    showToast('只能删除自己发起的模型的盘');
     return;
   }
   familyQueueTasks = familyQueueTasks.filter((task) => task.id !== taskId);
@@ -943,6 +952,13 @@ function selectedQueuedTask() {
 
 function canControlQueueTask(task) {
   return task && (document.querySelector('#device-settings-screen').dataset.account !== 'child' || task.owner === 'boy');
+}
+
+/* 长按删除的权限与任务控制一致：家长（设备 Owner）可删除队列中所有盘，
+   儿童账号只能删除自己发起的模型的盘，不能删除其它账号的盘。 */
+function canDeleteQueueTask(task) {
+  if (!task) return false;
+  return canControlQueueTask(task);
 }
 
 function canStartQueueTask(task, options) {
