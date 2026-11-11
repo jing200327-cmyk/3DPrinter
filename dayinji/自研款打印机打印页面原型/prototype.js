@@ -142,6 +142,50 @@ const preparedTaskCatalog = Object.fromEntries(modelPlateIds.map(plate => {
   return [id, { id, owner: 'boy', submission: 'prepared-model', prepared: true, plate, ...plateCatalog[plate] }];
 }));
 for (const batch of preparedBatches) for (const task of tasksForPreparedBatch(batch)) preparedTaskCatalog[task.id] = task;
+
+/* ---------- 外部批次：R001 模型编辑与切片原型跳转过来的这一批 ----------
+   extId / extTitle / extPlates / extSec / extGrams 由来源页写入：
+   模型名、勾选盘、每盘时长与耗材都跟着来源页走，不再套用打印页固定的 3 盘目录。
+   缩略图沿用目录里的盘图，第 4 盘起按 1→2→3 循环取图。 */
+const EXT_ASSET_CYCLE = ['1', '2', '3'];
+function extSecondsList(raw) {
+  return String(raw || '').split('|').map(value => Math.max(0, Math.round(Number(value) || 0)));
+}
+function durationLabel(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.round((seconds % 3600) / 60);
+  if (hours && minutes) return `${hours} h ${minutes} min`;
+  if (hours) return `${hours} h`;
+  return `${minutes} min`;
+}
+const externalBatch = (() => {
+  const id = (params.get('extId') || '').trim();
+  const title = (params.get('extTitle') || '').trim().slice(0, 60);
+  const plates = [...new Set((params.get('extPlates') || '').split(',').map(value => value.trim()))]
+    .filter(value => /^[1-8]$/.test(value));
+  if (!/^[a-z0-9-]{1,50}$/.test(id) || !title || !plates.length) return null;
+  return { id, title, plates, seconds: extSecondsList(params.get('extSec')), grams: extSecondsList(params.get('extGrams')) };
+})();
+const externalTasks = externalBatch ? externalBatch.plates.map((plate, index) => {
+  const asset = plateCatalog[plate] || plateCatalog[EXT_ASSET_CYCLE[index % EXT_ASSET_CYCLE.length]];
+  const seconds = externalBatch.seconds[index] || asset.seconds;
+  const grams = externalBatch.grams[index] || asset.grams;
+  return {
+    id: `ext-${externalBatch.id}-plate-${plate}`,
+    owner: 'boy',
+    submission: `ext-${externalBatch.id}`,
+    prepared: true,
+    plate,
+    title: externalBatch.plates.length > 1 ? `${externalBatch.title} · 盘${index + 1}` : externalBatch.title,
+    duration: durationLabel(seconds),
+    grams,
+    seconds,
+    taskAsset: asset.taskAsset,
+    queueAsset: asset.queueAsset
+  };
+}) : [];
+for (const task of externalTasks) preparedTaskCatalog[task.id] = task;
+
 const activePreparedTaskId = Object.hasOwn(preparedTaskCatalog, params.get('activeTask')) ? params.get('activeTask') : null;
 const activeGirlTaskId = Object.hasOwn(girlTaskCatalog, params.get('activeTask')) ? params.get('activeTask') : null;
 const activeTask = activeGirlTaskId ? girlTaskCatalog[activeGirlTaskId] : activePreparedTaskId ? preparedTaskCatalog[activePreparedTaskId] : plateCatalog[activePlate];
@@ -867,9 +911,11 @@ function renderStateRows() {
     const opened = taskCatalog[prepareQueueTaskId];
     const batchTasks = opened?.prepared ? Object.values(taskCatalog).filter(task => task.submission === opened.submission) : modelPlateIds.map(id => taskCatalog[`plate-${id}`]);
     const rowTask = batchTasks.find(task => task.plate === plate);
-    row.hidden = !rowTask;
-    if (!rowTask) return;
-    row.style.top = `${[28.148, 45.926, 63.852][batchTasks.indexOf(rowTask)]}%`;
+    /* 队列详情版只画了 3 个盘位；外部批次第 4 盘起没有盘位，直接隐藏而不是叠在一起 */
+    const slotTop = [28.148, 45.926, 63.852][batchTasks.indexOf(rowTask)];
+    row.hidden = !rowTask || slotTop === undefined;
+    if (row.hidden) return;
+    row.style.top = `${slotTop}%`;
     const result = taskResults.get(rowTask.id) || (rowTask.id === activeTaskId && plate === stampedPlate && currentStatus !== 'ready' ? resolvePrepareStateKey() : null);
     const stamped = Boolean(result);
     row.classList.toggle('is-stamped', stamped);
@@ -883,7 +929,7 @@ function renderStateRows() {
       const image = plate === stampedPlate ? stateStampImage : document.createElement('img');
       image.className = 'state-stamp';
       image.src = stamp.src;
-      image.alt = `${plateCatalog[plate].title}，${stamp.alt}`;
+      image.alt = `${plateCatalog[plate]?.title || rowTask.title}，${stamp.alt}`;
       image.hidden = false;
       row.append(image);
     }
@@ -940,6 +986,11 @@ function openQueueTaskSettings(queueId) {
   const queueTask = getVisibleQueueTasks().find((task) => task.id === queueId);
   if (!canControlQueueTask(queueTask)) return;
   if (window.__FAMILY_QUEUE?.owns(queueTask)) return window.__FAMILY_QUEUE.openQueuedTask(queueTask);
+  /* 外部批次可能多于 3 盘，队列详情版只画了 3 个盘位，超出部分给一句提示而不是错位渲染 */
+  if (queueTask && !plateCatalog[queueTask.plate]) {
+    showToast(`原型演示：第 ${queueTask.plate} 盘暂未做队列详情版准备页`);
+    return;
+  }
   const plate = queueTask && plateCatalog[queueTask.plate] ? queueTask.plate : '2';
   openPrepareStateScreen(plate, queueTask.id);
 }
@@ -2335,6 +2386,16 @@ else if (params.get('status') === 'cancelled') setTaskStatus('cancelled');
 else if (params.get('status') === 'cancelled-all') setTaskStatus('cancelled-all');
 else if (params.get('status') === 'preparing') setTaskStatus('preparing');
 else setTaskStatus('ready');
+/* 从 R001 准备打印页「加入打印队列」跳过来：展开队列并给一句入队提示，
+   与打印旅程里点「加入打印队列」后的反馈一致，避免用户看不到自己刚提交的这盘 */
+if (externalBatch && currentStatus === 'printing'
+  && familyQueueTasks.some(task => task.submission === `ext-${externalBatch.id}`)) {
+  queueToggle.hidden = false;
+  queueToggle.setAttribute('aria-expanded', 'true');
+  printQueue.hidden = false;
+  showToast(`已将 1 个模型（${externalBatch.plates.length} 盘）加入打印队列`);
+  taskPanel.scrollIntoView({ block: 'start', behavior: 'instant' });
+}
 bindScrollIndicator();
 
 /* ==========================================================================
