@@ -1274,6 +1274,8 @@ function deletePickedTimelapse() {
 
 timelapseCatalog.forEach((model) => timelapseList.appendChild(buildTimelapseItem(model).el));
 document.querySelector('#timelapse-screen-back').addEventListener('click', goBackInReuseScreens);
+/* 整页复用图的返回热区：与旧版返回按钮行为一致 */
+document.querySelector('#timelapse-baked-back')?.addEventListener('click', goBackInReuseScreens);
 timelapseDeleteButton.addEventListener('click', () => {
   /* 全部删完就没有可删的了，直接退出多选态 */
   const hasItems = [...timelapseItems.values()].some((state) => !state.el.hidden);

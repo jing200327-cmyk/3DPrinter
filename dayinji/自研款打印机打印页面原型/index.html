@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f4f5fa">
   <title>自研款打印机打印页面原型</title>
-  <link rel="stylesheet" href="styles.css?v=20261110-queue">
+  <link rel="stylesheet" href="styles.css?v=timelapse-baked-1">
   <link rel="stylesheet" href="styles-share-printer.css?v=r008">
   <link rel="stylesheet" href="styles-filament-operation.css?v=r009">
   <link rel="stylesheet" href="styles-3d-preview.css?v=r009">
@@ -325,7 +325,12 @@
        → 每张卡下方一枚「下载 / 下载中… / 播放」按钮。缩略图裁自原图，见 assets/_tools_make_timelapse_assets.py。 -->
   <section id="timelapse-screen" class="reuse-screen reuse-screen--fullscreen" hidden tabindex="-1" aria-label="延时摄影">
     <div class="reuse-screen-frame is-pannable">
-      <div class="timelapse-page">
+      <!-- 延时摄影列表页：复用整页设计图，页面只保留返回热区；实时监控区右上角与设备设置两个入口都落在这里 -->
+      <div class="timelapse-baked reuse-stage" style="--reuse-ratio: 376 / 613">
+        <img src="assets/延时摄影-模型视频页.png" alt="延时摄影列表页，共 6 个视频，支持管理与分享">
+        <button id="timelapse-baked-back" class="reuse-hotspot timelapse-baked__back" type="button" aria-label="返回"></button>
+      </div>
+      <div class="timelapse-page" hidden>
         <header class="timelapse-bar">
           <button id="timelapse-screen-back" class="timelapse-bar__btn" type="button" aria-label="返回打印页">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4.5 7.5 12l7.5 7.5"/></svg>
@@ -1231,7 +1236,7 @@
   </dialog>
   <script src="prototype-filament-backpack.js?v=2"></script>
   <script src="prototype-prepare-backpack.js?v=3"></script>
-  <script src="prototype.js?v=20261110-busy3"></script>
+  <script src="prototype.js?v=timelapse-baked-1"></script>
   <script src="prototype-device-control.js?v=motor-temp-1"></script>
   <script src="prototype-calibration.js?v=busy-3"></script>
   <script src="prototype-family-queue.js?v=queue-7"></script>

@@ -602,3 +602,11 @@ body.operation-open { overflow: hidden; }
 /* 儿童添加设备仅保留我的打印机；白色目录延伸覆盖底图的配置按钮。 */
 #add-printer-screen [hidden] { display: none !important; }
 #add-printer-screen[data-account="child"] .add-printer-catalog { bottom: 0; }
+
+/* 延时摄影列表页：整页复用设计图（376×613 原图比例），画布居中，返回热区按压痕对齐 */
+#timelapse-screen { background: #f6f7fb; }
+.timelapse-baked { margin: 0 auto; }
+.timelapse-baked > img { object-fit: contain; }
+.timelapse-baked__back { left: 2.6%; top: 2.4%; width: 10%; height: 6%; }
+/* 旧版列表页保留在文档中供脚本引用，但不再显示 */
+.timelapse-page[hidden] { display: none !important; }
